@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="vk-cpp-bot" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/vk-cpp-bot" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/vk-cpp-bot" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c++11" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Linker>
+			<Add library="curl" />
+			<Add library="pthread" />
+		</Linker>
+		<Unit filename="Makefile" />
+		<Unit filename="common.h" />
+		<Unit filename="config.json" />
+		<Unit filename="cmd.cpp" />
+		<Unit filename="cmds.cpp" />
+		<Unit filename="fs.cpp" />
+		<Unit filename="fs.h" />
+		<Unit filename="json.hpp" />
+		<Unit filename="lp.cpp" />
+		<Unit filename="lp.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="modules.cpp" />
+		<Unit filename="msg.cpp" />
+		<Unit filename="msg.h" />
+		<Unit filename="net.cpp" />
+		<Unit filename="net.h" />
+		<Unit filename="other.cpp" />
+		<Unit filename="other.h" />
+		<Unit filename="str.cpp" />
+		<Unit filename="str.h" />
+		<Unit filename="vk.cpp" />
+		<Unit filename="vk.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
