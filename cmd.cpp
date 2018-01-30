@@ -18,9 +18,13 @@ void cmd::init()
 	cmd::add("f", &cmds::f, false, "видосы с правками)", 3, false);
 	cmd::add("-f", &cmds::f, false, "видосы с правками)", 3, false);
 	cmd::add("доки", &cmds::doc, true, "доки", 1, false);
-	cmd::add("unic", &cmds::unicode, false, "конвертирование в вид \"#&index;\"", 0, false);
+	cmd::add("code", &cmds::code, false, "шифратор", 0, false);
+	cmd::add("decode", &cmds::decode, false, "дешифратор", 0, false);
 	cmd::add("ban", &cmds::ban, true, "ban", 0, true);
 	cmd::add("unban", &cmds::unban, true, "unban", 0, true);
+	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, false);
+	cmd::add("битконь", &cmds::moneysend, true, "отправить битконей", 0, false);
+	cmd::add("exe", &cmds::execute, true, "api", 0, true);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)

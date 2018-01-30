@@ -12,18 +12,17 @@ void module::start()
 	module::ban::read();
 }
 
-long long int oldbalance;
-void module::TR(message *inMsg, table *outMsg)
+void module::TR(message *inMsg, table *outMsg, long long int *oldbalance)
 {
-	oldbalance = module::money::get(to_string(inMsg->user_id));
+	*oldbalance = module::money::get(to_string(inMsg->user_id));
 }
 
-void module::postTR(message *inMsg, table *outMsg)
+void module::postTR(message *inMsg, table *outMsg, long long int *oldbalance)
 {
-	if(oldbalance != module::money::get(to_string(inMsg->user_id)))
+	if(*oldbalance != module::money::get(to_string(inMsg->user_id)))
 	{
 		(*outMsg)["message"]+="<br><br>🐎";
-		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id))-oldbalance);
+		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id))-*oldbalance);
 		(*outMsg)["message"]+="<br>🐎: ";
 		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id)));
 	}
@@ -69,22 +68,6 @@ void module::money::add(string id, long long int money)
 	moneys[id] = t + money;
 	module::money::save();
 	mon.unlock();
-}
-
-bool pred(const pair<string, long long int> &a, const pair<string, long long int> &b)
-{
-	return a.second > b.second;
-}
-
-vector<pair<string, long long int>> module::money::top()
-{
-	map<string, long long int> m;
-	mon.lock();
-	m = moneys.get<map<string, long long int>>();
-	mon.unlock();
-	vector<pair<string, long long int>> out(m.begin(), m.end());
-    std::sort(out.begin(), out.end(), pred);
-	return out;
 }
 
 // admin system

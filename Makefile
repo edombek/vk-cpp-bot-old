@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-std=c++11 -O3 -c -Wall
-LDFLAGS=-lstdc++ -L. -lcurl -pthread -Wl,-rpath,.
+CFLAGS=-std=c++11 -g -c -Wall
+LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -Wl,-rpath,.
 INCLUDES=
 SOURCES=	\
 	fs.cpp \

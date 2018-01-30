@@ -1,6 +1,9 @@
 //команды тут
 
 #include "common.h"
+#include <gd.h>
+#include <ctime>
+#include <random>
 
 void cmds::weather(message *inMsg, table *outMsg)
 {
@@ -239,17 +242,23 @@ void cmds::doc(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+=to_string(docs.size());
 }
 
-void cmds::unicode(message *inMsg, table *outMsg)
+#define delta 1
+void cmds::code(message *inMsg, table *outMsg)
 {
 	string str = str::summ(inMsg->words, 1);
-	string out = "";
 	for(unsigned int i = 0; i<str.size();i++)
-		out+="&#"+to_string((unsigned int)str[i])+";";
-	str = out;
-	out = "";
+		if(str[i]!=-48)
+			str[i]+=delta;
+	(*outMsg)["message"]+=str;
+}
+
+void cmds::decode(message *inMsg, table *outMsg)
+{
+	string str = str::summ(inMsg->words, 1);
 	for(unsigned int i = 0; i<str.size();i++)
-		out+="&#"+to_string((unsigned int)str[i])+";";
-	(*outMsg)["message"]+=out;
+		if(str[i]!=-48)
+			str[i]-=delta;
+	(*outMsg)["message"]+=str;
 }
 
 void cmds::ban(message *inMsg, table *outMsg)
@@ -260,4 +269,127 @@ void cmds::ban(message *inMsg, table *outMsg)
 void cmds::unban(message *inMsg, table *outMsg)
 {
 	module::ban::set(inMsg->words[1], false);
+}
+
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+
+#define MAX4(x,y,z,w) ((MAX((x),(y))) > (MAX((z),(w))) ? (MAX((x),(y))) : (MAX((z),(w))))
+#define MIN4(x,y,z,w) ((MIN((x),(y))) < (MIN((z),(w))) ? (MIN((x),(y))) : (MIN((z),(w))))
+
+#define MAXX(x) MAX4(x[0],x[2],x[4],x[6])
+#define MINX(x) MIN4(x[0],x[2],x[4],x[6])
+#define MAXY(x) MAX4(x[1],x[3],x[5],x[7])
+#define MINY(x) MIN4(x[1],x[3],x[5],x[7])
+
+#define TXT_SIZE 40
+#define TITLE_SIZE 30
+void cmds::citata(message *inMsg, table *outMsg)
+{
+	table params =
+	{
+		{"message_ids", to_string((int)inMsg->msg_id)}
+	};
+	json res = vk::send("messages.getById", params)["response"]["items"];
+	if(res[0]["fwd_messages"].is_null())
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	json out;
+	other::fwds(&res[0]["fwd_messages"], &out);
+	params =
+	{
+		{"fields", "photo_100"}
+	};
+	
+	unsigned int x=0;
+	unsigned int y=0;
+	for(unsigned i=0; i < out.size();i++)
+	{
+		int brect[8];
+		params["user_ids"]=to_string((int)out[i]["user_id"]);
+		json t = vk::send("users.get", params)["response"][0];
+		out[i]["photo"] = t["photo_100"];
+		out[i]["name"] = t["first_name"].get<string>() + " " + t["last_name"].get<string>();
+		gdImageStringFT(NULL, brect, 0x999999, "./font.ttf", TXT_SIZE, 0, 0, TXT_SIZE, (char*)out[i]["msg"].get<string>().c_str());
+		if(i>0&&out[i]["name"] == out[i-1]["name"]&&out[i]["photo"] == out[i-1]["photo"]&&out[i]["lvl"] == out[i-1]["lvl"])
+			out[i]["y"]=MAXY(brect)+TXT_SIZE;
+		else
+			out[i]["y"]=MAXY(brect)+100+TXT_SIZE;
+		out[i]["x"]=MAXX(brect)+out[i]["lvl"].get<int>()*100+TXT_SIZE;
+		y += out[i]["y"].get<int>();
+		gdImageStringFT(NULL, brect, 0x999999, "./font.ttf", TITLE_SIZE, 0, 0, TITLE_SIZE, (char*)out[i]["name"].get<string>().c_str());
+		out[i]["tx"]=MAXX(brect)+100+TITLE_SIZE+out[i]["lvl"].get<int>()*100;
+		if(out[i]["x"].get<unsigned int>()+TXT_SIZE>x)
+			x=out[i]["x"].get<int>()+TXT_SIZE;
+		if(out[i]["tx"].get<unsigned int>()+TITLE_SIZE>x)
+			x=out[i]["tx"].get<int>()+TITLE_SIZE;
+	}
+	if((float)x/y>10)y=(float)x/10;
+	gdImagePtr outIm = gdImageCreateTrueColor(x, y);
+	y=0;
+	for(unsigned int i=0;i<out.size();i++)
+	{
+		if(!(i>0&&out[i]["name"] == out[i-1]["name"]&&out[i]["photo"] == out[i-1]["photo"]&&out[i]["lvl"] == out[i-1]["lvl"]))
+		{
+			args w = str::words(out[i]["photo"].get<string>(), '.');
+			string n = "avatar."+w[w.size()-1];
+			/*gdImageFilledRectangle(outIm, out[i]["lvl"].get<int>()*100+150, y, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+100, gdImageColorClosest(outIm, 50, 50, 50));
+			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100+150, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));
+			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));*/
+			net::download(out[i]["photo"], n);
+			gdImagePtr im = gdImageCreateFromFile(n.c_str());
+			gdImageCopy(outIm, im, out[i]["lvl"].get<int>()*100, y, 0, 0, 100, 100);
+			gdImageDestroy(im);
+			gdImageStringTTF(outIm, NULL, gdImageColorClosest(outIm, 200, 200, 200), "./font.ttf", TITLE_SIZE, 0, out[i]["lvl"].get<int>()*100 + 100 + TITLE_SIZE*0.5, y+TITLE_SIZE*0.5+50, (char*)out[i]["name"].get<string>().c_str());
+			gdImageStringTTF(outIm, NULL, gdImageColorClosest(outIm, 255, 255, 255), "./font.ttf", TXT_SIZE, 0, TXT_SIZE*0.5+out[i]["lvl"].get<int>()*100 + TXT_SIZE*0.5, y+100+TXT_SIZE*1.5, (char*)out[i]["msg"].get<string>().c_str());
+		}
+		else
+			gdImageStringTTF(outIm, NULL, gdImageColorClosest(outIm, 255, 255, 255), "./font.ttf", TXT_SIZE, 0, TXT_SIZE*0.5+out[i]["lvl"].get<int>()*100 + TXT_SIZE*0.5, y+TXT_SIZE*1.5, (char*)out[i]["msg"].get<string>().c_str());
+		y+=out[i]["y"].get<int>();
+	}
+	FILE *in;
+	in = fopen("out.png", "wb");
+	gdImagePng(outIm, in);
+	fclose(in);
+	gdImageDestroy(outIm);
+	(*outMsg)["attachment"] += ","+vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
+}
+
+void cmds::execute(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	string cmd = str::summ(inMsg->words, 1);
+	cmd = str::replase(cmd, "<br>", "\n");
+	cmd = str::convertHtml(cmd);
+	table params =
+	{
+		{"code", cmd}
+	};
+	json res = vk::send("execute", params);
+	(*outMsg)["message"]+=res.dump(4);
+}
+
+void cmds::moneysend(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 3)
+	{
+		inMsg->words.push_back("0");
+		inMsg->words.push_back("0");
+	}
+	long long int id = str::fromString(inMsg->words[1]);
+	long long int m = str::fromString(inMsg->words[2]);
+	if(m < 1 || m > module::money::get(to_string(inMsg->user_id)))
+	{
+		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <$>\nну или у вас недостаточно $";
+		return;
+	}
+	else (*outMsg)["message"] += "отправил";
+	module::money::add(to_string(inMsg->user_id), 0-m);
+	module::money::add(to_string(id), m);
 }

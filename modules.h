@@ -4,8 +4,8 @@
 namespace module
 {
 	void start();
-	void TR(message *inMsg, table *outMsg);
-	void postTR(message *inMsg, table *outMsg);
+	void TR(message *inMsg, table *outMsg, long long int *oldbalance);
+	void postTR(message *inMsg, table *outMsg, long long int *oldbalance);
 	
 	namespace money
 	{
@@ -13,7 +13,6 @@ namespace module
 		void save();
 		long long int get(string id);
 		void add(string id, long long int money);
-		vector<pair<string, long long int>> top();
 	}
 	
 	namespace admin

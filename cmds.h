@@ -9,9 +9,13 @@ namespace cmds
 	void video(message *inMsg, table *outMsg);
 	void f(message *inMsg, table *outMsg);
 	void doc(message *inMsg, table *outMsg);
-	void unicode(message *inMsg, table *outMsg);
+	void code(message *inMsg, table *outMsg);
+	void decode(message *inMsg, table *outMsg);
 	void ban(message *inMsg, table *outMsg);
 	void unban(message *inMsg, table *outMsg);
+	void citata(message *inMsg, table *outMsg);
+	void execute(message *inMsg, table *outMsg);
+	void moneysend(message *inMsg, table *outMsg);
 }
 
 #endif

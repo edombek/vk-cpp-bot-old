@@ -15,11 +15,12 @@ void msg::in(json js){
     else
         id=to_string(inMsg.user_id);
     thread typing(msg::setTyping, id);
-    module::TR(&inMsg, &outMsg);
+    long long int oldbalance;
+    module::TR(&inMsg, &outMsg, &oldbalance);
     msg::func(&inMsg, &outMsg);
     if(outMsg["peer_id"]=="")
 		return;
-	module::postTR(&inMsg, &outMsg);
+	module::postTR(&inMsg, &outMsg, &oldbalance);
 	typing.join();
     msg::send(outMsg);
     //other::sleep(300000);
@@ -61,6 +62,8 @@ void msg::func(message *inMsg, table *outMsg)
 
 void msg::send(table outMsg)
 {
+	outMsg["message"] = str::replase(outMsg["message"], ".", "•");
+	outMsg["message"] = str::replase(outMsg["message"], "#", "•");
     vk::send("messages.send", outMsg);
     cout << other::getRealTime()+": send("+outMsg["peer_id"]+"): "+outMsg["message"] << endl;
 }
