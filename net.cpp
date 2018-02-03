@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define net_agent "EVGESHAd agent"
+#define net_agent "KateMobileAndroid/46-424 (Android 7.1; SDK 24; armeabi-v7a; Nexus 5; en)"
 //#define printOut
 
 /* Init network settings */

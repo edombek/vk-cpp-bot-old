@@ -81,3 +81,20 @@ string vk::upload(string path, string peer_id, string type)
 	}
 	return type+to_string((int)res["response"][0]["owner_id"])+"_"+to_string((int)res["response"][0]["id"]);
 }
+
+void vk::friends()
+{
+	while(true)
+	{
+		json list = vk::send("friends.getRequests", {
+			{"need_viewed", "1"}
+		})["response"]["items"];
+		for(unsigned int i=0; i<list.size();i++)
+		{
+			vk::send("friends.add", {
+				{"user_id", to_string((int)list[i])}
+			});
+		}
+		other::sleep(600000);
+	}
+}

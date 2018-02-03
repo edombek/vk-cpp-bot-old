@@ -7,7 +7,9 @@ int main()
 	other::startTime();
 	module::start();
 	cmd::init();
+	thread friends(vk::friends);
 	lp::loop();
 	t.join();
+	friends.join();
 	return 0;
 }

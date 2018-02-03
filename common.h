@@ -35,5 +35,5 @@ typedef struct{
 #include "cmds.h"
 #include "thr.h"
 
-#define botname {"кот", "!", "пуся", "хуй"}
+#define botname {"кот", "!", "пуся"}
 #endif

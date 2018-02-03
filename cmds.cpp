@@ -71,13 +71,13 @@ void cmds::con(message *inMsg, table *outMsg)
 	temp = "";
 	for(unsigned i = 0; i < out.size(); i++)
 	{
-		(*outMsg)["message"]+= "("+to_string(i+1)+"/"+to_string(out.size())+")\n";
+		if(out.size()>1)
+			(*outMsg)["message"]+= "("+to_string(i+1)+"/"+to_string(out.size())+")\n";
 		(*outMsg)["message"]+= "\n" + out[i];
 		if(out.size() == 1 || i == out.size()-1)break;
 		msg::send((*outMsg));
 		(*outMsg)["message"]= "";
 	}
-	return;
 }
 
 void cmds::upload(message *inMsg, table *outMsg)
@@ -242,25 +242,6 @@ void cmds::doc(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+=to_string(docs.size());
 }
 
-#define delta 1
-void cmds::code(message *inMsg, table *outMsg)
-{
-	string str = str::summ(inMsg->words, 1);
-	for(unsigned int i = 0; i<str.size();i++)
-		if(str[i]!=-48)
-			str[i]+=delta;
-	(*outMsg)["message"]+=str;
-}
-
-void cmds::decode(message *inMsg, table *outMsg)
-{
-	string str = str::summ(inMsg->words, 1);
-	for(unsigned int i = 0; i<str.size();i++)
-		if(str[i]!=-48)
-			str[i]-=delta;
-	(*outMsg)["message"]+=str;
-}
-
 void cmds::ban(message *inMsg, table *outMsg)
 {
 	module::ban::set(inMsg->words[1], true);
@@ -372,7 +353,29 @@ void cmds::execute(message *inMsg, table *outMsg)
 		{"code", cmd}
 	};
 	json res = vk::send("execute", params);
-	(*outMsg)["message"]+=res.dump(4);
+	string temp = "";
+	string resp=res.dump(4);
+	args out;
+	for(unsigned i = 0; i < resp.size(); i++)
+	{
+		temp.push_back(resp[i]);
+		if(temp.size() > max_size && (resp.size() > i +1 && resp[i+1]!='\n'))
+		{
+			out.push_back(temp);
+			temp = "";
+		}
+	}
+	out.push_back(temp);
+	temp = "";
+	for(unsigned i = 0; i < out.size(); i++)
+	{
+		if(out.size()>1)
+			(*outMsg)["message"]+= "("+to_string(i+1)+"/"+to_string(out.size())+")\n";
+		(*outMsg)["message"]+= "\n" + out[i];
+		if(out.size() == 1 || i == out.size()-1)break;
+		msg::send((*outMsg));
+		(*outMsg)["message"]= "";
+	}
 }
 
 void cmds::moneysend(message *inMsg, table *outMsg)
