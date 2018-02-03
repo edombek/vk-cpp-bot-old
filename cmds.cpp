@@ -394,7 +394,7 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	long long int m = str::fromString(inMsg->words[2]);
 	if(m < 1 || m > module::money::get(to_string(inMsg->user_id)))
 	{
-		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <$>\nну или у вас недостаточно $";
+		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <🐎>\nну или у вас недостаточно 🐎";
 		return;
 	}
 	else (*outMsg)["message"] += "отправил";
@@ -451,4 +451,35 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
 		lockOut.unlock();
 	}
+}
+
+map<int, int> mathDat;
+mutex mathLock;
+void cmds::math(message *inMsg, table *outMsg)
+{
+	mathLock.lock();
+	if(inMsg->words.size() == 2)
+	{
+		if(mathDat[inMsg->user_id]&&mathDat[inMsg->user_id]==str::fromString(inMsg->words[1]))
+		{
+			(*outMsg)["message"]+="маладца)\n";
+			module::money::add(to_string(inMsg->user_id), 5+rand()%6);
+		}
+		else if(mathDat[inMsg->user_id])
+			(*outMsg)["message"]+="ответ: "+to_string(mathDat[inMsg->user_id])+"\n";
+	}
+	int a, b;
+	a=0;
+	b=0;
+	while(!(a+b))
+	{
+		a=-100+rand()%201;
+		b=-100+rand()%201;
+	}
+	mathDat[inMsg->user_id]=a+b;
+	if(b<0)
+		(*outMsg)["message"]+=to_string(a)+"-"+to_string(-b)+"=?";
+	else
+		(*outMsg)["message"]+=to_string(a)+"+"+to_string(b)+"=?";
+	mathLock.unlock();
 }

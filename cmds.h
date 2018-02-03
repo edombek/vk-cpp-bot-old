@@ -15,6 +15,7 @@ namespace cmds
 	void execute(message *inMsg, table *outMsg);
 	void moneysend(message *inMsg, table *outMsg);
 	void pixel(message *inMsg, table *outMsg);
+	void math(message *inMsg, table *outMsg);
 }
 
 #endif
