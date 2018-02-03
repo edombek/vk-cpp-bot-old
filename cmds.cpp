@@ -442,7 +442,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		string name = "in-"+other::getRealTime()+"."+w[w.size()-1];
 		net::download(url, name);
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
-		int size = 1+rand()%10;
+		int size = 4+rand()%6;
 		gdImagePixelate(im, size, GD_PIXELATE_UPPERLEFT);
 		FILE *out = fopen("out.png", "wb");
 		gdImagePng(im, out);
