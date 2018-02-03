@@ -23,6 +23,7 @@ void cmd::init()
 	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, false);
 	cmd::add("битконь", &cmds::moneysend, true, "отправить битконей", 0, false);
 	cmd::add("exe", &cmds::execute, true, "api", 0, true);
+	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, false);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)

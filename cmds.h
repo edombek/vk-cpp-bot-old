@@ -14,6 +14,7 @@ namespace cmds
 	void citata(message *inMsg, table *outMsg);
 	void execute(message *inMsg, table *outMsg);
 	void moneysend(message *inMsg, table *outMsg);
+	void pixel(message *inMsg, table *outMsg);
 }
 
 #endif

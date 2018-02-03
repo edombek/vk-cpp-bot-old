@@ -396,3 +396,52 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	module::money::add(to_string(inMsg->user_id), 0-m);
 	module::money::add(to_string(id), m);
 }
+
+void cmds::pixel(message *inMsg, table *outMsg)
+{
+	table params =
+	{
+		{"message_ids", to_string(inMsg->msg_id)}
+	};
+	json res = vk::send("messages.getById", params)["response"]["items"][0];
+	if(res["attachments"].is_null())
+	{
+		return;
+	}
+	params = {};
+	json photos;
+	string p = "";
+	photos =
+	{
+		{"photos", ""},
+		{"photo_sizes", "1"},
+		{"extended", "0"}
+	};
+	for(unsigned i=0;i<res["attachments"].size();i++)
+	{
+		if(res["attachments"][i]["type"]=="photo")
+		{
+			p+=to_string((int)res["attachments"][i]["photo"]["owner_id"])+"_"+to_string((int)res["attachments"][i]["photo"]["id"]);
+			if(!res["attachments"][i]["photo"]["access_key"].is_null())
+				p+="_"+res["attachments"][i]["photo"]["access_key"].get<string>();
+			p+=",";
+		}
+	}
+	photos["photos"]=p;
+	res = vk::send("photos.getById", photos)["response"];
+	for(unsigned i=0;i<res.size();i++)
+	{
+		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
+		args w = str::words(url, '.');
+		string name = "in-"+other::getRealTime()+"."+w[w.size()-1];
+		net::download(url, name);
+		gdImagePtr im = gdImageCreateFromFile(name.c_str());
+		int size = 1+rand()%10;
+		gdImagePixelate(im, size, GD_PIXELATE_UPPERLEFT);
+		FILE *out = fopen("out.png", "wb");
+		gdImagePng(im, out);
+		fclose(out);
+		gdImageDestroy(im);
+		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
+	}
+}
