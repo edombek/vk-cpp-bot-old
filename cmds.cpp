@@ -4,6 +4,9 @@
 #include <gd.h>
 #include <ctime>
 #include <random>
+#include <mutex>
+
+mutex lockOut;
 
 void cmds::weather(message *inMsg, table *outMsg)
 {
@@ -286,6 +289,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 	
 	unsigned int x=0;
 	unsigned int y=0;
+	lockOut.lock();
 	for(unsigned i=0; i < out.size();i++)
 	{
 		int brect[8];
@@ -336,6 +340,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 	fclose(in);
 	gdImageDestroy(outIm);
 	(*outMsg)["attachment"] += ","+vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
+	lockOut.unlock();
 }
 
 void cmds::execute(message *inMsg, table *outMsg)
@@ -431,6 +436,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 	res = vk::send("photos.getById", photos)["response"];
 	for(unsigned i=0;i<res.size();i++)
 	{
+		lockOut.lock();
 		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
 		args w = str::words(url, '.');
 		string name = "in-"+other::getRealTime()+"."+w[w.size()-1];
@@ -443,5 +449,6 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		fclose(out);
 		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
+		lockOut.unlock();
 	}
 }
