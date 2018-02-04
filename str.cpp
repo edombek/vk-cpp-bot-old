@@ -10,12 +10,9 @@
 	std::locale const utf8("rus");
 #endif
 
-long long int str::fromString(const std::string& s) 
+long long int str::fromString(std::string s) 
 {
-  std::istringstream iss(s);
-  long long int res;
-  iss >> res;
-  return res;
+  return stoi(s);
 }
 
 args &split(const std::string &s, char delim, std::vector<std::string> &elems)
