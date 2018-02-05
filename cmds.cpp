@@ -483,3 +483,25 @@ void cmds::math(message *inMsg, table *outMsg)
 		(*outMsg)["message"]+=to_string(a)+"+"+to_string(b)+"=?";
 	mathLock.unlock();
 }
+
+#include <chrono>
+#include "sys/types.h"
+#include "sys/sysinfo.h"
+void cmds::test(message *inMsg, table *outMsg)
+{
+	std::chrono::time_point<std::chrono::system_clock> begin, end;
+	begin = std::chrono::system_clock::now();
+	vk::send("users.get");
+	end = std::chrono::system_clock::now();
+	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+	(*outMsg)["message"]+="Обращаюсь к вк за: "+to_string(t)+"мс\n";
+	
+	//получаем использование памяти
+	struct sysinfo memInfo;
+	sysinfo (&memInfo);
+	long long totalPhysMem = memInfo.totalram;
+	totalPhysMem *= memInfo.mem_unit;
+	long long physMemUsed = memInfo.totalram - memInfo.freeram;
+	physMemUsed *= memInfo.mem_unit;
+	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ";
+}

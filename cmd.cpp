@@ -25,6 +25,7 @@ void cmd::init()
 	cmd::add("exe", &cmds::execute, true, "api", 0, true);
 	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, false);
 	cmd::add("матеша", &cmds::math, true, "заработок", 0, false);
+	cmd::add("i", &cmds::test, true, "info", 0, false);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)
