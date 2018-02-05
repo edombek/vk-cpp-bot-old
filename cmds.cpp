@@ -39,6 +39,7 @@ void cmds::weather(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+=temp;
 }
 
+mutex cmdLock;
 #define max_size 2000
 void cmds::con(message *inMsg, table *outMsg)
 {
@@ -50,15 +51,16 @@ void cmds::con(message *inMsg, table *outMsg)
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::replase(cmd, "<br>", "\n");
 	cmd = str::convertHtml(cmd);
-	string time = other::getRealTime();
-	string comand = "chmod +x \""+time+".sh\"";
-	fs::writeData(time+".sh", cmd);
+	cmdLock.lock();
+	string comand = "chmod +x cmd.sh\"";
+	fs::writeData("cmd.sh", cmd);
 	system(comand.c_str());
-	comand = "bash \"./"+time+".sh\" > \""+time+"\" 2>&1";
+	comand = "bash ./cmd.sh > cmd 2>&1";
 	system(comand.c_str());
-	cmd = fs::readData(time);
-	comand = "rm -rf \""+time+"\";rm -rf \""+time+".sh\"";
+	cmd = fs::readData("cmd");
+	comand = "rm -rf cmd;rm -rf cmd.sh";
 	system(comand.c_str());
+	cmdLock.unlock();
 	string temp = "";
 	args out;
 	for(unsigned i = 0; i < cmd.size(); i++)
@@ -439,7 +441,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		lockOut.lock();
 		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
 		args w = str::words(url, '.');
-		string name = "in-"+other::getRealTime()+"."+w[w.size()-1];
+		string name = "in."+w[w.size()-1];
 		net::download(url, name);
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
 		int size = 4+rand()%6;
@@ -491,7 +493,7 @@ void cmds::test(message *inMsg, table *outMsg)
 {
 	std::chrono::time_point<std::chrono::system_clock> begin, end;
 	begin = std::chrono::system_clock::now();
-	net::send("vk.com");
+	net::send("http://api.vk.com");
 	end = std::chrono::system_clock::now();
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	(*outMsg)["message"]+="Обращаюсь к вк за: "+to_string(t)+"мс\n";
