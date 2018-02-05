@@ -30,9 +30,18 @@ string other::getRealTime()
 
 string other::getTime(time_t temp)
 {
-	string str = ctime(&temp);
-	str.resize(str.size()-1);
-	return str;
+	struct tm *timeinfo = localtime(&temp);
+	char buffer[64];
+	strftime(buffer, 64,"%Z %I:%M%p",timeinfo);
+	return buffer;
+}
+
+string other::getDate(time_t temp)
+{
+	struct tm *timeinfo = localtime(&temp);
+	char buffer[64];
+	strftime(buffer, 64,"%A, %d %B %Y",timeinfo);
+	return buffer;
 }
 
 json other::jsonDifferenceArr(json j1, json j2)

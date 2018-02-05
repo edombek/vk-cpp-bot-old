@@ -32,10 +32,15 @@ void cmds::weather(message *inMsg, table *outMsg)
 	string temp = "";
 	temp += "погода в "+weather["city"]["country"].get<string>()+"/"+weather["city"]["name"].get<string>()+":";
 	weather = weather["list"];
-	temp += "\nвремя | температура | скорость ветра | влажность | осадки";
-	temp += "\nсейчас "+to_string((int)weather[0]["main"]["temp"])+"°C | "+to_string((int)weather[0]["wind"]["speed"])+"м/с | "+to_string((int)weather[0]["main"]["humidity"])+"% | "+weather[0]["weather"][0]["description"].get<string>();
-	for(unsigned int i = 1; i<weather.size(); i++)
-		temp += "\n"+other::getTime(weather[i]["dt"])+" | "+to_string((int)weather[i]["main"]["temp"])+"°C | "+to_string((int)weather[i]["wind"]["speed"])+"м/с | "+to_string((int)weather[i]["main"]["humidity"])+"% | "+weather[i]["weather"][0]["description"].get<string>();
+	string olddate="";
+	for(unsigned int i = 0; i<weather.size(); i++)
+	{
+		string date = other::getDate(weather[i]["dt"]);
+		if(olddate!=date)
+			temp += "\n¤"+date+":\n";
+		temp += "\n•"+other::getTime(weather[i]["dt"])+"\n•температура: "+to_string((int)weather[i]["main"]["temp"])+"°C\n•скорость ветра: "+to_string((int)weather[i]["wind"]["speed"])+"м/с\n•влажность: "+to_string((int)weather[i]["main"]["humidity"])+"%\n•описание: "+weather[i]["weather"][0]["description"].get<string>()+"\n";
+		olddate = date;
+	}
 	(*outMsg)["message"]+=temp;
 }
 
