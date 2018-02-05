@@ -4,15 +4,14 @@
 #include <locale> 
 #include <sstream>
 
-#ifdef __linux__ 
-	std::locale const utf8("en_US.UTF-8");
-#elif _WIN32
-	std::locale const utf8("rus");
-#endif
+std::locale const utf8("en_US.UTF-8");
 
 long long int str::fromString(std::string s) 
 {
-  return stoi(s);
+  std::istringstream iss(s);
+  long long int res;
+  iss >> res;
+  return res;
 }
 
 args &split(const std::string &s, char delim, std::vector<std::string> &elems)
