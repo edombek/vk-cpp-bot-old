@@ -486,6 +486,30 @@ void cmds::math(message *inMsg, table *outMsg)
 	mathLock.unlock();
 }
 
+int parseLine(char* line){
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p <'0' || *p > '9') p++;
+    line[i-3] = '\0';
+    i = atoi(p);
+    return i;
+}
+int getMyMem(){ //Note: this value is in KB!
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmRSS:", 6) == 0){
+            result = parseLine(line);
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+
 #include <chrono>
 #include "sys/types.h"
 #include "sys/sysinfo.h"
@@ -505,5 +529,6 @@ void cmds::test(message *inMsg, table *outMsg)
 	totalPhysMem *= memInfo.mem_unit;
 	long long physMemUsed = memInfo.totalram - memInfo.freeram;
 	physMemUsed *= memInfo.mem_unit;
-	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ";
+	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
+	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
 }
