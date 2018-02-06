@@ -537,3 +537,28 @@ void cmds::test(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
 	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
 }
+
+void cmds::who(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	if(!inMsg->chat_id)
+	{
+		(*outMsg)["message"]+="ты не в чате...";
+		return;
+	}
+	table params =
+	{
+		{"chat_id", to_string(inMsg->chat_id)},
+		{"fields", "photo"}
+	};
+	json res = vk::send("messages.getChatUsers", params)["response"];
+	unsigned int i = rand()%res.size();
+	string who = str::summ(inMsg->words, 1);
+	if(who[who.size()-1]=='?')
+		who.resize(who.size()-1);
+	(*outMsg)["message"]+= who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
+}

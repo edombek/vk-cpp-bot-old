@@ -11,7 +11,7 @@ void msg::in(json js){
     if(!msg::toMe(&inMsg))return;
     string id;
     if(inMsg.chat_id)
-        id=to_string(inMsg.chat_id);
+        id=to_string(inMsg.chat_id+2000000000);
     else
         id=to_string(inMsg.user_id);
     thread typing(msg::setTyping, id);
@@ -33,7 +33,7 @@ void msg::decode(json js, message *inMsg)
     inMsg->msg=js[5];
     if(js[3]>2000000000)
     {
-        inMsg->chat_id=js[3];
+        inMsg->chat_id=(int)js[3]-2000000000;
         inMsg->user_id=str::fromString(js[6]["from"]);
     }
     else
@@ -52,7 +52,7 @@ void msg::func(message *inMsg, table *outMsg)
 {
     //outMsg["message"]=inMsg.js.dump(4);
     if(inMsg->chat_id)
-        (*outMsg)["peer_id"]=to_string(inMsg->chat_id);
+        (*outMsg)["peer_id"]=to_string(inMsg->chat_id+2000000000);
     else
         (*outMsg)["peer_id"]=to_string(inMsg->user_id);
 	if(!inMsg->words.size())
