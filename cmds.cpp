@@ -460,20 +460,20 @@ void cmds::pixel(message *inMsg, table *outMsg)
 	}
 }
 
-map<int, int> mathDat;
+map<string, int> mathDat;
 mutex mathLock;
 void cmds::math(message *inMsg, table *outMsg)
 {
 	mathLock.lock();
 	if(inMsg->words.size() == 2)
 	{
-		if(mathDat[inMsg->user_id]&&mathDat[inMsg->user_id]==str::fromString(inMsg->words[1]))
+		if(mathDat[(*outMsg)["peer_id"]]&&mathDat[(*outMsg)["peer_id"]]==str::fromString(inMsg->words[1]))
 		{
 			(*outMsg)["message"]+="маладца)\n";
 			module::money::add(to_string(inMsg->user_id), 5+rand()%6);
 		}
-		else if(mathDat[inMsg->user_id])
-			(*outMsg)["message"]+="ответ: "+to_string(mathDat[inMsg->user_id])+"\n";
+		else if(mathDat[(*outMsg)["peer_id"]])
+			(*outMsg)["message"]+="ответ: "+to_string(mathDat[(*outMsg)["peer_id"]])+"\n";
 	}
 	int a, b;
 	a=0;
@@ -483,7 +483,7 @@ void cmds::math(message *inMsg, table *outMsg)
 		a=-100+rand()%201;
 		b=-100+rand()%201;
 	}
-	mathDat[inMsg->user_id]=a+b;
+	mathDat[(*outMsg)["peer_id"]]=a+b;
 	if(b<0)
 		(*outMsg)["message"]+=to_string(a)+"-"+to_string(-b)+"=?";
 	else
@@ -536,6 +536,7 @@ void cmds::test(message *inMsg, table *outMsg)
 	physMemUsed *= memInfo.mem_unit;
 	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
 	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
+	(*outMsg)["message"]+="Сообщений: "+to_string(msg::CountComplete())+"/"+to_string(msg::Count())+"\n";
 }
 
 void cmds::who(message *inMsg, table *outMsg)

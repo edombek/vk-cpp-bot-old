@@ -23,7 +23,7 @@ void lp::loop()
 			{ "ts", ts },
 			{ "wait", "90" },//25
 			{ "mode", "2" },
-			{ "version", "2" },
+			{ "version", "3" },
 			{ "act", "a_check" }
 		};
 		json data = json::parse(net::send("https://" + server, params));
@@ -76,8 +76,12 @@ void lp::updates(json updates)
 		if(update[0].is_null() || update[1].is_null())continue;
 		switch((int)update[0])
 		{
-		case 4: // messange
+		case 4: // message
             thr::add(new thread(msg::in, update));
+			//message::load(update);
+			break;
+		case 2: // change message flag
+            thr::add(new thread(msg::change, update));
 			//message::load(update);
 			break;
 		}

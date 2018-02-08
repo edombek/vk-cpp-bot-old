@@ -69,9 +69,9 @@ string net::send(string url, string params)
 			cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
 	}
 	curl_easy_cleanup(curl);
-	#ifdef printOut
+#ifdef printOut
 	cout << endl << other::getRealTime() << ": " << url << "-" << params << endl << "	" << buffer << endl;
-	#endif
+#endif
 	return buffer;
 	
 }
@@ -115,9 +115,9 @@ string net::upload(string url, string filename, string params)
 			cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
 	}
 	curl_easy_cleanup(curl);
-	#ifdef printOut
+#ifdef printOut
 	cout << endl << other::getRealTime() << ": " << url << "-" << params << endl << "	" << buffer << endl;
-	#endif
+#endif
 	return buffer;
 }
 

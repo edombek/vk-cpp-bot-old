@@ -90,5 +90,7 @@ string str::convertHtml(string str)
 	str = str::replase(str, "&quot;", "\"");
 	str = str::replase(str, "&gt;", ">");
 	str = str::replase(str, "&lt;", "<");
+	str = str::replase(str, "»", ">>");
+	str = str::replase(str, "—", "--");
 	return str;
 }

@@ -5,11 +5,14 @@ void new_msg(json js);
 
 namespace msg{
 	void in(json js);
+	void change(json js);
     void decode(json js, message *inMsg);
     void func(message *inMsg, table *outMsg);
     void send(table outMsg);
     bool toMe(message *inMsg);
     void setTyping(string id);
+    unsigned long long int Count();
+    unsigned long long int CountComplete();
 };
 
 #endif // MSG_H_INCLUDED

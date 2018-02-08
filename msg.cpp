@@ -3,10 +3,22 @@
 #include <mutex>
 #include <thread>
 
+typedef struct{
+    string msg;
+    int user_id;
+} t_msgs;
+map<int, t_msgs> msgs;
+mutex msgLock;
+unsigned long long int msgCount=0;
+unsigned long long int msgCountComplete=0;
+
 void msg::in(json js){
     message inMsg;
     table outMsg;
     msg::decode(js, &inMsg);
+    msgLock.lock();
+    msgCount++;
+    msgLock.unlock();
     if(inMsg.msg=="")return;
     if(!msg::toMe(&inMsg))return;
     string id;
@@ -18,23 +30,38 @@ void msg::in(json js){
     long long int oldbalance;
     module::TR(&inMsg, &outMsg, &oldbalance);
     msg::func(&inMsg, &outMsg);
-    if(outMsg["peer_id"]=="")
-		return;
 	module::postTR(&inMsg, &outMsg, &oldbalance);
+	msgLock.lock();
+	msgCountComplete++;
+	msgLock.unlock();
 	typing.join();
     msg::send(outMsg);
     //other::sleep(300000);
+}
+
+void msg::change(json js){
+    message inMsg;
+    table outMsg;
+    msg::decode(js, &inMsg);
+    msgLock.lock();
+    if(inMsg.flags & 131072 && inMsg.chat_id && msgs[inMsg.msg_id].user_id)
+    {
+    	outMsg["peer_id"]=to_string(inMsg.chat_id+2000000000);
+    	outMsg["message"]="хех "+vk::send("users.get", {{"user_ids", to_string(msgs[inMsg.msg_id].user_id)}})["response"][0]["first_name"].get<string>()+" месагу удалил):\n\""+msgs[inMsg.msg_id].msg+"\"";
+    	msg::send(outMsg);
+    }
+    msgLock.unlock();
 }
 
 void msg::decode(json js, message *inMsg)
 {
     inMsg->msg_id=js[1];
     inMsg->flags=(int)js[2];
-    inMsg->msg=js[5];
+    if(!js[5].is_null())inMsg->msg=js[5];
     if(js[3]>2000000000)
     {
         inMsg->chat_id=(int)js[3]-2000000000;
-        inMsg->user_id=str::fromString(js[6]["from"]);
+        if(!js[6].is_null())inMsg->user_id=str::fromString(js[6]["from"]);
     }
     else
     {
@@ -45,6 +72,13 @@ void msg::decode(json js, message *inMsg)
     if(module::ban::get(to_string(inMsg->user_id)) && !module::admin::get(to_string(inMsg->user_id)))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
+    msgLock.lock();
+	msgs[inMsg->msg_id].msg=inMsg->msg;
+	msgs[inMsg->msg_id].user_id=inMsg->user_id;
+	if(msgs.size()>1000)
+		for(unsigned i=0;i<100;i++)
+			msgs.erase(msgs.begin());
+	msgLock.unlock();
     inMsg->words=str::words(inMsg->msg, ' ');
 }
 
@@ -85,4 +119,19 @@ void msg::setTyping(string id)
 		{"peer_id", id},
 		{"type", "typing"}
 	});
+}
+
+unsigned long long int msg::Count()
+{
+	msgLock.lock();
+	unsigned long long int temp = msgCount;
+	msgLock.unlock();
+	return temp;
+}
+unsigned long long int msg::CountComplete()
+{
+	msgLock.lock();
+	unsigned long long int temp = msgCountComplete;
+	msgLock.unlock();
+	return temp;
 }
