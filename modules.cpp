@@ -21,9 +21,9 @@ void module::postTR(message *inMsg, table *outMsg, long long int *oldbalance)
 {
 	if(*oldbalance != module::money::get(to_string(inMsg->user_id)))
 	{
-		(*outMsg)["message"]+="<br><br>🐎";
+		(*outMsg)["message"]+="<br><br>$";
 		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id))-*oldbalance);
-		(*outMsg)["message"]+="<br>🐎: ";
+		(*outMsg)["message"]+="<br>$: ";
 		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id)));
 	}
 }

@@ -60,7 +60,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	string comand = "chmod +x cmd.sh";
 	fs::writeData("cmd.sh", cmd);
 	system(comand.c_str());
-	comand = "./cmd.sh > cmd 2>&1";
+	comand = "bash ./cmd.sh > cmd 2>&1";
 	system(comand.c_str());
 	cmd = fs::readData("cmd");
 	comand = "rm -rf cmd;rm -rf cmd.sh";
