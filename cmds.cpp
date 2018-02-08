@@ -57,7 +57,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	cmd = str::replase(cmd, "<br>", "\n");
 	cmd = str::convertHtml(cmd);
 	cmdLock.lock();
-	string comand = "chmod +x cmd.sh\"";
+	string comand = "chmod +x cmd.sh";
 	fs::writeData("cmd.sh", cmd);
 	system(comand.c_str());
 	comand = "./cmd.sh > cmd 2>&1";
