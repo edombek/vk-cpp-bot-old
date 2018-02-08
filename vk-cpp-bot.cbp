@@ -36,12 +36,15 @@
 		<Linker>
 			<Add library="curl" />
 			<Add library="pthread" />
+			<Add library="gd" />
 		</Linker>
 		<Unit filename="Makefile" />
+		<Unit filename="cmd.cpp" />
+		<Unit filename="cmd.h" />
+		<Unit filename="cmds.cpp" />
+		<Unit filename="cmds.h" />
 		<Unit filename="common.h" />
 		<Unit filename="config.json" />
-		<Unit filename="cmd.cpp" />
-		<Unit filename="cmds.cpp" />
 		<Unit filename="fs.cpp" />
 		<Unit filename="fs.h" />
 		<Unit filename="json.hpp" />
@@ -49,6 +52,7 @@
 		<Unit filename="lp.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="modules.cpp" />
+		<Unit filename="modules.h" />
 		<Unit filename="msg.cpp" />
 		<Unit filename="msg.h" />
 		<Unit filename="net.cpp" />
@@ -57,6 +61,8 @@
 		<Unit filename="other.h" />
 		<Unit filename="str.cpp" />
 		<Unit filename="str.h" />
+		<Unit filename="thr.cpp" />
+		<Unit filename="thr.h" />
 		<Unit filename="vk.cpp" />
 		<Unit filename="vk.h" />
 		<Extensions>

@@ -60,7 +60,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	string comand = "chmod +x cmd.sh\"";
 	fs::writeData("cmd.sh", cmd);
 	system(comand.c_str());
-	comand = "bash ./cmd.sh > cmd 2>&1";
+	comand = "./cmd.sh > cmd 2>&1";
 	system(comand.c_str());
 	cmd = fs::readData("cmd");
 	comand = "rm -rf cmd;rm -rf cmd.sh";
@@ -293,7 +293,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 	{
 		{"fields", "photo_100"}
 	};
-	
+
 	unsigned int x=0;
 	unsigned int y=0;
 	lockOut.lock();
@@ -401,7 +401,7 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	long long int m = str::fromString(inMsg->words[2]);
 	if(m < 1 || m > module::money::get(to_string(inMsg->user_id)))
 	{
-		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <🐎>\nну или у вас недостаточно 🐎";
+		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <������\nну или у вас недостаточно битконей)";
 		return;
 	}
 	else (*outMsg)["message"] += "отправил";
@@ -526,15 +526,13 @@ void cmds::test(message *inMsg, table *outMsg)
 	end = std::chrono::system_clock::now();
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	(*outMsg)["message"]+="Обращаюсь к вк за: "+to_string(t)+"мс\n";
-	
+
 	//получаем использование памяти
 	struct sysinfo memInfo;
 	sysinfo (&memInfo);
 	long long totalPhysMem = memInfo.totalram;
 	totalPhysMem *= memInfo.mem_unit;
-	long long physMemUsed = memInfo.totalram - memInfo.freeram;
-	physMemUsed *= memInfo.mem_unit;
-	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)physMemUsed/1024/1024))+"/"+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
+	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
 	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
 	(*outMsg)["message"]+="Сообщений: "+to_string(msg::CountComplete())+"/"+to_string(msg::Count())+"\n";
 }
