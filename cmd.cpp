@@ -4,7 +4,7 @@ cmd::cmd_table cmd_d;
 
 void help(message *inMsg, table *outMsg)
 {
-	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg);
+	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n\nРазработчик: [id323871959|EVGESHAd]";
 }
 
 void cmd::init()
@@ -21,7 +21,7 @@ void cmd::init()
 	cmd::add("ban", &cmds::ban, true, "ban", 0, true);
 	cmd::add("unban", &cmds::unban, true, "unban", 0, true);
 	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, false);
-	cmd::add("битконь", &cmds::moneysend, true, "отправить битконей", 0, false);
+	cmd::add("$", &cmds::moneysend, true, "отправить $", 0, false);
 	cmd::add("exe", &cmds::execute, true, "api", 0, true);
 	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, false);
 	cmd::add("матеша", &cmds::math, true, "заработок", 0, false);
@@ -45,7 +45,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	{
 		if(module::money::get(to_string(inMsg->user_id))<cmd_d[command].cost)
 		{
-			(*outMsg)["message"] += "чот тебе битконей нехватаит";
+			(*outMsg)["message"] += "чот тебе $ нехватаит";
 			return;
 		}
 		if(!module::admin::get(to_string(inMsg->user_id))&cmd_d[command].admin_cmd)
@@ -78,7 +78,7 @@ string cmd::helpList(message *inMsg)
 		{
 			out+=" - ";
 			out+=to_string(cmds.second.cost);
-			out+="🐎";
+			out+="$";
 		}
 	}
 	return out;

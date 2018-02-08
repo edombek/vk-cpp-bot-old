@@ -401,7 +401,7 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	long long int m = str::fromString(inMsg->words[2]);
 	if(m < 1 || m > module::money::get(to_string(inMsg->user_id)))
 	{
-		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <������\nну или у вас недостаточно битконей)";
+		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <$>\nну или у вас недостаточно $)";
 		return;
 	}
 	else (*outMsg)["message"] += "отправил";
