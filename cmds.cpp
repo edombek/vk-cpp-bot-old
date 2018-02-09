@@ -535,6 +535,7 @@ void cmds::test(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
 	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
 	(*outMsg)["message"]+="Сообщений: "+to_string(msg::CountComplete())+"/"+to_string(msg::Count())+"\n";
+	(*outMsg)["message"]+="Запущен: "+other::getTime()+"\n";
 }
 
 void cmds::who(message *inMsg, table *outMsg)
