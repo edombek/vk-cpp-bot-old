@@ -562,3 +562,17 @@ void cmds::who(message *inMsg, table *outMsg)
 		who.resize(who.size()-1);
 	(*outMsg)["message"]+= who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
 }
+
+void cmds::info(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	unsigned int i = rand()%130;
+	if(i>100)
+		i=(i-100)*10;
+	string info = str::summ(inMsg->words, 1);
+	(*outMsg)["message"]+= info + " - " + to_string(i) + "%";
+}

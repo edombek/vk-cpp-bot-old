@@ -19,7 +19,7 @@ void msg::in(json js){
     msgLock.lock();
     msgCount++;
     msgLock.unlock();
-    if(inMsg.msg=="")return;
+    if(inMsg.msg==""||(inMsg.flags&0x02))return;
     if(!msg::toMe(&inMsg))return;
     string id;
     if(inMsg.chat_id)

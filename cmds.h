@@ -18,6 +18,7 @@ namespace cmds
 	void math(message *inMsg, table *outMsg);
 	void test(message *inMsg, table *outMsg);
 	void who(message *inMsg, table *outMsg);
+	void info(message *inMsg, table *outMsg);
 }
 
 #endif

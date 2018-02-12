@@ -27,6 +27,7 @@ void cmd::init()
 	cmd::add("матеша", &cmds::math, true, "заработок", 0, false);
 	cmd::add("i", &cmds::test, true, "info", 0, false);
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, false);
+	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, false);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)
