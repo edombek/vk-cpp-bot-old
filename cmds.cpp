@@ -475,6 +475,8 @@ void cmds::math(message *inMsg, table *outMsg)
 		else if(mathDat[(*outMsg)["peer_id"]])
 			(*outMsg)["message"]+="ответ: "+to_string(mathDat[(*outMsg)["peer_id"]])+"\n";
 	}
+	else
+		(*outMsg)["message"]+="форма ответа: \"... матеша <ответ>\"\n";
 	int a, b;
 	a=0;
 	b=0;
