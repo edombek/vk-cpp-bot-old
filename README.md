@@ -19,9 +19,9 @@ For install on Arch:
 ¯\_(ツ)_/¯
 ```
 For install on Gentoo:
-'''
+```
 ¯\_(ツ)_/¯
-'''
+```
 ### Compiling
 
 ```
@@ -32,7 +32,5 @@ cp ./vkbot ../
 ```
 
 ### Configuration
-'''
 in common.h - botnames and in cmd.cpp commands
 after first launch in config.json
-'''
