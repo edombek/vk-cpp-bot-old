@@ -8,7 +8,7 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libpython2.7-dev
 ````
 For install on Termux:
 ```
