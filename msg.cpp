@@ -73,8 +73,8 @@ void msg::decode(json js, message *inMsg)
 		inMsg->msg="";
     if(inMsg->msg=="")return;
     msgLock.lock();
-	msgs[inMsg->msg_id].msg=inMsg->msg;
-	msgs[inMsg->msg_id].user_id=inMsg->user_id;
+	/*msgs[inMsg->msg_id].msg=inMsg->msg;
+	msgs[inMsg->msg_id].user_id=inMsg->user_id;*/
 	if(msgs.size()>1000)
 		for(unsigned i=0;i<100;i++)
 			msgs.erase(msgs.begin());
@@ -91,6 +91,7 @@ void msg::func(message *inMsg, table *outMsg)
         (*outMsg)["peer_id"]=to_string(inMsg->user_id);
 	if(!inMsg->words.size())
 		inMsg->words.push_back("help");
+	(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
 }
 

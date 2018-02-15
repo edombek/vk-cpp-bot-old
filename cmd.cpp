@@ -14,10 +14,10 @@ void cmd::init()
 	cmd::add("погода", &cmds::weather, true, "погодка", 2, false);
 	cmd::add("con", &cmds::con, true, "консолька)", 0, true);
 	cmd::add("u", &cmds::upload, true, "выгрузить в контач", 0, true);
-	cmd::add("видосы", &cmds::video, true, "видосы", 2, false);
-	cmd::add("f", &cmds::f, false, "видосы с правками)", 3, false);
-	cmd::add("-f", &cmds::f, false, "видосы с правками)", 3, false);
-	cmd::add("доки", &cmds::doc, true, "доки", 1, false);
+	cmd::add("видосы", &cmds::video, false, "видосы", 0, true);
+	cmd::add("f", &cmds::f, false, "видосы с правками)", 0, true);
+	cmd::add("-f", &cmds::f, false, "видосы с правками)", 0, true);
+	cmd::add("доки", &cmds::doc, true, "доки", 0, true);
 	cmd::add("ban", &cmds::ban, true, "ban", 0, true);
 	cmd::add("unban", &cmds::unban, true, "unban", 0, true);
 	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, false);

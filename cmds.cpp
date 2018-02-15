@@ -493,33 +493,7 @@ void cmds::math(message *inMsg, table *outMsg)
 	mathLock.unlock();
 }
 
-int parseLine(char* line){
-    // This assumes that a digit will be found and the line ends in " Kb".
-    int i = strlen(line);
-    const char* p = line;
-    while (*p <'0' || *p > '9') p++;
-    line[i-3] = '\0';
-    i = atoi(p);
-    return i;
-}
-int getMyMem(){ //Note: this value is in KB!
-    FILE* file = fopen("/proc/self/status", "r");
-    int result = -1;
-    char line[128];
-
-    while (fgets(line, 128, file) != NULL){
-        if (strncmp(line, "VmRSS:", 6) == 0){
-            result = parseLine(line);
-            break;
-        }
-    }
-    fclose(file);
-    return result;
-}
-
 #include <chrono>
-#include "sys/types.h"
-#include "sys/sysinfo.h"
 void cmds::test(message *inMsg, table *outMsg)
 {
 	std::chrono::time_point<std::chrono::system_clock> begin, end;
@@ -530,12 +504,13 @@ void cmds::test(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+="Обращаюсь к вк за: "+to_string(t)+"мс\n";
 
 	//получаем использование памяти
-	struct sysinfo memInfo;
-	sysinfo (&memInfo);
-	long long totalPhysMem = memInfo.totalram;
-	totalPhysMem *= memInfo.mem_unit;
-	(*outMsg)["message"]+="Оперативы: "+to_string((int)((float)totalPhysMem/1024/1024))+"МБ\n";
-	(*outMsg)["message"]+="Из них я сожрал: "+to_string((int)((float)getMyMem()/1024))+"МБ\n";
+	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))/1024));
+	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))-str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable")))/1024));
+	string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS"))/1024));
+	
+	(*outMsg)["message"]+="CPU:"+other::getParamOfPath("/proc/cpuinfo", "model name")+"\n";
+	(*outMsg)["message"]+="Оперативы: "+usedMem+"/"+allMem+"Мб\n";
+	(*outMsg)["message"]+="Из них я сожрал: "+myMem+" Мб\n";
 	(*outMsg)["message"]+="Сообщений: "+to_string(msg::CountComplete())+"/"+to_string(msg::Count())+"\n";
 	(*outMsg)["message"]+="Запущен: "+other::getTime()+"\n";
 }
@@ -562,7 +537,7 @@ void cmds::who(message *inMsg, table *outMsg)
 	string who = str::summ(inMsg->words, 1);
 	if(who[who.size()-1]=='?')
 		who.resize(who.size()-1);
-	(*outMsg)["message"]+= who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
+	(*outMsg)["message"]+= "Я считаю что " + who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
 }
 
 void cmds::info(message *inMsg, table *outMsg)
@@ -576,5 +551,5 @@ void cmds::info(message *inMsg, table *outMsg)
 	if(i>100)
 		i=(i-100)*10;
 	string info = str::summ(inMsg->words, 1);
-	(*outMsg)["message"]+= info + " - " + to_string(i) + "%";
+	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }

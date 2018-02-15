@@ -81,7 +81,7 @@ void lp::updates(json updates)
 			//message::load(update);
 			break;
 		case 2: // change message flag
-            thr::add(new thread(msg::change, update));
+            //thr::add(new thread(msg::change, update));
 			//message::load(update);
 			break;
 		}

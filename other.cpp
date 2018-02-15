@@ -76,3 +76,16 @@ void other::fwds(json *in, json *out, unsigned int lvl)
 		other::fwds(&i["fwd_messages"], out, lvl+1);
 	}
 }
+
+string other::getParamOfPath(string path, string p)
+{
+	string dat = fs::readData(path);
+	args lines = str::words(dat, '\n');
+	for(auto line: lines)
+	{
+		args param=str::words(line, ':');
+		if(str::at(param[0], p))
+			return str::replase(param[1], "  ", " ");
+	}
+	return "";
+}
