@@ -52,6 +52,8 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 
 string vk::upload(string path, string peer_id, string type)
 {
+	if(!other::getFileSize(path.c_str()))
+		return "";
 	json res;
 	table params =
 	{

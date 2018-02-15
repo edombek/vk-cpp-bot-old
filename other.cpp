@@ -89,3 +89,11 @@ string other::getParamOfPath(string path, string p)
 	}
 	return "";
 }
+
+#include <sys/stat.h>
+long long int other::getFileSize(const char * fileName)
+{
+    struct stat file_stat;
+    stat(fileName, &file_stat);
+    return file_stat.st_size;
+}
