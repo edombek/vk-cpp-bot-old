@@ -19,6 +19,7 @@ namespace cmds
 	void test(message *inMsg, table *outMsg);
 	void who(message *inMsg, table *outMsg);
 	void info(message *inMsg, table *outMsg);
+	void py(message *inMsg, table *outMsg);
 }
 
 #endif

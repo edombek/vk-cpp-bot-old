@@ -553,3 +553,48 @@ void cmds::info(message *inMsg, table *outMsg)
 	string info = str::summ(inMsg->words, 1);
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
+
+#include <python2.7/Python.h>
+void cmds::py(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	string cmd = str::summ(inMsg->words, 1);
+	cmd = str::replase(cmd, "<br>", "\n");
+	cmd = str::convertHtml(cmd);
+	
+    Py_Initialize();
+    PyObject *pModule = PyImport_AddModule("__main__");
+    PyRun_SimpleString("import sys\nclass CatchOutErr:\n    def __init__(self):\n        self.value = ''\n    def write(self, txt):\n        self.value += txt\ncatchOutErr = CatchOutErr()\nsys.stdout = catchOutErr\nsys.stderr = catchOutErr\n");
+    PyRun_SimpleString(cmd.c_str());
+    PyObject *catcher = PyObject_GetAttrString(pModule,"catchOutErr");
+    PyErr_Print();
+    PyObject *output = PyObject_GetAttrString(catcher,"value");
+    cmd=PyString_AsString(output);
+    Py_Finalize();
+	string temp = "";
+	args out;
+	for(unsigned i = 0; i < cmd.size(); i++)
+	{
+		temp.push_back(cmd[i]);
+		if(temp.size() > max_size && (cmd.size() > i +1 && cmd[i+1]!='\n'))
+		{
+			out.push_back(temp);
+			temp = "";
+		}
+	}
+	out.push_back(temp);
+	temp = "";
+	for(unsigned i = 0; i < out.size(); i++)
+	{
+		if(out.size()>1)
+			(*outMsg)["message"]+= "("+to_string(i+1)+"/"+to_string(out.size())+")\n";
+		(*outMsg)["message"]+= "\n" + out[i];
+		if(out.size() == 1 || i == out.size()-1)break;
+		msg::send((*outMsg));
+		(*outMsg)["message"]= "";
+	}
+}

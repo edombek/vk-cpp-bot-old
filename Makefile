@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-std=c++11 -g -c -Wall
-LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -Wl,-rpath,.
+LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lpython2.7 -Wl,-rpath,.
 INCLUDES=
 SOURCES=	\
 	fs.cpp \

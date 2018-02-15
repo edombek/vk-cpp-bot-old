@@ -28,6 +28,7 @@ void cmd::init()
 	cmd::add("i", &cmds::test, true, "info", 0, false);
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, false);
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, false);
+	cmd::add("py", &cmds::py, true, "python 2.7", 0, true);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)
