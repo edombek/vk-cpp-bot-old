@@ -36,10 +36,10 @@ void msg::in(json js){
 	msgLock.unlock();
 	typing.join();
     msg::send(outMsg);
-    //other::sleep(300000);
 }
 
 void msg::change(json js){
+#ifdef senddeletedmessages
     message inMsg;
     table outMsg;
     msg::decode(js, &inMsg);
@@ -51,6 +51,7 @@ void msg::change(json js){
     	msg::send(outMsg);
     }
     msgLock.unlock();
+#endif
 }
 
 void msg::decode(json js, message *inMsg)
@@ -72,13 +73,15 @@ void msg::decode(json js, message *inMsg)
     if(module::ban::get(to_string(inMsg->user_id)) && !module::admin::get(to_string(inMsg->user_id)))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
+  #ifdef senddeletedmessages
     msgLock.lock();
-	/*msgs[inMsg->msg_id].msg=inMsg->msg;
-	msgs[inMsg->msg_id].user_id=inMsg->user_id;*/
+	msgs[inMsg->msg_id].msg=inMsg->msg;
+	msgs[inMsg->msg_id].user_id=inMsg->user_id;
 	if(msgs.size()>1000)
 		for(unsigned i=0;i<100;i++)
 			msgs.erase(msgs.begin());
 	msgLock.unlock();
+#endif
     inMsg->words=str::words(inMsg->msg, ' ');
 }
 
@@ -91,7 +94,9 @@ void msg::func(message *inMsg, table *outMsg)
         (*outMsg)["peer_id"]=to_string(inMsg->user_id);
 	if(!inMsg->words.size())
 		inMsg->words.push_back("help");
+#ifdef forwardmessages
 	(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
+#endif
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
 }
 

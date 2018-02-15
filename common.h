@@ -36,4 +36,8 @@ typedef struct{
 #include "thr.h"
 
 #define botname {"кот", "!", "пуся"}
+
+#define friendsadd
+//#define senddeletedmessages
+#define forwardmessages
 #endif
