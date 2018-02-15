@@ -7,7 +7,9 @@ typedef struct{
     string msg;
     int user_id;
 } t_msgs;
+#ifdef senddeletedmessages
 map<int, t_msgs> msgs;
+#endif
 mutex msgLock;
 unsigned long long int msgCount=0;
 unsigned long long int msgCountComplete=0;
@@ -73,7 +75,7 @@ void msg::decode(json js, message *inMsg)
     if(module::ban::get(to_string(inMsg->user_id)) && !module::admin::get(to_string(inMsg->user_id)))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
-  #ifdef senddeletedmessages
+#ifdef senddeletedmessages
     msgLock.lock();
 	msgs[inMsg->msg_id].msg=inMsg->msg;
 	msgs[inMsg->msg_id].user_id=inMsg->user_id;

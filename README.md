@@ -12,7 +12,7 @@ sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libpython2.7
 ````
 For install on Termux:
 ```
-pkg install libcurl-dev libgd-dev gcc g++ make git
+pkg install libcurl-dev libgd-dev python2-dev gcc g++ make git
 ```
 For install on Arch:
 ```

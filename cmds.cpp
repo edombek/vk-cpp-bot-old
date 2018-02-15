@@ -33,7 +33,7 @@ void cmds::weather(message *inMsg, table *outMsg)
 	temp += "погода в "+weather["city"]["country"].get<string>()+"/"+weather["city"]["name"].get<string>()+":";
 	weather = weather["list"];
 	string olddate="";
-	for(unsigned int i = 0; i<weather.size(); i++)
+	for(unsigned int i = 0; (i<weather.size()&&i<5); i++)
 	{
 		string date = other::getDate(weather[i]["dt"]);
 		if(olddate!=date)
@@ -498,10 +498,10 @@ void cmds::test(message *inMsg, table *outMsg)
 {
 	std::chrono::time_point<std::chrono::system_clock> begin, end;
 	begin = std::chrono::system_clock::now();
-	net::send("http://api.vk.com");
+	vk::send("users.get");
 	end = std::chrono::system_clock::now();
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-	(*outMsg)["message"]+="Обращаюсь к вк за: "+to_string(t)+"мс\n";
+	(*outMsg)["message"]+="Обработка VK API за: "+to_string(t)+"мс\n";
 
 	//получаем использование памяти
 	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))/1024));
