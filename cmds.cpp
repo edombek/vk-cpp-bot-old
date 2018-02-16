@@ -498,7 +498,7 @@ void cmds::test(message *inMsg, table *outMsg)
 {
 	std::chrono::time_point<std::chrono::system_clock> begin, end;
 	begin = std::chrono::system_clock::now();
-	vk::send("users.get");
+	net::send("http://api.vk.com", "");
 	end = std::chrono::system_clock::now();
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	(*outMsg)["message"]+="Обработка VK API за: "+to_string(t)+"мс\n";
