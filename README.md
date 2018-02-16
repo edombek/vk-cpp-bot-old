@@ -8,11 +8,11 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libpython2.7-dev
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev python3.5-dev
 ````
 For install on Termux:
 ```
-pkg install libcurl-dev libgd-dev python2-dev gcc g++ make git
+pkg install libcurl-dev libgd-dev python-dev gcc g++ make git
 ```
 For install on Arch:
 ```

@@ -554,7 +554,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#include <python2.7/Python.h>
+#include <python3.5/Python.h>
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -573,7 +573,7 @@ void cmds::py(message *inMsg, table *outMsg)
     PyObject *catcher = PyObject_GetAttrString(pModule,"catchOutErr");
     PyErr_Print();
     PyObject *output = PyObject_GetAttrString(catcher,"value");
-    cmd=PyString_AsString(output);
+    cmd=PyUnicode_AsUTF8(output);
     Py_Finalize();
 	string temp = "";
 	args out;
