@@ -252,14 +252,14 @@ void cmds::doc(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+=to_string(docs.size());
 }
 
-void cmds::ban(message *inMsg, table *outMsg)
+void cmds::set(message *inMsg, table *outMsg)
 {
-	module::ban::set(inMsg->words[1], true);
-}
-
-void cmds::unban(message *inMsg, table *outMsg)
-{
-	module::ban::set(inMsg->words[1], false);
+	if(inMsg->words.size() < 3)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	module::user::set(inMsg->words[1], str::fromString(inMsg->words[2]));
 }
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))

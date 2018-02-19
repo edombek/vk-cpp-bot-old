@@ -15,20 +15,12 @@ namespace module
 		void add(string id, long long int money);
 	}
 	
-	namespace admin
+	namespace user
 	{
 		void read();
 		void save();
-		bool get(string id);
-		void set(string id, bool admin);
-	}
-	
-	namespace ban
-	{
-		void read();
-		void save();
-		bool get(string id);
-		void set(string id, bool admin);
+		int get(string id);
+		void set(string id, int acess);
 	}
 }
 

@@ -6,7 +6,7 @@
 #include <fcntl.h>
 
 #define net_agent "EVGESHAd vk-cpp-bot"
-//#define printOut
+#define printOut
 
 /* Init network settings */
 void net::init()

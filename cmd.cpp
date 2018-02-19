@@ -2,42 +2,52 @@
 #include <iostream>
 cmd::cmd_table cmd_d;
 
+/*
+права доступа:
+0 в бане
+1 пользователь
+2 доверенный
+3 кодер
+4
+5 админ
+*/
+
 void help(message *inMsg, table *outMsg)
 {
+	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(to_string(inMsg->user_id)))+"\n";
 	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n\nРазработчик: [id323871959|EVGESHAd]";
 }
 
 void cmd::init()
 {
-	// comand func print discripion cost admin
-	cmd::add("help", &help, false, "help", 0, false);
-	cmd::add("погода", &cmds::weather, true, "погодка", 2, false);
-	cmd::add("con", &cmds::con, true, "консолька)", 0, true);
-	cmd::add("u", &cmds::upload, true, "выгрузить в контач", 0, true);
-	cmd::add("видосы", &cmds::video, false, "видосы", 0, true);
-	cmd::add("f", &cmds::f, false, "видосы с правками)", 0, true);
-	cmd::add("-f", &cmds::f, false, "видосы с правками)", 0, true);
-	cmd::add("доки", &cmds::doc, true, "доки", 0, true);
-	cmd::add("ban", &cmds::ban, true, "ban", 0, true);
-	cmd::add("unban", &cmds::unban, true, "unban", 0, true);
-	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, false);
-	cmd::add("$", &cmds::moneysend, true, "отправить $", 0, false);
-	cmd::add("exe", &cmds::execute, true, "api", 0, true);
-	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, false);
-	cmd::add("матеша", &cmds::math, true, "заработок", 0, false);
-	cmd::add("i", &cmds::test, true, "info", 0, false);
-	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, false);
-	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, false);
-	cmd::add("py", &cmds::py, true, "python 3.5", 0, true);
+	// comand func print discripion cost cess
+	cmd::add("help", &help, false, "help", 0, 1);
+	cmd::add("погода", &cmds::weather, true, "погодка", 2, 1);
+	cmd::add("con", &cmds::con, true, "консолька)", 0, 5);
+	cmd::add("u", &cmds::upload, true, "выгрузить в контач", 0, 3);
+	cmd::add("видосы", &cmds::video, false, "видосы", 0, 2);
+	cmd::add("f", &cmds::f, false, "видосы с правками)", 0, 2);
+	cmd::add("-f", &cmds::f, false, "видосы с правками)", 0, 2);
+	cmd::add("доки", &cmds::doc, true, "доки", 0, 2);
+	cmd::add("set", &cmds::set, true, "acess set", 0, 5);
+	cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, 1);
+	cmd::add("$", &cmds::moneysend, true, "отправить $", 0, 1);
+	cmd::add("exe", &cmds::execute, true, "api", 0, 5);
+	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, 1);
+	cmd::add("матеша", &cmds::math, true, "заработок", 0, 1);
+	cmd::add("i", &cmds::test, true, "info", 0, 1);
+	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, 1);
+	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
+	cmd::add("py", &cmds::py, true, "python 3.5", 0, 3);
 }
 
-void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, bool admin_cmd)
+void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
 {
 	cmd_d[str::low(command)].func=func;
 	cmd_d[str::low(command)].disp=disp;
 	cmd_d[str::low(command)].info=info;
 	cmd_d[str::low(command)].cost=cost;
-	cmd_d[str::low(command)].admin_cmd=admin_cmd;
+	cmd_d[str::low(command)].acess=acess;
 }
 
 void cmd::start(message *inMsg, table *outMsg, string command)
@@ -50,7 +60,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			(*outMsg)["message"] += "чот тебе $ нехватаит";
 			return;
 		}
-		if(!module::admin::get(to_string(inMsg->user_id))&cmd_d[command].admin_cmd)
+		if(module::user::get(to_string(inMsg->user_id))<cmd_d[command].acess)
 		{
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
@@ -70,8 +80,8 @@ string cmd::helpList(message *inMsg)
 	string out = "";
 	for(auto cmds: cmd_d)
 	{
-		if(!cmds.second.disp&!module::admin::get(to_string(inMsg->user_id)))continue;
-		if(!module::admin::get(to_string(inMsg->user_id))&cmds.second.admin_cmd) continue;
+		if(!cmds.second.disp&&module::user::get(to_string(inMsg->user_id))!=5)continue;
+		if(module::user::get(to_string(inMsg->user_id))<cmds.second.acess) continue;
 		out+="\n - \"";
 		out+=str::low(cmds.first);
 		out+="\" - ";

@@ -72,7 +72,7 @@ void msg::decode(json js, message *inMsg)
         inMsg->user_id=js[3];
     }
     inMsg->js=js;
-    if(module::ban::get(to_string(inMsg->user_id)) && !module::admin::get(to_string(inMsg->user_id)))
+    if(!module::user::get(to_string(inMsg->user_id)))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
 #ifdef senddeletedmessages

@@ -8,8 +8,7 @@ void module::start()
 {
 	srand(time(NULL));
 	module::money::read();
-	module::admin::read();
-	module::ban::read();
+	module::user::read();
 }
 
 void module::TR(message *inMsg, table *outMsg, long long int *oldbalance)
@@ -70,80 +69,42 @@ void module::money::add(string id, long long int money)
 	mon.unlock();
 }
 
-// admin system
-#define admins_path "admins.json"
-json admins;
-mutex adm;
-void module::admin::read()
+// user system
+#define users_path "users.json"
+json users;
+mutex uLock;
+void module::user::read()
 {
-	if(fs::exists(admins_path))
+	if(fs::exists(users_path))
 	{
-		admins = json::parse(fs::readData(admins_path));
+		users = json::parse(fs::readData(users_path));
 	}else
 	{
-		admins["default"] = false;
-		module::admin::save();
+		users["default"] = 1;
+		module::user::save();
 	}
 }
-void module::admin::save()
+void module::user::save()
 {
-	fs::writeData(admins_path, admins.dump(4));
+	fs::writeData(users_path, users.dump(4));
 }
-bool module::admin::get(string id)
+int module::user::get(string id)
 {
-	bool t;
-	adm.lock();
-	if(admins[id].is_null())
-	{
-		admins[id] = admins["default"];
-	}
-	t = admins[id];
-	adm.unlock();
+	int t;
+	uLock.lock();
+	if(users.find(id)==users.end())
+		t = users["default"];
+	else
+		t = users[id];
+	uLock.unlock();
 	return t;
 }
-void module::admin::set(string id, bool admin)
+void module::user::set(string id, int acess)
 {
-	adm.lock();
-	admins[id] = admin;
-	module::admin::save();
-	adm.unlock();
-}
-
-// ban system
-#define bans_path "bans.json"
-json bans;
-mutex b;
-void module::ban::read()
-{
-	if(fs::exists(bans_path))
-	{
-		bans = json::parse(fs::readData(bans_path));
-	}else
-	{
-		bans["default"] = false;
-		module::ban::save();
-	}
-}
-void module::ban::save()
-{
-	fs::writeData(bans_path, bans.dump(4));
-}
-bool module::ban::get(string id)
-{
-	bool t;
-	b.lock();
-	if(bans[id].is_null())
-	{
-		bans[id] = bans["default"];
-	}
-	t = bans[id];
-	b.unlock();
-	return t;
-}
-void module::ban::set(string id, bool ban)
-{
-	b.lock();
-	bans[id] = ban;
-	module::ban::save();
-	b.unlock();
+	uLock.lock();
+	users[id] = acess;
+	if(acess==users["default"])
+		users.erase(id);
+	module::user::save();
+	uLock.unlock();
 }
