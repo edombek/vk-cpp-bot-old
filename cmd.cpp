@@ -38,7 +38,7 @@ void cmd::init()
 	cmd::add("i", &cmds::test, true, "info", 0, 1);
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, 1);
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
-	cmd::add("py", &cmds::py, true, "python 3.5", 0, 3);
+	cmd::add("py", &cmds::py, true, "python 3.6", 0, 3);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)

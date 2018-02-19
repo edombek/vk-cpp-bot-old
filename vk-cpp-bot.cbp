@@ -37,7 +37,7 @@
 			<Add library="curl" />
 			<Add library="pthread" />
 			<Add library="gd" />
-			<Add library="python3.5" />
+			<Add library="python3.6m" />
 		</Linker>
 		<Unit filename="Makefile" />
 		<Unit filename="cmd.cpp" />

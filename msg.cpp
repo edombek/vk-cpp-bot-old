@@ -100,12 +100,15 @@ void msg::func(message *inMsg, table *outMsg)
 	(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
 #endif
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
+	if(module::user::get(to_string(inMsg->user_id))<=3)
+	{
+		(*outMsg)["message"] = str::replase((*outMsg)["message"], ".", "•");
+		(*outMsg)["message"] = str::replase((*outMsg)["message"], "#", "•");
+	}
 }
 
 void msg::send(table outMsg)
 {
-	outMsg["message"] = str::replase(outMsg["message"], ".", "•");
-	outMsg["message"] = str::replase(outMsg["message"], "#", "•");
     vk::send("messages.send", outMsg);
     cout << other::getRealTime()+": send("+outMsg["peer_id"]+"): "+outMsg["message"] << endl;
 }
