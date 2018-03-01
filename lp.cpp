@@ -79,9 +79,6 @@ void lp::updates(json updates)
 		case 4: // message
             msg::in(update);
 			break;
-		case 2: // change message flag
-            msg::change(update);
-			break;
 		}
 	}
 }

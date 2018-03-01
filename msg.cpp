@@ -7,9 +7,6 @@ typedef struct{
     string msg;
     int user_id;
 } t_msgs;
-#ifdef senddeletedmessages
-map<int, t_msgs> msgs;
-#endif
 mutex msgLock;
 unsigned long long int msgCount=0;
 unsigned long long int msgCountComplete=0;
@@ -43,22 +40,6 @@ void msg::treatment(message inMsg, table outMsg)
 	msgLock.unlock();
 	//typing.join();
 	msg::send(outMsg);
-}
-
-void msg::change(json js){
-#ifdef senddeletedmessages
-    message inMsg;
-    table outMsg;
-    msg::decode(js, &inMsg);
-    msgLock.lock();
-    if(inMsg.flags & 131072 && inMsg.chat_id && msgs[inMsg.msg_id].user_id)
-    {
-    	outMsg["peer_id"]=to_string(inMsg.chat_id+2000000000);
-    	outMsg["message"]="хех "+vk::send("users.get", {{"user_ids", to_string(msgs[inMsg.msg_id].user_id)}})["response"][0]["first_name"].get<string>()+" месагу удалил):\n\""+msgs[inMsg.msg_id].msg+"\"";
-    	msg::send(outMsg);
-    }
-    msgLock.unlock();
-#endif
 }
 
 void msg::decode(json js, message *inMsg)
