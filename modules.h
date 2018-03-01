@@ -22,6 +22,14 @@ namespace module
 		int get(string id);
 		void set(string id, int acess);
 	}
+	
+	namespace ct
+	{
+		void read();
+		void save();
+		string get();
+		void add(string id);
+	}
 }
 
 #endif

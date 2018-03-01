@@ -22,25 +22,17 @@ void cmds::weather(message *inMsg, table *outMsg)
 		{"APPID", "ef23e5397af13d705cfb244b33d04561"},
 		{"q", str::summ(inMsg->words, 1)}
 	};
-	json weather = json::parse(net::send("http://api.openweathermap.org/data/2.5/forecast", params, false));
-	if(weather["list"].is_null()&&!weather["list"].size())
+	json weather = json::parse(net::send("http://api.openweathermap.org/data/2.5/weather", params, false));
+	if(weather["main"].is_null())
 	{
 		(*outMsg)["message"]+="чтота пошло не так, возможно надо ввести город транслитом";
 		return;
 	}
-	//(*outMsg)["message"]+=weather["list"][0].dump(4);
+	//(*outMsg)["message"]+=weather.dump(4);
 	string temp = "";
-	temp += "погода в "+weather["city"]["country"].get<string>()+"/"+weather["city"]["name"].get<string>()+":";
-	weather = weather["list"];
-	string olddate="";
-	for(unsigned int i = 0; (i<weather.size()&&i<5); i++)
-	{
-		string date = other::getDate(weather[i]["dt"]);
-		if(olddate!=date)
-			temp += "\n¤"+date+":\n";
-		temp += "\n•"+other::getTime(weather[i]["dt"])+"\n•температура: "+to_string((int)weather[i]["main"]["temp"])+"°C\n•скорость ветра: "+to_string((int)weather[i]["wind"]["speed"])+"м/с\n•влажность: "+to_string((int)weather[i]["main"]["humidity"])+"%\n•описание: "+weather[i]["weather"][0]["description"].get<string>()+"\n";
-		olddate = date;
-	}
+	temp += "погода в "+weather["sys"]["country"].get<string>()+"/"+weather["name"].get<string>()+":";
+	temp += "\n¤"+other::getTime(weather["dt"])+":\n";
+	temp += "\n•температура: "+to_string((int)weather["main"]["temp"])+"°C\n•скорость ветра: "+to_string((int)weather["wind"]["speed"])+"м/с\n•влажность: "+to_string((int)weather["main"]["humidity"])+"%\n•описание: "+weather["weather"][0]["description"].get<string>()+"\n";
 	(*outMsg)["message"]+=temp;
 }
 
@@ -554,7 +546,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#include <python3.6/Python.h>
+#include <python3.6m/Python.h>
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)

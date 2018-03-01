@@ -23,12 +23,17 @@ void msg::in(json js){
     msgLock.unlock();
     if(inMsg.msg==""||(inMsg.flags&0x02))return;
     if(!msg::toMe(&inMsg))return;
-    string id;
+    thr::add(new thread(msg::treatment, inMsg, outMsg));
+}
+
+void msg::treatment(message inMsg, table outMsg)
+{
+	string id;
     if(inMsg.chat_id)
         id=to_string(inMsg.chat_id+2000000000);
     else
         id=to_string(inMsg.user_id);
-    thread typing(msg::setTyping, id);
+    //thread typing(msg::setTyping, id);
     long long int oldbalance;
     module::TR(&inMsg, &outMsg, &oldbalance);
     msg::func(&inMsg, &outMsg);
@@ -36,8 +41,8 @@ void msg::in(json js){
 	msgLock.lock();
 	msgCountComplete++;
 	msgLock.unlock();
-	typing.join();
-    msg::send(outMsg);
+	//typing.join();
+	msg::send(outMsg);
 }
 
 void msg::change(json js){
@@ -100,7 +105,7 @@ void msg::func(message *inMsg, table *outMsg)
 	(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
 #endif
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
-	if(module::user::get(to_string(inMsg->user_id))<=3)
+	if(module::user::get(to_string(inMsg->user_id))<3)
 	{
 		(*outMsg)["message"] = str::replase((*outMsg)["message"], ".", "•");
 		(*outMsg)["message"] = str::replase((*outMsg)["message"], "#", "•");
@@ -109,6 +114,7 @@ void msg::func(message *inMsg, table *outMsg)
 
 void msg::send(table outMsg)
 {
+	if(outMsg["peer_id"]=="")return;
     vk::send("messages.send", outMsg);
     cout << other::getRealTime()+": send("+outMsg["peer_id"]+"): "+outMsg["message"] << endl;
 }

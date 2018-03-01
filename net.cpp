@@ -6,7 +6,7 @@
 #include <fcntl.h>
 
 #define net_agent "EVGESHAd vk-cpp-bot"
-#define printOut
+//#define printOut
 
 /* Init network settings */
 void net::init()
@@ -136,6 +136,7 @@ void net::download(string url, string filename, string params)
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, net_agent);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 		if (params != "") {
 			curl_easy_setopt(curl, CURLOPT_POST, 1);
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
