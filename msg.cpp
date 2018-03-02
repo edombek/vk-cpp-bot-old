@@ -3,10 +3,6 @@
 #include <mutex>
 #include <thread>
 
-typedef struct{
-    string msg;
-    int user_id;
-} t_msgs;
 mutex msgLock;
 unsigned long long int msgCount=0;
 unsigned long long int msgCountComplete=0;
@@ -61,15 +57,6 @@ void msg::decode(json js, message *inMsg)
     if(!module::user::get(to_string(inMsg->user_id)))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
-#ifdef senddeletedmessages
-    msgLock.lock();
-	msgs[inMsg->msg_id].msg=inMsg->msg;
-	msgs[inMsg->msg_id].user_id=inMsg->user_id;
-	if(msgs.size()>1000)
-		for(unsigned i=0;i<100;i++)
-			msgs.erase(msgs.begin());
-	msgLock.unlock();
-#endif
     inMsg->words=str::words(inMsg->msg, ' ');
 }
 
