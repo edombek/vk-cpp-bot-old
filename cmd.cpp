@@ -1,5 +1,6 @@
 #include "common.h"
 #include <iostream>
+#include <mutex>
 cmd::cmd_table cmd_d;
 
 /*
@@ -54,7 +55,24 @@ void cmd::add(string command, cmd::msg_func func, bool disp, string info, int co
 
 void cmd::start(message *inMsg, table *outMsg, string command)
 {
-	command = str::replase(str::replase(str::low(command), "#", "[*]"), ".", "[*]");
+    if(command=="exit")
+    {
+        cmd::easySet(inMsg->user_id, "");
+        (*outMsg)["message"] += "вышел";
+        return;
+    }
+    string t = cmd::easyGet(inMsg->user_id);
+    if(t!="" && cmd_d.find(command)->first == "")
+    {
+        command = t;
+        args temp;
+        temp.push_back(t);
+        for(auto ar:inMsg->words)
+            temp.push_back(ar);
+        inMsg->words = temp;
+    }
+    else
+        command = str::replase(str::replase(str::low(command), "#", "[*]"), ".", "[*]");
 	if(cmd_d.find(command)->first != "")
 	{
 		if(module::money::get(to_string(inMsg->user_id))<cmd_d[command].cost)
@@ -73,7 +91,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	else
 	{
 		(*outMsg)["message"]=(*outMsg)["message"]+"незнаю такого"+"("+command+")";
-		(*outMsg)["peer_id"]="";
+		//(*outMsg)["peer_id"]="";
 	}
 	return;
 }
@@ -97,4 +115,29 @@ string cmd::helpList(message *inMsg)
 		}
 	}
 	return out;
+}
+
+map<int, string> easyCmd;
+mutex easyLock;
+
+void cmd::easySet(int id, string cmd)
+{
+    easyLock.lock();
+    if(cmd=="")
+        easyCmd.erase(id);
+    else
+        easyCmd[id]=cmd;
+    easyLock.unlock();
+}
+
+string cmd::easyGet(int id)
+{
+    string t;
+    easyLock.lock();
+    if(easyCmd.find(id)->first != 0)
+        t=easyCmd[id];
+    else
+        t="";
+    easyLock.unlock();
+    return t;
 }

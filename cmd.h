@@ -12,11 +12,13 @@ namespace cmd
 		bool disp;
 	}cmd_dat;
 	typedef map<string, cmd_dat> cmd_table;
-	
+
 	void init();
 	void add(string command, cmd::msg_func func, bool disp=false, string info="", int cost=0, int acess=1);
 	void start(message *inMsg, table *outMsg, string command);
 	string helpList(message *inMsg);
+    void easySet(int id, string cmd);
+    string easyGet(int id);
 }
 
 #endif

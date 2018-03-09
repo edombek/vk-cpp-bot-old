@@ -456,6 +456,7 @@ map<string, int> mathDat;
 mutex mathLock;
 void cmds::math(message *inMsg, table *outMsg)
 {
+    cmd::easySet(inMsg->user_id, "матеша");
 	mathLock.lock();
 	if(inMsg->words.size() == 2)
 	{
@@ -468,7 +469,7 @@ void cmds::math(message *inMsg, table *outMsg)
 			(*outMsg)["message"]+="ответ: "+to_string(mathDat[(*outMsg)["peer_id"]])+"\n";
 	}
 	else
-		(*outMsg)["message"]+="форма ответа: \"... матеша <ответ>\"\n";
+		(*outMsg)["message"]+="форма ответа: \"... <ответ>\"\n";
 	int a, b;
 	a=0;
 	b=0;
@@ -499,7 +500,7 @@ void cmds::test(message *inMsg, table *outMsg)
 	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))/1024));
 	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))-str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable")))/1024));
 	string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS"))/1024));
-	
+
 	(*outMsg)["message"]+="CPU:"+other::getParamOfPath("/proc/cpuinfo", "model name")+"\n";
 	(*outMsg)["message"]+="Оперативы: "+usedMem+"/"+allMem+"Мб\n";
 	(*outMsg)["message"]+="Из них я сожрал: "+myMem+" Мб\n";
@@ -579,7 +580,7 @@ void cmds::py(message *inMsg, table *outMsg)
     PyObject *output = PyObject_GetAttrString(catcher,"value");
     cmd=PyUnicode_AsUTF8(output);
     Py_Finalize();
-   
+
 	string temp = "";
 	args out;
 	for(unsigned i = 0; i < cmd.size(); i++)
