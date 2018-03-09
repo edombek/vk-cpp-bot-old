@@ -17,8 +17,10 @@ namespace cmds
 	void math(message *inMsg, table *outMsg);
 	void test(message *inMsg, table *outMsg);
 	void who(message *inMsg, table *outMsg);
+	void when(message *inMsg, table *outMsg);
 	void info(message *inMsg, table *outMsg);
 	void py(message *inMsg, table *outMsg);
+	void ip(message *inMsg, table *outMsg);
 }
 
 #endif

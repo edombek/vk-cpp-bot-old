@@ -95,6 +95,8 @@ bool msg::toMe(message *inMsg)
 			inMsg->words.erase(inMsg->words.begin());
 			return true;
 		}
+	if(!inMsg->chat_id)
+		return true;
 	return false;
 }
 

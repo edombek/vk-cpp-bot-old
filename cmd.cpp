@@ -37,8 +37,10 @@ void cmd::init()
 	cmd::add("матеша", &cmds::math, true, "заработок", 0, 1);
 	cmd::add("i", &cmds::test, true, "info", 0, 1);
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, 1);
+	cmd::add("когда", &cmds::when, true, "когда чтолибо произойдёт", 0, 1);
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
+	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)

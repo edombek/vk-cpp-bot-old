@@ -169,7 +169,7 @@ void cmds::f(message *inMsg, table *outMsg)
 	{
 		params["offset"] = to_string(i);
 		json temp = vk::send("video.search", params)["response"]["items"];
-		for(unsigned int t; t<temp.size(); t++)
+		for(unsigned int t=0; t<temp.size(); t++)
 			res2.push_back(temp[i]);
 	}
 	json res = other::jsonDifferenceArr(res1, res2);
@@ -532,6 +532,19 @@ void cmds::who(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Я считаю что " + who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
 }
 
+void cmds::when(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	string when = str::summ(inMsg->words, 1);
+	if(when[when.size()-1]=='?')
+		when.resize(when.size()-1);
+	(*outMsg)["message"]+= "Я считаю что " + when + " произойдёт " + other::getDate(time(NULL)+rand()%100000000);
+}
+
 void cmds::info(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -589,4 +602,20 @@ void cmds::py(message *inMsg, table *outMsg)
 		msg::send((*outMsg));
 		(*outMsg)["message"]= "";
 	}
+}
+
+void cmds::ip(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="мб ойпе введёшь?";
+		return;
+	}
+	table params =
+	{
+		{"ip", str::summ(inMsg->words, 1)}
+	};
+	json ip = json::parse(net::send("http://www.geoplugin.net/json.gp", params, false));
+	if(!ip["geoplugin_currencySymbol"].is_null())
+		(*outMsg)["message"]+=ip["geoplugin_currencySymbol"].get<string>()+" "+ip["geoplugin_countryCode"].get<string>()+"/"+ip["geoplugin_city"].get<string>();
 }

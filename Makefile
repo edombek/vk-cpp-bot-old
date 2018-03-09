@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c++11 -g -c -Wall
+CFLAGS=-std=c++11 -c -g -Wall
 LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lpython3.6m -Wl,-rpath,.
 INCLUDES=
 SOURCES=	\
