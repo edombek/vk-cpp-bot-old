@@ -8,7 +8,7 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev python3.5-dev
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev python3.6-dev
 ````
 For install on Termux:
 ```
@@ -33,4 +33,4 @@ cp ./vkbot ../
 
 ### Configuration
 in common.h - botnames and in cmd.cpp commands
-after first launch in config.json
+after first launch put vk token to config.json
