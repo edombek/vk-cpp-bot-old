@@ -456,7 +456,7 @@ map<string, int> mathDat;
 mutex mathLock;
 void cmds::math(message *inMsg, table *outMsg)
 {
-    cmd::easySet(inMsg->user_id, "матеша");
+    cmd::easySet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id), "матеша");
 	mathLock.lock();
 	if(inMsg->words.size() == 2)
 	{

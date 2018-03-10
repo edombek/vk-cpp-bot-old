@@ -17,8 +17,8 @@ namespace cmd
 	void add(string command, cmd::msg_func func, bool disp=false, string info="", int cost=0, int acess=1);
 	void start(message *inMsg, table *outMsg, string command);
 	string helpList(message *inMsg);
-    void easySet(int id, string cmd);
-    string easyGet(int id);
+    void easySet(string id, string cmd);
+    string easyGet(string id);
 }
 
 #endif

@@ -16,6 +16,7 @@ cmd::cmd_table cmd_d;
 void help(message *inMsg, table *outMsg)
 {
 	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(to_string(inMsg->user_id)))+"\n";
+	(*outMsg)["message"]+="ВНИМАНИЕ!!! КОМАНДЫ ТРЕБУЮЩИЕ ОТВЕТА БУДУТ ЖДАТЬ ОТВЕТ И ВОСПРИНИМАТЬ ЗА НЕГО ЛЮБОЕ СООБЩЕНИЕ, ВЫХОДИТЕ ИЗ ЭТОГО РЕЖИМА КОМАНДОЙ \"exit\"\n\n";
 	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n\nРазработчик: [id323871959|EVGESHAd]";
 }
 
@@ -57,11 +58,11 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 {
     if(command=="exit")
     {
-        cmd::easySet(inMsg->user_id, "");
+        cmd::easySet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id), "");
         (*outMsg)["message"] += "вышел";
         return;
     }
-    string t = cmd::easyGet(inMsg->user_id);
+    string t = cmd::easyGet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id));
     if(t!="" && cmd_d.find(command)->first == "")
     {
         command = t;
@@ -117,10 +118,10 @@ string cmd::helpList(message *inMsg)
 	return out;
 }
 
-map<int, string> easyCmd;
+map<string, string> easyCmd;
 mutex easyLock;
 
-void cmd::easySet(int id, string cmd)
+void cmd::easySet(string id, string cmd)
 {
     easyLock.lock();
     if(cmd=="")
@@ -130,11 +131,11 @@ void cmd::easySet(int id, string cmd)
     easyLock.unlock();
 }
 
-string cmd::easyGet(int id)
+string cmd::easyGet(string id)
 {
     string t;
     easyLock.lock();
-    if(easyCmd.find(id)->first != 0)
+    if(easyCmd.find(id)->first != "")
         t=easyCmd[id];
     else
         t="";
