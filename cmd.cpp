@@ -15,7 +15,7 @@ cmd::cmd_table cmd_d;
 
 void help(message *inMsg, table *outMsg)
 {
-	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(to_string(inMsg->user_id)))+"\n";
+	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(inMsg))+"\n";
 	(*outMsg)["message"]+="ВНИМАНИЕ!!! КОМАНДЫ ТРЕБУЮЩИЕ ОТВЕТА БУДУТ ЖДАТЬ ОТВЕТ И ВОСПРИНИМАТЬ ЗА НЕГО ЛЮБОЕ СООБЩЕНИЕ, ВЫХОДИТЕ ИЗ ЭТОГО РЕЖИМА КОМАНДОЙ \"exit\"\n\n";
 	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n\nРазработчик: [id323871959|EVGESHAd]";
 }
@@ -81,7 +81,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			(*outMsg)["message"] += "чот тебе $ нехватаит";
 			return;
 		}
-		if(module::user::get(to_string(inMsg->user_id))<cmd_d[command].acess)
+		if(module::user::get(inMsg)<cmd_d[command].acess)
 		{
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
@@ -102,8 +102,8 @@ string cmd::helpList(message *inMsg)
 	string out = "";
 	for(auto cmds: cmd_d)
 	{
-		if(!cmds.second.disp&&module::user::get(to_string(inMsg->user_id))!=5)continue;
-		if(module::user::get(to_string(inMsg->user_id))<cmds.second.acess) continue;
+		if(!cmds.second.disp&&module::user::get(inMsg)!=5)continue;
+		if(module::user::get(inMsg)<cmds.second.acess) continue;
 		out+="\n - \"";
 		out+=str::low(cmds.first);
 		out+="\" - ";

@@ -495,7 +495,8 @@ void cmds::test(message *inMsg, table *outMsg)
 	end = std::chrono::system_clock::now();
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	(*outMsg)["message"]+="Обработка VK API за: "+to_string(t)+"мс\n";
-
+	(*outMsg)["message"]+="id чата (пользователь/чат): "+to_string(inMsg->user_id)+"/"+to_string(inMsg->chat_id)+"\n";
+	
 	//получаем использование памяти
 	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))/1024));
 	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))-str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable")))/1024));

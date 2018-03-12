@@ -88,16 +88,27 @@ void module::user::save()
 {
 	fs::writeData(users_path, users.dump(4));
 }
-int module::user::get(string id)
+int module::user::get(message *inMsg)
 {
-	int t;
+	int user=0;
+	int chat=0;
 	uLock.lock();
-	if(users.find(id)==users.end())
-		t = users["default"];
+	if(users.find(to_string(inMsg->user_id))==users.end())
+		user = users["default"];
 	else
-		t = users[id];
+		user = users[to_string(inMsg->user_id)];
+	
+	if(users.find(to_string(-inMsg->chat_id))==users.end())
+		chat = users["default"];
+	else
+		chat = users[to_string(-inMsg->chat_id)];
 	uLock.unlock();
-	return t;
+	if(chat+user<=1)
+		return 0;
+	if(chat>user)
+		return chat;
+	else
+		return user;
 }
 void module::user::set(string id, int acess)
 {
@@ -107,39 +118,4 @@ void module::user::set(string id, int acess)
 		users.erase(id);
 	module::user::save();
 	uLock.unlock();
-}
-
-// ct system
-#define cts_path "cts.json"
-json cts;
-mutex ctL;
-void module::ct::read()
-{
-	if(fs::exists(cts_path))
-	{
-		cts = json::parse(fs::readData(cts_path));
-	}
-}
-
-void module::ct::save()
-{
-	fs::writeData(cts_path, cts.dump(4));
-}
-
-string module::ct::get()
-{
-	string t="";
-	ctL.lock();
-	for(auto id:cts)
-		t+=id.get<string>()+',';
-	ctL.unlock();
-	return t;
-}
-
-void module::ct::add(string id)
-{
-	ctL.lock();
-	cts.push_back(id);
-	module::ct::save();
-	ctL.unlock();
 }

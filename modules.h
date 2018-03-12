@@ -19,16 +19,8 @@ namespace module
 	{
 		void read();
 		void save();
-		int get(string id);
+		int get(message *inMsg);
 		void set(string id, int acess);
-	}
-	
-	namespace ct
-	{
-		void read();
-		void save();
-		string get();
-		void add(string id);
 	}
 }
 
