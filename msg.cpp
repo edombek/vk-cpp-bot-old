@@ -84,14 +84,14 @@ void msg::send(table outMsg)
 
 bool msg::toMe(message *inMsg)
 {
-    if(cmd::easyGet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id))!="")
-        return true;
 	for(auto n: botname)
 		if(str::low(n)==str::low(inMsg->words[0]))
 		{
 			inMsg->words.erase(inMsg->words.begin());
 			return true;
 		}
+	if(cmd::easyGet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id))!="")
+        return true;
 	if(!inMsg->chat_id)
 		return true;
 	return false;
