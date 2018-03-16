@@ -21,6 +21,7 @@ namespace cmds
 	void info(message *inMsg, table *outMsg);
 	void py(message *inMsg, table *outMsg);
 	void ip(message *inMsg, table *outMsg);
+	void game(message *inMsg, table *outMsg);
 }
 
 #endif

@@ -27,7 +27,7 @@ void cmd::init()
 	cmd::add("погода", &cmds::weather, true, "погодка", 2, 1);
 	cmd::add("con", &cmds::con, true, "консолька)", 0, 5);
 	cmd::add("u", &cmds::upload, true, "выгрузить в контач", 0, 3);
-	cmd::add("видосы", &cmds::video, false, "видосы", 0, 2);
+	cmd::add("видосы", &cmds::video, false, "видосы", 0, 1);
 	cmd::add("f", &cmds::f, false, "видосы с правками)", 0, 2);
 	cmd::add("-f", &cmds::f, false, "видосы с правками)", 0, 2);
 	cmd::add("доки", &cmds::doc, true, "доки", 0, 2);
@@ -43,6 +43,7 @@ void cmd::init()
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
 	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
+	cmd::add("гейм", &cmds::game, true, "игорка", 0, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -91,7 +92,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	}
 	else
 	{
-		(*outMsg)["message"]=(*outMsg)["message"]+"незнаю такого"+"("+command+")";
+		(*outMsg)["message"]=(*outMsg)["message"]+"незнаю такого"+"("+command+"), введите команду help и уточните";
 		//(*outMsg)["peer_id"]="";
 	}
 	return;

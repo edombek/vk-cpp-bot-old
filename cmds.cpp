@@ -386,6 +386,7 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 3)
 	{
+		(*outMsg)["message"]+="баланс: " + to_string(module::money::get(to_string(inMsg->user_id))) + "$\n";
 		inMsg->words.push_back("0");
 		inMsg->words.push_back("0");
 	}
@@ -620,4 +621,193 @@ void cmds::ip(message *inMsg, table *outMsg)
 	json ip = json::parse(net::send("http://www.geoplugin.net/json.gp", params, false));
 	if(!ip["geoplugin_currencySymbol"].is_null())
 		(*outMsg)["message"]+=ip["geoplugin_currencySymbol"].get<string>()+" "+ip["geoplugin_countryCode"].get<string>()+"/"+ip["geoplugin_city"].get<string>();
+}
+
+#define sizeGame 5
+#define n "⭕"
+const string nums[] = {"0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"};
+const string levels[2][3] = {
+	{"⚪","🔸","🔶"},
+	{"⚪","🔹","🔷"}
+};
+typedef struct{
+	int users_id[2];
+	int user;
+	int map[sizeGame][sizeGame][2]; // user/level
+	int step;
+}game_t;
+map<int, game_t*> gameNew = {};
+map<int, map<int, game_t*>> users = {};
+mutex gameL;
+
+void gameNewMap(game_t *t)
+{
+	t->user=1;
+	t->users_id[0]=0;
+	t->users_id[1]=0;
+	t->step=0;
+	for(int y=0;y<sizeGame;y++)
+		for(int x=0;x<sizeGame;x++)
+		{
+			t->map[y][x][0] = 0;
+			t->map[y][x][1] = 0;
+		}
+	t->map[0][0][0] = 0;
+	t->map[0][0][1] = 1;
+	t->map[sizeGame-1][sizeGame-1][0] = 1;
+	t->map[sizeGame-1][sizeGame-1][1] = 1;
+}
+
+void gameUplevel(game_t *t, int x, int y, bool replase = false, int step = sizeGame)
+{
+	if(x>=sizeGame || y>=sizeGame || x < 0 || y<0 || step==0)
+		return;
+	if(t->map[x][y][1]>=2) //если она взрывается
+	{
+		t->map[x][y][1]=0;
+		t->map[x][y][0]=0;
+		gameUplevel(t, x, y+1, true, step-1);
+		//gameUplevel(t, x+1, y+1, true, step-1);
+		gameUplevel(t, x+1, y, true, step-1);
+		//gameUplevel(t, x+1, y-1, true, step-1);
+		gameUplevel(t, x, y-1, true, step-1);
+		//gameUplevel(t, x-1, y-1, true, step-1);
+		gameUplevel(t, x-1, y, true, step-1);
+		//gameUplevel(t, x+1, y-1, true, step-1);
+	}
+	else
+	{
+		if(replase || t->map[x][y][0]==t->user || t->map[x][y][1]==0)
+		{
+			t->map[x][y][1]++;
+			t->map[x][y][0]=t->user;
+		}
+	}
+}
+
+bool gameWin(game_t *t)
+{
+	bool s = true;
+	for(int y=0;y<sizeGame;y++)
+		for(int x=0;x<sizeGame;x++)
+			if(t->map[x][y][0]!=t->user && t->map[x][y][1]!=0)
+				s = false;
+	return s;
+}
+
+void gameDeleteMap(game_t *t, int chat_id)
+{
+	if(t->users_id[0])
+	{
+		users[chat_id].erase(users[chat_id].find(t->users_id[0]));
+		cmd::easySet(to_string(chat_id)+"_"+to_string(t->users_id[0]), "");
+	}
+	if(t->users_id[1])
+	{
+		users[chat_id].erase(users[chat_id].find(t->users_id[1]));
+		cmd::easySet(to_string(chat_id)+"_"+to_string(t->users_id[1]), "");
+	}
+	gameNew[chat_id] = NULL;
+	delete t;
+}
+
+void cmds::game(message *inMsg, table *outMsg)
+{
+	if(!inMsg->chat_id)
+	{
+		(*outMsg)["message"]+="ты не в чате...";
+		return;
+	}
+	gameL.lock();
+	cmd::easySet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id), "гейм");
+	game_t *t;
+	if(users[inMsg->chat_id].find(inMsg->user_id)!=users[inMsg->chat_id].end() && (users[inMsg->chat_id].find(inMsg->user_id))->second->users_id[1]) // проверяем на полностью созданную игру
+	{
+		t = users[inMsg->chat_id].find(inMsg->user_id)->second;
+		if(inMsg->words.size() <= 1)
+		{
+			(*outMsg)["message"]+="игра остановлена";
+			gameDeleteMap(t, inMsg->chat_id);
+			gameL.unlock();
+			return;
+		}
+		if(inMsg->words.size() <= 3)
+		{
+			inMsg->words.push_back("0");
+			inMsg->words.push_back("0");
+		}
+	}else
+	{
+		if(gameNew[inMsg->chat_id] && !gameNew[inMsg->chat_id]->users_id[1]) //ожидает второго игрока
+		{
+			if(inMsg->user_id == gameNew[inMsg->chat_id]->users_id[0])
+			{
+				(*outMsg)["message"]+="так нельзя";
+				gameL.unlock();
+				return;
+			}
+			gameNew[inMsg->chat_id]->users_id[1]=inMsg->user_id;
+			users[inMsg->chat_id][inMsg->user_id]=gameNew[inMsg->chat_id];
+			t = users[inMsg->chat_id].find(inMsg->user_id)->second;
+		}
+		else
+		{
+			t = new game_t;
+			gameNewMap(t);
+			t->users_id[0]=inMsg->user_id;
+			users[inMsg->chat_id][inMsg->user_id]=t;
+			gameNew[inMsg->chat_id] = t;
+			(*outMsg)["message"]+="создана игра, ожидаем игроков";
+			gameL.unlock();
+			return;
+		}
+	}
+	
+	if(inMsg->user_id==t->users_id[t->user] || t->step == 0)
+	{
+		if(t->step)
+			gameUplevel(t, str::fromString(inMsg->words[1]), str::fromString(inMsg->words[2]));
+		t->step++;
+		(*outMsg)["message"]+=n;
+		for(int i=0;i<sizeGame;i++)
+			(*outMsg)["message"]+=nums[i];
+		(*outMsg)["message"]+="\n";
+		for(int y=0;y<sizeGame;y++)
+		{
+			(*outMsg)["message"]+=nums[y];
+			for(int x=0;x<sizeGame;x++)
+				(*outMsg)["message"]+=levels[t->map[x][y][0]][t->map[x][y][1]];
+			(*outMsg)["message"]+="\n";
+		}
+
+		msg::send((*outMsg));
+	
+		if(gameWin(t))
+		{
+			if(t->user)
+			{
+				(*outMsg)["message"]="выйграл первый игрок";
+			}
+			else
+			{
+				(*outMsg)["message"]="выйграл второй игрок";
+			}
+			module::money::add(to_string(t->users_id[t->user]), 100);
+			gameDeleteMap(t, inMsg->chat_id);
+		}
+		else if(t->user)
+		{
+			t->user=0;
+			(*outMsg)["message"]="ходит первый игрок";
+		}
+		else
+		{
+			t->user=1;
+			(*outMsg)["message"]="ходит второй игрок";
+		}
+	}
+	else
+		(*outMsg)["message"]="не твой ход!";
+	gameL.unlock();
+	other::sleep(1000);
 }
