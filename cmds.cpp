@@ -6,6 +6,8 @@
 #include <random>
 #include <mutex>
 
+#define max_size 4000
+
 mutex lockOut;
 
 void cmds::weather(message *inMsg, table *outMsg)
@@ -37,7 +39,6 @@ void cmds::weather(message *inMsg, table *outMsg)
 }
 
 mutex cmdLock;
-#define max_size 2000
 void cmds::con(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -562,7 +563,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#include <python3.5m/Python.h>
+#include <python3.5/Python.h>
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -632,7 +633,7 @@ typedef struct{
 	int step;
 }game_t;
 map<int, game_t*> gameNew = {};
-map<int, map<int, game_t*>> users = {};
+map<int, map<int, game_t*>> gameUsers = {};
 mutex gameL;
 
 void gameNewMap(game_t *t)
@@ -694,12 +695,12 @@ void gameDeleteMap(game_t *t, int chat_id)
 {
 	if(t->users_id[0])
 	{
-		users[chat_id].erase(users[chat_id].find(t->users_id[0]));
+		gameUsers[chat_id].erase(gameUsers[chat_id].find(t->users_id[0]));
 		cmd::easySet(to_string(chat_id)+"_"+to_string(t->users_id[0]), "");
 	}
 	if(t->users_id[1])
 	{
-		users[chat_id].erase(users[chat_id].find(t->users_id[1]));
+		gameUsers[chat_id].erase(gameUsers[chat_id].find(t->users_id[1]));
 		cmd::easySet(to_string(chat_id)+"_"+to_string(t->users_id[1]), "");
 	}
 	gameNew[chat_id] = NULL;
@@ -716,9 +717,9 @@ void cmds::game(message *inMsg, table *outMsg)
 	gameL.lock();
 	cmd::easySet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id), "гейм");
 	game_t *t;
-	if(users[inMsg->chat_id].find(inMsg->user_id)!=users[inMsg->chat_id].end() && (users[inMsg->chat_id].find(inMsg->user_id))->second->users_id[1]) // проверяем на полностью созданную игру
+	if(gameUsers[inMsg->chat_id].find(inMsg->user_id)!=gameUsers[inMsg->chat_id].end() && (gameUsers[inMsg->chat_id].find(inMsg->user_id))->second->users_id[1]) // проверяем на полностью созданную игру
 	{
-		t = users[inMsg->chat_id].find(inMsg->user_id)->second;
+		t = gameUsers[inMsg->chat_id].find(inMsg->user_id)->second;
 		if(inMsg->words.size() <= 1)
 		{
 			(*outMsg)["message"]+="игра остановлена";
@@ -742,15 +743,15 @@ void cmds::game(message *inMsg, table *outMsg)
 				return;
 			}
 			gameNew[inMsg->chat_id]->users_id[1]=inMsg->user_id;
-			users[inMsg->chat_id][inMsg->user_id]=gameNew[inMsg->chat_id];
-			t = users[inMsg->chat_id].find(inMsg->user_id)->second;
+			gameUsers[inMsg->chat_id][inMsg->user_id]=gameNew[inMsg->chat_id];
+			t = gameUsers[inMsg->chat_id].find(inMsg->user_id)->second;
 		}
 		else
 		{
 			t = new game_t;
 			gameNewMap(t);
 			t->users_id[0]=inMsg->user_id;
-			users[inMsg->chat_id][inMsg->user_id]=t;
+			gameUsers[inMsg->chat_id][inMsg->user_id]=t;
 			gameNew[inMsg->chat_id] = t;
 			(*outMsg)["message"]+="создана игра, ожидаем игроков";
 			gameL.unlock();

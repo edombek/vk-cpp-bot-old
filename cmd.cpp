@@ -43,7 +43,7 @@ void cmd::init()
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
 	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
-	cmd::add("гейм", &cmds::game, true, "игорка", 0, 1);
+	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
