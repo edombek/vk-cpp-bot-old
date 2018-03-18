@@ -562,7 +562,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#include <python3.6m/Python.h>
+#include <python3.5m/Python.h>
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -609,18 +609,13 @@ void cmds::py(message *inMsg, table *outMsg)
 
 void cmds::ip(message *inMsg, table *outMsg)
 {
-	if(inMsg->words.size() < 2)
+	json ip = json::parse(net::send("http://ip-api.com/json/"+str::summ(inMsg->words, 1)));
+	(*outMsg)["message"]= ip.dump(4);
+	if(ip["lon"].is_number()&&ip["lat"].is_number())
 	{
-		(*outMsg)["message"]+="мб ойпе введёшь?";
-		return;
+		(*outMsg)["long"]=to_string((float)ip["lon"]);
+		(*outMsg)["lat"]=to_string((float)ip["lat"]);
 	}
-	table params =
-	{
-		{"ip", str::summ(inMsg->words, 1)}
-	};
-	json ip = json::parse(net::send("http://www.geoplugin.net/json.gp", params, false));
-	if(!ip["geoplugin_currencySymbol"].is_null())
-		(*outMsg)["message"]+=ip["geoplugin_currencySymbol"].get<string>()+" "+ip["geoplugin_countryCode"].get<string>()+"/"+ip["geoplugin_city"].get<string>();
 }
 
 #define sizeGame 5
@@ -662,7 +657,7 @@ void gameUplevel(game_t *t, int x, int y, bool replase = false, int step = sizeG
 {
 	if(x>=sizeGame || y>=sizeGame || x < 0 || y<0 || step==0)
 		return;
-	if(t->map[x][y][1]>=2) //если она взрывается
+	if(t->map[x][y][1]>=2 && (replase || t->map[x][y][0]==t->user)) //если она взрывается
 	{
 		t->map[x][y][1]=0;
 		t->map[x][y][0]=0;
@@ -786,11 +781,11 @@ void cmds::game(message *inMsg, table *outMsg)
 		{
 			if(t->user)
 			{
-				(*outMsg)["message"]="выйграл первый игрок";
+				(*outMsg)["message"]="выйграл второй игрок";
 			}
 			else
 			{
-				(*outMsg)["message"]="выйграл второй игрок";
+				(*outMsg)["message"]="выйграл первый игрок";
 			}
 			module::money::add(to_string(t->users_id[t->user]), 100);
 			gameDeleteMap(t, inMsg->chat_id);

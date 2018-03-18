@@ -4,7 +4,7 @@
 #include <locale> 
 #include <sstream>
 
-std::locale const utf8("en_US.UTF-8");
+std::locale const utf8("ru_RU.UTF-8");
 
 long long int str::fromString(std::string s) 
 {
