@@ -37,9 +37,10 @@
 			<Add library="curl" />
 			<Add library="pthread" />
 			<Add library="gd" />
-			<Add library="python3.6m" />
+			<Add library="python3.5m" />
 		</Linker>
 		<Unit filename="Makefile" />
+		<Unit filename="README.md" />
 		<Unit filename="cmd.cpp" />
 		<Unit filename="cmd.h" />
 		<Unit filename="cmds.cpp" />
@@ -69,6 +70,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
