@@ -837,8 +837,8 @@ int delta(gdImagePtr im, int x, int y, int r)
     return gdImageColorClosest(im, colors[0], colors[1], colors[2]);
 }
 
-#define minC 20
-#define radD 15
+#define minC 25
+#define radD 10
 #define radG 2
 
 void cmds::neon(message *inMsg, table *outMsg)
@@ -910,11 +910,6 @@ void cmds::neon(message *inMsg, table *outMsg)
         fclose(f);
         gdImageDestroy(outIm);
         gdImageDestroy(im);
-
-		FILE *out = fopen("out.png", "wb");
-		gdImagePng(im, out);
-		fclose(out);
-		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
 		lockOut.unlock();
 	}
