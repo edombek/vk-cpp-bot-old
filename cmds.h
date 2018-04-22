@@ -22,6 +22,7 @@ namespace cmds
 	void py(message *inMsg, table *outMsg);
 	void ip(message *inMsg, table *outMsg);
 	void game(message *inMsg, table *outMsg);
+	void neon(message *inMsg, table *outMsg);
 }
 
 #endif

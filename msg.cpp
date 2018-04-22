@@ -70,7 +70,8 @@ void msg::func(message *inMsg, table *outMsg)
 	if(!inMsg->words.size())
 		inMsg->words.push_back("help");
 #ifdef forwardmessages
-	(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
+	if(inMsg->chat_id)
+		(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
 #endif
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
 }

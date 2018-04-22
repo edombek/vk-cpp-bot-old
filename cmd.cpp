@@ -17,7 +17,7 @@ void help(message *inMsg, table *outMsg)
 {
 	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(inMsg))+"\n";
 	(*outMsg)["message"]+="ВНИМАНИЕ!!! КОМАНДЫ ТРЕБУЮЩИЕ ОТВЕТА БУДУТ ЖДАТЬ ОТВЕТ И ВОСПРИНИМАТЬ ЗА НЕГО ЛЮБОЕ СООБЩЕНИЕ, ВЫХОДИТЕ ИЗ ЭТОГО РЕЖИМА КОМАНДОЙ \"exit\"\n\n";
-	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n\nРазработчик: [id323871959|EVGESHAd]";
+	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n";
 }
 
 void cmd::init()
@@ -44,6 +44,7 @@ void cmd::init()
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
 	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
 	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
+	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)

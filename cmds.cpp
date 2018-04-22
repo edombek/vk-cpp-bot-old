@@ -498,7 +498,7 @@ void cmds::test(message *inMsg, table *outMsg)
 	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 	(*outMsg)["message"]+="Обработка VK API за: "+to_string(t)+"мс\n";
 	(*outMsg)["message"]+="id чата (пользователь/чат): "+to_string(inMsg->user_id)+"/"+to_string(inMsg->chat_id)+"\n";
-	
+
 	//получаем использование памяти
 	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))/1024));
 	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal"))-str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable")))/1024));
@@ -758,7 +758,7 @@ void cmds::game(message *inMsg, table *outMsg)
 			return;
 		}
 	}
-	
+
 	if(inMsg->user_id==t->users_id[t->user] || t->step == 0)
 	{
 		if(t->step)
@@ -777,7 +777,7 @@ void cmds::game(message *inMsg, table *outMsg)
 		}
 
 		msg::send((*outMsg));
-	
+
 		if(gameWin(t))
 		{
 			if(t->user)
@@ -806,4 +806,116 @@ void cmds::game(message *inMsg, table *outMsg)
 		(*outMsg)["message"]="не твой ход!";
 	gameL.unlock();
 	other::sleep(1000);
+}
+
+int delta(gdImagePtr im, int x, int y, int r)
+{
+    int rr=r*r;
+    long long unsigned int summ[3] = {0, 0, 0};
+    int colors[3];
+    unsigned int c = 0;
+    for(int xc=x-r;xc<=x+r;xc++)
+    {
+        for(int yc=y-r;yc<=y+r;yc++)
+        {
+            if(rr>=(xc-x)*(xc-x)+(yc-y)*(yc-y)&&xc>=0&&yc>=0&&xc<im->sx&&yc<im->sy)
+            {
+                int color = gdImageGetTrueColorPixel(im, xc, yc);
+                summ[0]+=gdTrueColorGetRed(color);
+                summ[1]+=gdTrueColorGetGreen(color);
+                summ[2]+=gdTrueColorGetBlue(color);
+                c++;
+            }
+        }
+    }
+    int color=gdImageGetTrueColorPixel(im, x, y);
+    colors[0]=summ[0]/c-gdTrueColorGetRed(color);
+    colors[1]=summ[1]/c-gdTrueColorGetGreen(color);
+    colors[2]=summ[2]/c-gdTrueColorGetBlue(color);
+    for(int i=0;i<3;i++)
+        if(colors[i]<0)colors[i]=0;
+    return gdImageColorClosest(im, colors[0], colors[1], colors[2]);
+}
+
+#define minC 20
+#define radD 15
+#define radG 2
+
+void cmds::neon(message *inMsg, table *outMsg)
+{
+	table params =
+	{
+		{"message_ids", to_string(inMsg->msg_id)}
+	};
+	json res = vk::send("messages.getById", params)["response"]["items"][0];
+	if(res["attachments"].is_null())
+	{
+		return;
+	}
+	params = {};
+	json photos;
+	string p = "";
+	photos =
+	{
+		{"photos", ""},
+		{"photo_sizes", "1"},
+		{"extended", "0"}
+	};
+	for(unsigned i=0;i<res["attachments"].size();i++)
+	{
+		if(res["attachments"][i]["type"]=="photo")
+		{
+			p+=to_string((int)res["attachments"][i]["photo"]["owner_id"])+"_"+to_string((int)res["attachments"][i]["photo"]["id"]);
+			if(!res["attachments"][i]["photo"]["access_key"].is_null())
+				p+="_"+res["attachments"][i]["photo"]["access_key"].get<string>();
+			p+=",";
+		}
+	}
+	photos["photos"]=p;
+	res = vk::send("photos.getById", photos)["response"];
+	for(unsigned i=0;i<res.size();i++)
+	{
+		lockOut.lock();
+		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
+		args w = str::words(url, '.');
+		string name = "in."+w[w.size()-1];
+		net::download(url, name);
+
+		gdImagePtr im = gdImageCreateFromFile(name.c_str());
+        gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
+
+        for(int xc=0;xc<im->sx;xc++)
+            for(int yc=0;yc<im->sy;yc++)
+            {
+                int color = delta(im, xc, yc, radD);
+                int colors[3];
+                colors[0]=gdTrueColorGetRed(color);
+                colors[1]=gdTrueColorGetGreen(color);
+                colors[2]=gdTrueColorGetBlue(color);
+                for(int i=0;i<3;i++)
+                    if(colors[i]>minC)colors[i]=255;
+
+                gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
+            }
+        gdImagePtr result = gdImageCopyGaussianBlurred(outIm, radG, -1.0);
+        if(result)
+        {
+            gdImageDestroy(outIm);
+            outIm=result;
+        }
+
+        FILE *f;
+        f = fopen("out.png", "w");
+        gdImagePng(outIm, f);
+        fclose(f);
+        gdImageDestroy(outIm);
+        gdImageDestroy(im);
+
+		FILE *out = fopen("out.png", "wb");
+		gdImagePng(im, out);
+		fclose(out);
+		gdImageDestroy(im);
+		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
+		lockOut.unlock();
+	}
 }
