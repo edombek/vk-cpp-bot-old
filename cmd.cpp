@@ -88,8 +88,8 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
 		}
-		module::money::add(to_string(inMsg->user_id), 0-cmd_d[command].cost);
 		cmd_d[command].func(inMsg, outMsg);
+		module::money::add(to_string(inMsg->user_id), 0-cmd_d[command].cost);
 	}
 	else
 	{

@@ -69,11 +69,11 @@ void msg::func(message *inMsg, table *outMsg)
         (*outMsg)["peer_id"]=to_string(inMsg->user_id);
 	if(!inMsg->words.size())
 		inMsg->words.push_back("help");
+	cmd::start(inMsg, outMsg, inMsg->words[0]);
 #ifdef forwardmessages
 	if(inMsg->chat_id)
 		(*outMsg)["forward_messages"]=to_string(inMsg->msg_id);
 #endif
-	cmd::start(inMsg, outMsg, inMsg->words[0]);
 }
 
 void msg::send(table outMsg)

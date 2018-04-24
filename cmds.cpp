@@ -8,7 +8,8 @@
 
 #define max_size 4000
 
-mutex lockOut;
+mutex lockInP;
+mutex lockOutP;
 
 void cmds::weather(message *inMsg, table *outMsg)
 {
@@ -289,7 +290,6 @@ void cmds::citata(message *inMsg, table *outMsg)
 
 	unsigned int x=0;
 	unsigned int y=0;
-	lockOut.lock();
 	for(unsigned i=0; i < out.size();i++)
 	{
 		int brect[8];
@@ -323,7 +323,9 @@ void cmds::citata(message *inMsg, table *outMsg)
 			/*gdImageFilledRectangle(outIm, out[i]["lvl"].get<int>()*100+150, y, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100+150, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));*/
+			lockInP.lock();
 			net::download(out[i]["photo"], n);
+			lockInP.unlock();
 			gdImagePtr im = gdImageCreateFromFile(n.c_str());
 			gdImageCopy(outIm, im, out[i]["lvl"].get<int>()*100, y, 0, 0, 100, 100);
 			gdImageDestroy(im);
@@ -334,13 +336,14 @@ void cmds::citata(message *inMsg, table *outMsg)
 			gdImageStringTTF(outIm, NULL, gdImageColorClosest(outIm, 255, 255, 255), "./font.ttf", TXT_SIZE, 0, TXT_SIZE*0.5+out[i]["lvl"].get<int>()*100 + TXT_SIZE*0.5, y+TXT_SIZE*1.5, (char*)out[i]["msg"].get<string>().c_str());
 		y+=out[i]["y"].get<int>();
 	}
+	lockOutP.lock();
 	FILE *in;
 	in = fopen("out.png", "wb");
 	gdImagePng(outIm, in);
 	fclose(in);
 	gdImageDestroy(outIm);
 	(*outMsg)["attachment"] += ","+vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
-	lockOut.unlock();
+	lockOutP.unlock();
 }
 
 void cmds::execute(message *inMsg, table *outMsg)
@@ -437,20 +440,26 @@ void cmds::pixel(message *inMsg, table *outMsg)
 	res = vk::send("photos.getById", photos)["response"];
 	for(unsigned i=0;i<res.size();i++)
 	{
-		lockOut.lock();
-		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
+		int maxIndex=0;
+		for(unsigned int si=0;si<res[i]["sizes"].size();si++)
+			if(res[i]["sizes"][si]["width"]>res[i]["sizes"][maxIndex]["width"])
+				maxIndex=si;
+		string url = res[i]["sizes"][maxIndex]["src"];
 		args w = str::words(url, '.');
 		string name = "in."+w[w.size()-1];
+		lockInP.lock();
 		net::download(url, name);
+		lockInP.unlock();
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
 		int size = 4+rand()%6;
 		gdImagePixelate(im, size, GD_PIXELATE_UPPERLEFT);
+		lockOutP.lock();
 		FILE *out = fopen("out.png", "wb");
 		gdImagePng(im, out);
 		fclose(out);
 		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
-		lockOut.unlock();
+		lockOutP.unlock();
 	}
 }
 
@@ -533,7 +542,7 @@ void cmds::who(message *inMsg, table *outMsg)
 	string who = str::summ(inMsg->words, 1);
 	if(who[who.size()-1]=='?')
 		who.resize(who.size()-1);
-	(*outMsg)["message"]+= "Я считаю что " + who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
+	(*outMsg)["message"]+= "Я считаю, что " + who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
 }
 
 void cmds::when(message *inMsg, table *outMsg)
@@ -546,7 +555,7 @@ void cmds::when(message *inMsg, table *outMsg)
 	string when = str::summ(inMsg->words, 1);
 	if(when[when.size()-1]=='?')
 		when.resize(when.size()-1);
-	(*outMsg)["message"]+= "Я считаю что " + when + " произойдёт " + other::getDate(time(NULL)+rand()%100000000);
+	(*outMsg)["message"]+= "Я считаю, что " + when + " произойдёт " + other::getDate(time(NULL)+rand()%100000000);
 }
 
 void cmds::info(message *inMsg, table *outMsg)
@@ -623,8 +632,8 @@ void cmds::ip(message *inMsg, table *outMsg)
 #define n "⭕"
 const string nums[] = {"0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"};
 const string levels[2][3] = {
-	{"⚪","🔸","🔶"},
-	{"⚪","🔹","🔷"}
+	{"⚪",{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967224},{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967222}},
+	{"⚪",{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967225},{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967223}}
 };
 typedef struct{
 	int users_id[2];
@@ -811,7 +820,7 @@ void cmds::game(message *inMsg, table *outMsg)
 int delta(gdImagePtr im, int x, int y, int r)
 {
     int rr=r*r;
-    long long unsigned int summ[3] = {0, 0, 0};
+    long long summ[3] = {0, 0, 0};
     int colors[3];
     unsigned int c = 0;
     for(int xc=x-r;xc<=x+r;xc++)
@@ -829,16 +838,16 @@ int delta(gdImagePtr im, int x, int y, int r)
         }
     }
     int color=gdImageGetTrueColorPixel(im, x, y);
-    colors[0]=summ[0]/c-gdTrueColorGetRed(color);
-    colors[1]=summ[1]/c-gdTrueColorGetGreen(color);
-    colors[2]=summ[2]/c-gdTrueColorGetBlue(color);
+    colors[0]=gdTrueColorGetRed(color)-summ[0]/c;
+    colors[1]=gdTrueColorGetGreen(color)-summ[1]/c;
+    colors[2]=gdTrueColorGetBlue(color)-summ[2]/c;
     for(int i=0;i<3;i++)
         if(colors[i]<0)colors[i]=0;
     return gdImageColorClosest(im, colors[0], colors[1], colors[2]);
 }
 
-#define minC 25
-#define radD 10
+#define minC 0.2
+#define radD 20
 #define radG 2
 
 void cmds::neon(message *inMsg, table *outMsg)
@@ -875,15 +884,23 @@ void cmds::neon(message *inMsg, table *outMsg)
 	res = vk::send("photos.getById", photos)["response"];
 	for(unsigned i=0;i<res.size();i++)
 	{
-		lockOut.lock();
-		string url = res[i]["sizes"][res[i]["sizes"].size()-1]["src"];
+		std::chrono::time_point<std::chrono::system_clock> begin, end;
+		begin = std::chrono::system_clock::now();
+		int maxIndex=0;
+		for(unsigned int si=0;si<res[i]["sizes"].size();si++)
+			if(res[i]["sizes"][si]["width"]>res[i]["sizes"][maxIndex]["width"])
+				maxIndex=si;
+		string url = res[i]["sizes"][maxIndex]["src"];
 		args w = str::words(url, '.');
 		string name = "in."+w[w.size()-1];
+		lockInP.lock();
 		net::download(url, name);
+		lockInP.unlock();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
         gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
 
+		int max = 0;
         for(int xc=0;xc<im->sx;xc++)
             for(int yc=0;yc<im->sy;yc++)
             {
@@ -893,8 +910,23 @@ void cmds::neon(message *inMsg, table *outMsg)
                 colors[1]=gdTrueColorGetGreen(color);
                 colors[2]=gdTrueColorGetBlue(color);
                 for(int i=0;i<3;i++)
-                    if(colors[i]>minC)colors[i]=255;
-
+                {
+                    if(colors[i]>max)max=colors[i];
+                    gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
+                }
+            }
+        int minColor = max*minC;
+        for(int xc=0;xc<im->sx;xc++)
+            for(int yc=0;yc<im->sy;yc++)
+            {
+                int color = gdImageGetPixel(outIm, xc, yc);
+                int colors[3];
+                colors[0]=gdTrueColorGetRed(color);
+                colors[1]=gdTrueColorGetGreen(color);
+                colors[2]=gdTrueColorGetBlue(color);
+                for(int i=0;i<3;i++)
+                    if(colors[i]<minColor) colors[i]=0;
+                    else colors[i]=255;
                 gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
             }
         gdImagePtr result = gdImageCopyGaussianBlurred(outIm, radG, -1.0);
@@ -903,14 +935,21 @@ void cmds::neon(message *inMsg, table *outMsg)
             gdImageDestroy(outIm);
             outIm=result;
         }
-
+        
+        lockOutP.lock();
         FILE *f;
         f = fopen("out.png", "w");
         gdImagePng(outIm, f);
         fclose(f);
         gdImageDestroy(outIm);
         gdImageDestroy(im);
-		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
-		lockOut.unlock();
+		(*outMsg)["attachment"] = vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
+		lockOutP.unlock();
+		end = std::chrono::system_clock::now();
+		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000;
+		(*outMsg)["message"]+=to_string(t)+" сек.";
+		msg::send((*outMsg));
+		(*outMsg)["message"]="";
+		(*outMsg)["attachment"]="";
 	}
 }
