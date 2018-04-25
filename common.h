@@ -39,5 +39,5 @@ typedef struct{
 #define friendsadd
 #define forwardmessages
 
-#define MAXTHREADS 25
+#define MAXTHREADS 20
 #endif

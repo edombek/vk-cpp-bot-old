@@ -396,13 +396,14 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	}
 	long long int id = str::fromString(inMsg->words[1]);
 	long long int m = str::fromString(inMsg->words[2]);
-	if(m < 1 || m > module::money::get(to_string(inMsg->user_id)))
+	if(m < 1 || (m > module::money::get(to_string(inMsg->user_id))&&module::user::get(inMsg)<5))
 	{
-		(*outMsg)["message"] += "ошибка(\nиспользуйте отправить <id> <$>\nну или у вас недостаточно $)";
+		(*outMsg)["message"] += "ошибка(\nиспользуйте: $ <id> <$>\nну или у вас недостаточно $)";
 		return;
 	}
 	else (*outMsg)["message"] += "отправил";
-	module::money::add(to_string(inMsg->user_id), 0-m);
+	if(module::user::get(inMsg)<5)
+		module::money::add(to_string(inMsg->user_id), 0-m);
 	module::money::add(to_string(id), m);
 }
 
@@ -514,8 +515,8 @@ void cmds::test(message *inMsg, table *outMsg)
 	string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS"))/1024));
 
 	(*outMsg)["message"]+="CPU:"+other::getParamOfPath("/proc/cpuinfo", "model name")+"\n";
-	(*outMsg)["message"]+="Оперативы: "+usedMem+"/"+allMem+"Мб\n";
-	(*outMsg)["message"]+="Из них я сожрал: "+myMem+" Мб\n";
+	(*outMsg)["message"]+="Потоков выделенно: "+other::getParamOfPath("/proc/self/status", "Threads")+"\n";
+	(*outMsg)["message"]+="Я сожрал оперативы: "+myMem+" Мб\n";
 	(*outMsg)["message"]+="Сообщений: "+to_string(msg::CountComplete())+"/"+to_string(msg::Count())+"\n";
 	(*outMsg)["message"]+="Запущен: "+other::getTime()+"\n";
 }
