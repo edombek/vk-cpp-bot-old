@@ -2,31 +2,36 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include "ThreadPool.h"
 
+ThreadPool pool(MAXTHREADS);
 mutex msgLock;
 unsigned long long int msgCount=0;
 unsigned long long int msgCountComplete=0;
 
-void msg::in(json js){
-    message inMsg;
-    table outMsg;
-    msg::decode(js, &inMsg);
-    msgLock.lock();
-    msgCount++;
-    msgLock.unlock();
-    if(inMsg.msg==""||(inMsg.flags&0x02))return;
-    if(!msg::toMe(&inMsg))return;
-    thr::add(new thread(msg::treatment, inMsg, outMsg));
+void msg::init()
+{
+	pool.init();
 }
 
-void msg::treatment(message inMsg, table outMsg)
+void msg::in(json js){
+    message inMsg;
+    msg::decode(js, &inMsg);
+    msgCount++;
+    if(inMsg.msg==""||(inMsg.flags&0x02))return;
+    if(!msg::toMe(&inMsg))return;
+    pool.submit(msg::treatment, inMsg);
+}
+
+void msg::treatment(message inMsg)
 {
+	table outMsg = {};
 	string id;
     if(inMsg.chat_id)
         id=to_string(inMsg.chat_id+2000000000);
     else
         id=to_string(inMsg.user_id);
-    //thread typing(msg::setTyping, id);
+    thread typing(msg::setTyping, id);
     long long int oldbalance;
     module::TR(&inMsg, &outMsg, &oldbalance);
     msg::func(&inMsg, &outMsg);
@@ -34,7 +39,7 @@ void msg::treatment(message inMsg, table outMsg)
 	msgLock.lock();
 	msgCountComplete++;
 	msgLock.unlock();
-	//typing.join();
+	typing.join();
 	msg::send(outMsg);
 }
 

@@ -2,7 +2,6 @@
 #include <iostream>
 int main()
 {
-	thread t(thr::cleaner);
 	vk::init();
 	other::startTime();
 	module::start();
@@ -10,8 +9,8 @@ int main()
 #ifdef friendsadd
 	thread friends(vk::friends);
 #endif
+	msg::init();
 	lp::loop();
-	t.join();
 #ifdef friendsadd
 	friends.join();
 #endif

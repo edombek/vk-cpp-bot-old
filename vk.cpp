@@ -97,6 +97,7 @@ void vk::friends()
 				{"user_id", to_string((int)list[i])}
 			});
 		}
-		other::sleep(600000);
+		vk::send("account.setOnline");
+		other::sleep(300000);
 	}
 }
