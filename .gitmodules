@@ -1,0 +1,6 @@
+[submodule "vox"]
+	path = vox
+	url = http://github.com/EVGESHAd/GoldSrcVox
+[submodule "thr"]
+	path = thr
+	url = https://github.com/mtrebi/thread-pool
