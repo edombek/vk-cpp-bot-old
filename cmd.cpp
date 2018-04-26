@@ -45,6 +45,7 @@ void cmd::init()
 	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
 	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
+	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)

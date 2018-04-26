@@ -1,7 +1,6 @@
 #include "common.h"
 #include <iostream>
 #include <mutex>
-#include <thread>
 #include "ThreadPool.h"
 
 ThreadPool pool(MAXTHREADS);
@@ -31,7 +30,7 @@ void msg::treatment(message inMsg)
         id=to_string(inMsg.chat_id+2000000000);
     else
         id=to_string(inMsg.user_id);
-    thread typing(msg::setTyping, id);
+    //msg::setTyping(id);
     long long int oldbalance;
     module::TR(&inMsg, &outMsg, &oldbalance);
     msg::func(&inMsg, &outMsg);
@@ -39,7 +38,6 @@ void msg::treatment(message inMsg)
 	msgLock.lock();
 	msgCountComplete++;
 	msgLock.unlock();
-	typing.join();
 	msg::send(outMsg);
 }
 

@@ -57,9 +57,13 @@ string vk::upload(string path, string peer_id, string type)
 	json res;
 	table params =
 	{
-		{"peer_id", peer_id}
+		{"peer_id", peer_id},
+		{"type", type}
 	};
-	res = vk::send(type+"s.getMessagesUploadServer", params)["response"];
+	if(type!="audio_message")
+		res = vk::send(type+"s.getMessagesUploadServer", params)["response"];
+	else
+		res = vk::send("docs.getMessagesUploadServer", params)["response"];
 	string tmp = net::upload(res["upload_url"], path);
 	if(tmp == "" || str::at(tmp, "504 Gateway Time-out"))
 	{
@@ -73,7 +77,7 @@ string vk::upload(string path, string peer_id, string type)
 		params["hash"] = res["hash"];
 		res = vk::send("photos.saveMessagesPhoto", params);
 	}else
-	if(type=="doc"){
+	if(type=="doc" || type=="audio_message"){
 		params["file"] = res["file"];
 		res = vk::send("docs.save", params)/*["response"]*/;
 	}
@@ -81,6 +85,8 @@ string vk::upload(string path, string peer_id, string type)
 	{
 		return "";
 	}
+	if(type=="audio_message")
+		type="doc";
 	return type+to_string((int)res["response"][0]["owner_id"])+"_"+to_string((int)res["response"][0]["id"]);
 }
 

@@ -80,6 +80,7 @@ void cmds::con(message *inMsg, table *outMsg)
 		(*outMsg)["message"]+= "\n" + out[i];
 		if(out.size() == 1 || i == out.size()-1)break;
 		msg::send((*outMsg));
+		other::sleep(10000);
 		(*outMsg)["message"]= "";
 	}
 }
@@ -95,7 +96,7 @@ void cmds::upload(message *inMsg, table *outMsg)
 	string name = inMsg->words[1];
 	if(inMsg->words.size() > 2)
 		net::download(url, name);
-	(*outMsg)["attachment"] += ","+vk::upload(name, to_string((int)inMsg->msg[3]), "doc");
+	(*outMsg)["attachment"] += ","+vk::upload(name, (*outMsg)["peer_id"], "doc");
 	if(inMsg->words.size() > 2){
 		name = "rm -f " + name;
 		system(name.c_str());
@@ -342,7 +343,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 	gdImagePng(outIm, in);
 	fclose(in);
 	gdImageDestroy(outIm);
-	(*outMsg)["attachment"] += ","+vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
+	(*outMsg)["attachment"] += ","+vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 	lockOutP.unlock();
 }
 
@@ -459,7 +460,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		gdImagePng(im, out);
 		fclose(out);
 		gdImageDestroy(im);
-		(*outMsg)["attachment"] += vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo") + ",";
+		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		lockOutP.unlock();
 	}
 }
@@ -630,7 +631,7 @@ void cmds::ip(message *inMsg, table *outMsg)
 }
 
 #define sizeGame 5
-#define n "⭕"
+#define ss "⭕"
 const string nums[] = {"0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"};
 const string levels[2][3] = {
 	{"⚪",{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967224},{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967222}},
@@ -774,7 +775,7 @@ void cmds::game(message *inMsg, table *outMsg)
 		if(t->step)
 			gameUplevel(t, str::fromString(inMsg->words[1]), str::fromString(inMsg->words[2]));
 		t->step++;
-		(*outMsg)["message"]+=n;
+		(*outMsg)["message"]+=ss;
 		for(int i=0;i<sizeGame;i++)
 			(*outMsg)["message"]+=nums[i];
 		(*outMsg)["message"]+="\n";
@@ -944,7 +945,7 @@ void cmds::neon(message *inMsg, table *outMsg)
         fclose(f);
         gdImageDestroy(outIm);
         gdImageDestroy(im);
-		(*outMsg)["attachment"] = vk::upload("out.png", to_string((int)inMsg->msg[3]), "photo");
+		(*outMsg)["attachment"] = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 		lockOutP.unlock();
 		end = std::chrono::system_clock::now();
 		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000;
@@ -953,4 +954,78 @@ void cmds::neon(message *inMsg, table *outMsg)
 		(*outMsg)["message"]="";
 		(*outMsg)["attachment"]="";
 	}
+}
+
+#define TPAUSE 0.1 //pause in sec
+#define ofset 10 //in bites
+mutex voxLock;
+
+typedef struct  WAV_HEADER{
+    char                RIFF[4];        // RIFF Header      Magic header
+    unsigned long       ChunkSize;      // RIFF Chunk Size
+    char                WAVE[4];        // WAVE Header
+    char                fmt[4];         // FMT header
+    unsigned long       Subchunk1Size;  // Size of the fmt chunk
+    unsigned short      AudioFormat;    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
+    unsigned short      NumOfChan;      // Number of channels 1=Mono 2=Sterio
+    unsigned long       SamplesPerSec;  // Sampling Frequency in Hz
+    unsigned long       bytesPerSec;    // bytes per second
+    unsigned short      blockAlign;     // 2=16-bit mono, 4=16-bit stereo
+    unsigned short      bitsPerSample;  // Number of bits per sample
+    char                f[2];           //offset
+    char                Subchunk2ID[4]; // "data"  string
+    unsigned short      Subchunk2Size;  // Sampled data length
+}wav_hdr;
+void cmds::vox(message *inMsg, table *outMsg)
+{
+	if(inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"]+="...";
+		return;
+	}
+	voxLock.lock();
+	unsigned short size = 0;
+	string data = "";
+	wav_hdr wavHeader;
+	for(int i = 1; i < inMsg->words.size(); i++)
+	{
+		bool pause = true;
+		if(inMsg->words[i][0]=='-')
+		{
+			pause = false;
+			inMsg->words[i].erase(inMsg->words[i].begin());
+		}
+		string path = "vox/"+inMsg->words[i]+".wav";
+		FILE *wavFile = fopen(path.c_str(), "rb");
+		if(wavFile==NULL)continue;
+    	fread(&wavHeader,sizeof(wav_hdr),1,wavFile);
+    	char dataIn[wavHeader.Subchunk2Size];
+    	fread(&dataIn,wavHeader.Subchunk2Size,1,wavFile);
+    	fclose(wavFile);
+    	size+=wavHeader.Subchunk2Size;
+    	if(pause)
+    	{
+    		size+=TPAUSE*wavHeader.bytesPerSec;
+    		for(int s=0;s<TPAUSE*wavHeader.bytesPerSec;s++)
+    			data+=data[data.size()-1];
+    	}
+    	for(int s = ofset; s < wavHeader.Subchunk2Size-ofset; s++)
+    		data+=dataIn[s];
+    }
+    if(data=="")
+    {
+    	voxLock.unlock();
+		(*outMsg)["message"]+="...";
+		return;
+	}
+    size+=TPAUSE*wavHeader.bytesPerSec;
+    for(int s=0;s<TPAUSE*wavHeader.bytesPerSec;s++)
+    	data+=data[data.size()-1];
+    wavHeader.Subchunk2Size=size;
+    FILE *wavFile = fopen("audiomsg.wav", "wb");
+    fwrite(&wavHeader,sizeof(wav_hdr),1,wavFile);
+    fwrite(&data[0],size,1,wavFile);
+    fclose(wavFile);
+    (*outMsg)["attachment"] += ","+vk::upload("audiomsg.wav", (*outMsg)["peer_id"], "audio_message");
+	voxLock.unlock();
 }
