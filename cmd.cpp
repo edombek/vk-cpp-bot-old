@@ -75,8 +75,6 @@ void cmd::start(message *inMsg, table *outMsg, string command)
             temp.push_back(ar);
         inMsg->words = temp;
     }
-    else
-        command = str::replase(str::replase(str::low(command), "#", "[*]"), ".", "[*]");
 	if(cmd_d.find(command)->first != "")
 	{
 		if(module::money::get(to_string(inMsg->user_id))<cmd_d[command].cost)

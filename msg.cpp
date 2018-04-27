@@ -60,6 +60,9 @@ void msg::decode(json js, message *inMsg)
     if(!module::user::get(inMsg))
 		inMsg->msg="";
     if(inMsg->msg=="")return;
+    if(module::user::get(inMsg)<2)
+    	inMsg->msg=str::replase(str::replase(inMsg->msg, "&#", ""), ".", "");
+    inMsg->msg=str::replase(inMsg->msg, "<br>", " \n");
     inMsg->words=str::words(inMsg->msg, ' ');
 }
 

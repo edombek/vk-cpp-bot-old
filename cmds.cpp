@@ -48,7 +48,6 @@ void cmds::con(message *inMsg, table *outMsg)
 		return;
 	}
 	string cmd = str::summ(inMsg->words, 1);
-	cmd = str::replase(cmd, "<br>", "\n");
 	cmd = str::convertHtml(cmd);
 	cmdLock.lock();
 	string comand = "chmod +x cmd.sh";
@@ -355,7 +354,6 @@ void cmds::execute(message *inMsg, table *outMsg)
 		return;
 	}
 	string cmd = str::summ(inMsg->words, 1);
-	cmd = str::replase(cmd, "<br>", "\n");
 	cmd = str::convertHtml(cmd);
 	table params =
 	{
@@ -583,7 +581,6 @@ void cmds::py(message *inMsg, table *outMsg)
 		return;
 	}
 	string cmd = str::summ(inMsg->words, 1);
-	cmd = str::replase(cmd, "<br>", "\n");
 	cmd = str::convertHtml(cmd);
     Py_Initialize();
     PyObject *pModule = PyImport_AddModule("__main__");
@@ -957,7 +954,7 @@ void cmds::neon(message *inMsg, table *outMsg)
 }
 
 #define TPAUSE 0.1 //pause in sec
-#define ofset 10 //in bites
+#define ofset 8 //in bites
 mutex voxLock;
 
 typedef struct  WAV_HEADER{
