@@ -24,6 +24,7 @@ namespace cmds
 	void game(message *inMsg, table *outMsg);
 	void neon(message *inMsg, table *outMsg);
 	void vox(message *inMsg, table *outMsg);
+	void rgb(message *inMsg, table *outMsg);
 }
 
 #endif

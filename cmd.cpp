@@ -46,6 +46,7 @@ void cmd::init()
 	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
+	cmd::add("rgb", &cmds::rgb, true, "поварачевает изображение поканально", 1, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -75,6 +76,8 @@ void cmd::start(message *inMsg, table *outMsg, string command)
             temp.push_back(ar);
         inMsg->words = temp;
     }
+    else
+    	command = str::low(command);
 	if(cmd_d.find(command)->first != "")
 	{
 		if(module::money::get(to_string(inMsg->user_id))<cmd_d[command].cost)
