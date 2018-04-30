@@ -957,22 +957,27 @@ void cmds::neon(message *inMsg, table *outMsg)
 #define ofset 8 //in bites
 mutex voxLock;
 
-typedef struct  WAV_HEADER{
-    char                RIFF[4];        // RIFF Header      Magic header
-    unsigned long       ChunkSize;      // RIFF Chunk Size
-    char                WAVE[4];        // WAVE Header
-    char                fmt[4];         // FMT header
-    unsigned long       Subchunk1Size;  // Size of the fmt chunk
-    unsigned short      AudioFormat;    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
-    unsigned short      NumOfChan;      // Number of channels 1=Mono 2=Sterio
-    unsigned long       SamplesPerSec;  // Sampling Frequency in Hz
-    unsigned long       bytesPerSec;    // bytes per second
-    unsigned short      blockAlign;     // 2=16-bit mono, 4=16-bit stereo
-    unsigned short      bitsPerSample;  // Number of bits per sample
-    char                f[2];           //offset
-    char                Subchunk2ID[4]; // "data"  string
-    unsigned short      Subchunk2Size;  // Sampled data length
-}wav_hdr;
+struct wav_header_t
+{
+    char chunkID[4]; //"RIFF" = 0x46464952
+    unsigned long chunkSize; //28 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes] + sum(sizeof(chunk.id) + sizeof(chunk.size) + chunk.size)
+    char format[4]; //"WAVE" = 0x45564157
+    char subchunk1ID[4]; //"fmt " = 0x20746D66
+    unsigned long subchunk1Size; //16 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes]
+    unsigned short audioFormat;
+    unsigned short numChannels;
+    unsigned long sampleRate;
+    unsigned long byteRate;
+    unsigned short blockAlign;
+    unsigned short bitsPerSample;
+    //[WORD wExtraFormatBytes;]
+    //[Extra format bytes]
+};
+struct chunk_t
+{
+    char ID[4]; //"data" = 0x61746164
+    unsigned long size;  //Chunk data bytes
+};
 void cmds::vox(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -981,9 +986,10 @@ void cmds::vox(message *inMsg, table *outMsg)
 		return;
 	}
 	voxLock.lock();
-	unsigned short size = 0;
+	unsigned long size = 0;
 	string data = "";
-	wav_hdr wavHeader;
+	wav_header_t wavHeader;
+	chunk_t wavChunk;
 	for(int i = 1; i < inMsg->words.size(); i++)
 	{
 		bool pause = true;
@@ -995,18 +1001,21 @@ void cmds::vox(message *inMsg, table *outMsg)
 		string path = "vox/"+inMsg->words[i]+".wav";
 		FILE *wavFile = fopen(path.c_str(), "rb");
 		if(wavFile==NULL)continue;
-    	fread(&wavHeader,sizeof(wav_hdr),1,wavFile);
-    	char dataIn[wavHeader.Subchunk2Size];
-    	fread(&dataIn,wavHeader.Subchunk2Size,1,wavFile);
+    	fread(&wavHeader,sizeof(wav_header_t),1,wavFile);
+    	char offset[wavHeader.subchunk1Size-16];
+    	fread(&offset,wavHeader.subchunk1Size-16,1,wavFile);
+    	fread(&wavChunk,sizeof(chunk_t),1,wavFile);
+    	char dataIn[wavChunk.size];
+    	fread(&dataIn,wavChunk.size,1,wavFile);
     	fclose(wavFile);
-    	size+=wavHeader.Subchunk2Size;
+    	size+=wavChunk.size;
     	if(pause)
     	{
-    		size+=TPAUSE*wavHeader.bytesPerSec;
-    		for(int s=0;s<TPAUSE*wavHeader.bytesPerSec;s++)
+    		size+=TPAUSE*wavHeader.byteRate;
+    		for(int s=0;s<TPAUSE*wavHeader.byteRate;s++)
     			data+=data[data.size()-1];
     	}
-    	for(int s = ofset; s < wavHeader.Subchunk2Size-ofset; s++)
+    	for(int s = ofset; s < wavChunk.size-ofset; s++)
     		data+=dataIn[s];
     }
     if(data=="")
@@ -1015,12 +1024,14 @@ void cmds::vox(message *inMsg, table *outMsg)
 		(*outMsg)["message"]+="...";
 		return;
 	}
-    size+=TPAUSE*wavHeader.bytesPerSec;
-    for(int s=0;s<TPAUSE*wavHeader.bytesPerSec;s++)
+    size+=TPAUSE*wavHeader.byteRate;
+    for(int s=0;s<TPAUSE*wavHeader.byteRate;s++)
     	data+=data[data.size()-1];
-    wavHeader.Subchunk2Size=size;
+    wavChunk.size=size;
     FILE *wavFile = fopen("audiomsg.wav", "wb");
-    fwrite(&wavHeader,sizeof(wav_hdr),1,wavFile);
+    wavHeader.subchunk1Size=16;
+    fwrite(&wavHeader,sizeof(wav_header_t),1,wavFile);
+    fwrite(&wavChunk,sizeof(chunk_t),1,wavFile);
     fwrite(&data[0],size,1,wavFile);
     fclose(wavFile);
     (*outMsg)["attachment"] += ","+vk::upload("audiomsg.wav", (*outMsg)["peer_id"], "audio_message");
