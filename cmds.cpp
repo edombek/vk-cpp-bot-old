@@ -572,7 +572,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#include <python3.5/Python.h>
+#include <Python.h>
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
