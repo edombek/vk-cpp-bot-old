@@ -18,12 +18,12 @@ void module::TR(message *inMsg, table *outMsg, long long int *oldbalance)
 
 void module::postTR(message *inMsg, table *outMsg, long long int *oldbalance)
 {
-	if(*oldbalance != module::money::get(to_string(inMsg->user_id)))
+	if (*oldbalance != module::money::get(to_string(inMsg->user_id)))
 	{
-		(*outMsg)["message"]+="<br><br>$";
-		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id))-*oldbalance);
-		(*outMsg)["message"]+="<br>$: ";
-		(*outMsg)["message"]+=to_string(module::money::get(to_string(inMsg->user_id)));
+		(*outMsg)["message"] += "<br><br>$";
+		(*outMsg)["message"] += to_string(module::money::get(to_string(inMsg->user_id)) - *oldbalance);
+		(*outMsg)["message"] += "<br>$: ";
+		(*outMsg)["message"] += to_string(module::money::get(to_string(inMsg->user_id)));
 	}
 }
 
@@ -35,7 +35,7 @@ json moneys;
 mutex mon;
 void module::money::read()
 {
-	if(fs::exists(moneys_path))
+	if (fs::exists(moneys_path))
 	{
 		moneys = json::parse(fs::readData(moneys_path));
 	}
@@ -50,9 +50,9 @@ long long int module::money::get(string id)
 {
 	long long int t;
 	mon.lock();
-	if(moneys[id].is_null())
+	if (moneys[id].is_null())
 	{
-		moneys[id] = rand() % (START_MAX - START_MIN +1 ) + START_MIN;
+		moneys[id] = rand() % (START_MAX - START_MIN + 1) + START_MIN;
 		module::money::save();
 	}
 	t = moneys[id];
@@ -75,10 +75,11 @@ json users;
 mutex uLock;
 void module::user::read()
 {
-	if(fs::exists(users_path))
+	if (fs::exists(users_path))
 	{
 		users = json::parse(fs::readData(users_path));
-	}else
+	}
+	else
 	{
 		users["default"] = 1;
 		module::user::save();
@@ -90,22 +91,22 @@ void module::user::save()
 }
 int module::user::get(message *inMsg)
 {
-	int user=0;
-	int chat=0;
+	int user = 0;
+	int chat = 0;
 	uLock.lock();
-	if(users.find(to_string(inMsg->user_id))==users.end())
+	if (users.find(to_string(inMsg->user_id)) == users.end())
 		user = users["default"];
 	else
 		user = users[to_string(inMsg->user_id)];
-	
-	if(users.find(to_string(-inMsg->chat_id))==users.end())
+
+	if (users.find(to_string(-inMsg->chat_id)) == users.end())
 		chat = users["default"];
 	else
 		chat = users[to_string(-inMsg->chat_id)];
 	uLock.unlock();
-	if(chat+user<=1)
+	if (chat + user <= 1)
 		return 0;
-	if(chat>user)
+	if (chat > user)
 		return chat;
 	else
 		return user;
@@ -114,7 +115,7 @@ void module::user::set(string id, int acess)
 {
 	uLock.lock();
 	users[id] = acess;
-	if(acess==users["default"])
+	if (acess == users["default"])
 		users.erase(id);
 	module::user::save();
 	uLock.unlock();

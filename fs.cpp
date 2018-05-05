@@ -14,7 +14,7 @@ bool fs::exists(string path)
 
 /* --------- FILE CLASS ---------*/
 
-fs::file *fs::open(std::string path,  int flags)
+fs::file *fs::open(std::string path, int flags)
 {
 	file *_file = new file();
 	_file->getStream()->open(path, (std::ios_base::openmode)flags);
@@ -35,8 +35,8 @@ string fs::file::read()
 		data += line;
 		data += "\n";
 	}
-	if(data.size())
-		data.resize(data.size()-1);
+	if (data.size())
+		data.resize(data.size() - 1);
 	return data;
 }
 

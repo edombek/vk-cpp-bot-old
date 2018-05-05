@@ -15,9 +15,9 @@ cmd::cmd_table cmd_d;
 
 void help(message *inMsg, table *outMsg)
 {
-	(*outMsg)["message"]+="ваш уровень доступа: "+to_string(module::user::get(inMsg))+"\n";
-	(*outMsg)["message"]+="ВНИМАНИЕ!!! КОМАНДЫ ТРЕБУЮЩИЕ ОТВЕТА БУДУТ ЖДАТЬ ОТВЕТ И ВОСПРИНИМАТЬ ЗА НЕГО ЛЮБОЕ СООБЩЕНИЕ, ВЫХОДИТЕ ИЗ ЭТОГО РЕЖИМА КОМАНДОЙ \"exit\"\n\n";
-	(*outMsg)["message"]+="команды\n"+cmd::helpList(inMsg)+"\n";
+	(*outMsg)["message"] += "ваш уровень доступа: " + to_string(module::user::get(inMsg)) + "\n";
+	(*outMsg)["message"] += "ВНИМАНИЕ!!! КОМАНДЫ ТРЕБУЮЩИЕ ОТВЕТА БУДУТ ЖДАТЬ ОТВЕТ И ВОСПРИНИМАТЬ ЗА НЕГО ЛЮБОЕ СООБЩЕНИЕ, ВЫХОДИТЕ ИЗ ЭТОГО РЕЖИМА КОМАНДОЙ \"exit\"\n\n";
+	(*outMsg)["message"] += "команды\n" + cmd::helpList(inMsg) + "\n";
 }
 
 void cmd::init()
@@ -51,51 +51,51 @@ void cmd::init()
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
 {
-	cmd_d[str::low(command)].func=func;
-	cmd_d[str::low(command)].disp=disp;
-	cmd_d[str::low(command)].info=info;
-	cmd_d[str::low(command)].cost=cost;
-	cmd_d[str::low(command)].acess=acess;
+	cmd_d[str::low(command)].func = func;
+	cmd_d[str::low(command)].disp = disp;
+	cmd_d[str::low(command)].info = info;
+	cmd_d[str::low(command)].cost = cost;
+	cmd_d[str::low(command)].acess = acess;
 }
 
 void cmd::start(message *inMsg, table *outMsg, string command)
 {
-    if(command=="exit")
-    {
-        cmd::easySet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id), "");
-        (*outMsg)["message"] += "вышел";
-        return;
-    }
-    string t = cmd::easyGet(to_string(inMsg->chat_id)+"_"+to_string(inMsg->user_id));
-    if(t!="" && cmd_d.find(command)->first == "")
-    {
-        command = t;
-        args temp;
-        temp.push_back(t);
-        for(auto ar:inMsg->words)
-            temp.push_back(ar);
-        inMsg->words = temp;
-    }
-    else
-    	command = str::low(command);
-	if(cmd_d.find(command)->first != "")
+	if (str::low(command) == "exit")
 	{
-		if(module::money::get(to_string(inMsg->user_id))<cmd_d[command].cost)
+		cmd::easySet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id), "");
+		(*outMsg)["message"] += "вышел";
+		return;
+	}
+	string t = cmd::easyGet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id));
+	if (t != "" && cmd_d.find(command)->first == "")
+	{
+		command = t;
+		args temp;
+		temp.push_back(t);
+		for (auto ar : inMsg->words)
+			temp.push_back(ar);
+		inMsg->words = temp;
+	}
+	else
+		command = str::low(command);
+	if (cmd_d.find(command)->first != "")
+	{
+		if (module::money::get(to_string(inMsg->user_id)) < cmd_d[command].cost)
 		{
 			(*outMsg)["message"] += "чот тебе $ нехватаит";
 			return;
 		}
-		if(module::user::get(inMsg)<cmd_d[command].acess)
+		if (module::user::get(inMsg) < cmd_d[command].acess)
 		{
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
 		}
 		cmd_d[command].func(inMsg, outMsg);
-		module::money::add(to_string(inMsg->user_id), 0-cmd_d[command].cost);
+		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}
 	else
 	{
-		(*outMsg)["message"]=(*outMsg)["message"]+"незнаю такого"+"("+command+"), введите команду help и уточните";
+		(*outMsg)["message"] = (*outMsg)["message"] + "незнаю такого" + "(" + command + "), введите команду help и уточните";
 		//(*outMsg)["peer_id"]="";
 	}
 	return;
@@ -104,19 +104,19 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 string cmd::helpList(message *inMsg)
 {
 	string out = "";
-	for(auto cmds: cmd_d)
+	for (auto cmds : cmd_d)
 	{
-		if(!cmds.second.disp&&module::user::get(inMsg)!=5)continue;
-		if(module::user::get(inMsg)<cmds.second.acess) continue;
-		out+="\n - \"";
-		out+=str::low(cmds.first);
-		out+="\" - ";
-		out+=cmds.second.info;
-		if(cmds.second.cost)
+		if (!cmds.second.disp&&module::user::get(inMsg) != 5)continue;
+		if (module::user::get(inMsg) < cmds.second.acess) continue;
+		out += "\n - \"";
+		out += str::low(cmds.first);
+		out += "\" - ";
+		out += cmds.second.info;
+		if (cmds.second.cost)
 		{
-			out+=" - ";
-			out+=to_string(cmds.second.cost);
-			out+="$";
+			out += " - ";
+			out += to_string(cmds.second.cost);
+			out += "$";
 		}
 	}
 	return out;
@@ -127,22 +127,22 @@ mutex easyLock;
 
 void cmd::easySet(string id, string cmd)
 {
-    easyLock.lock();
-    if(cmd=="")
-        easyCmd.erase(id);
-    else
-        easyCmd[id]=cmd;
-    easyLock.unlock();
+	easyLock.lock();
+	if (cmd == "")
+		easyCmd.erase(id);
+	else
+		easyCmd[id] = cmd;
+	easyLock.unlock();
 }
 
 string cmd::easyGet(string id)
 {
-    string t;
-    easyLock.lock();
-    if(easyCmd.find(id)->first != "")
-        t=easyCmd[id];
-    else
-        t="";
-    easyLock.unlock();
-    return t;
+	string t;
+	easyLock.lock();
+	if (easyCmd.find(id)->first != "")
+		t = easyCmd[id];
+	else
+		t = "";
+	easyLock.unlock();
+	return t;
 }

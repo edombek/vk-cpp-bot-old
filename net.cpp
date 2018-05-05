@@ -35,9 +35,9 @@ string net::send(string url, table param, bool post)
 	for (auto iter = params->begin(); iter != params->end(); iter++) {
 		paramline += iter->first + "=" + urlEncode(iter->second) + "&";
 	}
-	if(post)
+	if (post)
 		return net::send(url, paramline);
-	return net::send(url+"?"+paramline);
+	return net::send(url + "?" + paramline);
 }
 
 size_t writer(char *data, size_t size, size_t nmemb, string *buffer)
@@ -53,11 +53,11 @@ size_t writer(char *data, size_t size, size_t nmemb, string *buffer)
 
 string net::send(string url, string params)
 {
-	string buffer ="";
+	string buffer = "";
 	CURL *curl;
 	CURLcode result;
 	char errorBuffer[CURL_ERROR_SIZE];
-    curl = curl_easy_init();
+	curl = curl_easy_init();
 	if (curl)
 	{
 		curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
@@ -80,7 +80,7 @@ string net::send(string url, string params)
 	cout << endl << other::getRealTime() << ": " << url << "-" << params << endl << "	" << buffer << endl;
 #endif
 	return buffer;
-	
+
 }
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
@@ -91,11 +91,11 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 
 string net::upload(string url, string filename, string params)
 {
-	string buffer ="";
+	string buffer = "";
 	CURL *curl;
 	CURLcode result;
 	char errorBuffer[CURL_ERROR_SIZE];
-    curl = curl_easy_init();
+	curl = curl_easy_init();
 	if (curl)
 	{
 		curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
@@ -107,15 +107,15 @@ string net::upload(string url, string filename, string params)
 			curl_easy_setopt(curl, CURLOPT_POST, 1);
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
 		}
-		struct curl_httppost *formpost=NULL;
-		struct curl_httppost *lastptr=NULL;
+		struct curl_httppost *formpost = NULL;
+		struct curl_httppost *lastptr = NULL;
 		curl_formadd(&formpost,
-									&lastptr,
-									CURLFORM_COPYNAME, "file",
-									CURLFORM_FILENAME, filename.c_str(),
-									CURLFORM_FILE, filename.c_str(),
-									CURLFORM_CONTENTTYPE, "multipart/form-data",
-									CURLFORM_END);
+			&lastptr,
+			CURLFORM_COPYNAME, "file",
+			CURLFORM_FILENAME, filename.c_str(),
+			CURLFORM_FILE, filename.c_str(),
+			CURLFORM_CONTENTTYPE, "multipart/form-data",
+			CURLFORM_END);
 		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 		result = curl_easy_perform(curl);
 		if (result != CURLE_OK)
@@ -134,7 +134,7 @@ void net::download(string url, string filename, string params)
 	CURLcode result;
 	FILE *file = NULL;
 	char errorBuffer[CURL_ERROR_SIZE];
-    curl = curl_easy_init();
+	curl = curl_easy_init();
 	if (curl)
 	{
 		curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer);
@@ -147,9 +147,9 @@ void net::download(string url, string filename, string params)
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
 		}
 		file = fopen(filename.c_str(), "wb");
-		if(file){
+		if (file) {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-			result=curl_easy_perform(curl);
+			result = curl_easy_perform(curl);
 			if (result != CURLE_OK)
 				cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
 			fclose(file);
