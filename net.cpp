@@ -1,4 +1,9 @@
+#ifdef __linux__
 #include <curl/curl.h>
+#elif _WIN32
+#pragma comment(lib,"libcurl.lib")
+#include "win32deps/include/curl/curl.h"
+#endif
 #include "common.h"
 #include<iostream>
 #include <stdio.h>

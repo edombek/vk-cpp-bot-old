@@ -1,7 +1,12 @@
 //команды тут
 
 #include "common.h"
+#ifdef __linux__
 #include <gd.h>
+#elif _WIN32
+#pragma comment(lib,"libgd.lib")
+#include "win32deps/include/gd/gd.h"
+#endif
 #include <ctime>
 #include <random>
 #include <mutex>
@@ -572,7 +577,11 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"]+= "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
+#ifdef __linux__
 #include <Python.h>
+#elif _WIN32
+#include "win32deps/include/python/Python.h"
+#endif
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if(inMsg->words.size() < 2)
@@ -1002,10 +1011,11 @@ void cmds::vox(message *inMsg, table *outMsg)
 		FILE *wavFile = fopen(path.c_str(), "rb");
 		if(wavFile==NULL)continue;
     	fread(&wavHeader,sizeof(wav_header_t),1,wavFile);
-    	char offset[wavHeader.subchunk1Size-16];
+    	char * offset = new char[wavHeader.subchunk1Size-16];
     	fread(&offset,wavHeader.subchunk1Size-16,1,wavFile);
+		delete offset;
     	fread(&wavChunk,sizeof(chunk_t),1,wavFile);
-    	char dataIn[wavChunk.size];
+    	char *dataIn = new char[wavChunk.size];
     	fread(&dataIn,wavChunk.size,1,wavFile);
     	fclose(wavFile);
     	size+=wavChunk.size;
@@ -1017,6 +1027,7 @@ void cmds::vox(message *inMsg, table *outMsg)
     	}
     	for(int s = ofset; s < wavChunk.size-ofset; s++)
     		data+=dataIn[s];
+		delete dataIn;
     }
     if(data=="")
     {

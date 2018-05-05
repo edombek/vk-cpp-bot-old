@@ -4,3 +4,6 @@
 [submodule "thr"]
 	path = thr
 	url = https://github.com/mtrebi/thread-pool
+[submodule "win32-deps"]
+	path = win32-deps
+	url = https://github.com/EVGESHAd/vk-cpp-bot-win32deps

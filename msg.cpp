@@ -1,7 +1,7 @@
 #include "common.h"
 #include <iostream>
 #include <mutex>
-#include "ThreadPool.h"
+#include "thr/include/ThreadPool.h"
 
 ThreadPool pool(MAXTHREADS);
 mutex msgLock;
