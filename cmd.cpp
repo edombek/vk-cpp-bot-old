@@ -46,7 +46,7 @@ void cmd::init()
 	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
-	cmd::add("rgb", &cmds::rgb, true, "поварачевает изображение поканально", 1, 1);
+	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -97,6 +97,13 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	{
 		(*outMsg)["message"] = (*outMsg)["message"] + "незнаю такого" + "(" + command + "), введите команду help и уточните";
 		//(*outMsg)["peer_id"]="";
+	}
+	
+	if (module::user::get(inMsg) < 2)
+	{
+		(*outMsg)["message"] = str::replase((*outMsg)["message"], ". ", "@#$%&");
+		(*outMsg)["message"] = str::replase(str::replase((*outMsg)["message"], "&#", "-"), ".", "-");
+		(*outMsg)["message"] = str::replase((*outMsg)["message"], "@#$%&", ". ");
 	}
 	return;
 }
