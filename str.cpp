@@ -4,7 +4,11 @@
 #include <locale> 
 #include <sstream>
 
-const locale utf8("");
+#ifdef __linux__
+std::locale const utf8("");
+#elif _WIN32
+std::locale const utf8("rus");
+#endif
 
 long long int str::fromString(std::string s)
 {
