@@ -78,7 +78,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	}
 	else
 		command = str::low(command);
-	if (cmd_d.find(command)->first != "")
+	if (cmd_d.find(command) != cmd_d.cend())
 	{
 		if (module::money::get(to_string(inMsg->user_id)) < cmd_d[command].cost)
 		{
@@ -98,7 +98,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		(*outMsg)["message"] = (*outMsg)["message"] + "незнаю такого" + "(" + command + "), введите команду help и уточните";
 		//(*outMsg)["peer_id"]="";
 	}
-	
+
 	if (module::user::get(inMsg) < 2)
 	{
 		(*outMsg)["message"] = str::replase((*outMsg)["message"], ". ", "@#$%&");
