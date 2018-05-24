@@ -8,7 +8,7 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libbost-all-dev python-pip
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-all-dev python-pip
 pip install psutil
 ````
 For install on Termux:
