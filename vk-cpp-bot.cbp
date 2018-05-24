@@ -11,7 +11,7 @@
 			<CompileFile command="$make -f $makefile" />
 			<Clean command="$make -f $makefile clean" />
 			<DistClean command="$make -f $makefile distclean$target" />
-			<AskRebuildNeeded command="$make -f $makefile" />
+			<AskRebuildNeeded command="0" />
 			<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
 		</MakeCommands>
 		<Build>
@@ -31,7 +31,7 @@
 					<CompileFile command="$make -f $makefile" />
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -f $makefile" />
+					<AskRebuildNeeded command="0" />
 					<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>

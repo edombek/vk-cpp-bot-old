@@ -10,3 +10,6 @@
 [submodule "win32deps"]
 	path = win32deps
 	url = http://github.com/evgeshad/vk-cpp-bot-win32deps
+[submodule "py"]
+	path = py
+	url = https://github.com/EVGESHAd/vk-cpp-bot-py

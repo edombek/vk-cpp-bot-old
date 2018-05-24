@@ -502,29 +502,6 @@ void cmds::math(message *inMsg, table *outMsg)
 	mathLock.unlock();
 }
 
-#include <chrono>
-void cmds::test(message *inMsg, table *outMsg)
-{
-	std::chrono::time_point<std::chrono::system_clock> begin, end;
-	begin = std::chrono::system_clock::now();
-	net::send("http://api.vk.com", "");
-	end = std::chrono::system_clock::now();
-	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-	(*outMsg)["message"] += "Обработка VK API за: " + to_string(t) + "мс\n";
-	(*outMsg)["message"] += "id чата (пользователь/чат): " + to_string(inMsg->user_id) + "/" + to_string(inMsg->chat_id) + "\n";
-
-	//получаем использование памяти
-	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal")) / 1024));
-	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal")) - str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable"))) / 1024));
-	string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS")) / 1024));
-
-	(*outMsg)["message"] += "CPU:" + other::getParamOfPath("/proc/cpuinfo", "model name") + "\n";
-	(*outMsg)["message"] += "Потоков выделенно: " + other::getParamOfPath("/proc/self/status", "Threads") + "\n";
-	(*outMsg)["message"] += "Я сожрал оперативы: " + myMem + " Мб\n";
-	(*outMsg)["message"] += "Сообщений: " + to_string(msg::CountComplete()) + "/" + to_string(msg::Count()) + "\n";
-	(*outMsg)["message"] += "Запущен: " + other::getTime() + "\n";
-}
-
 void cmds::who(message *inMsg, table *outMsg)
 {
 	if (inMsg->words.size() < 2)
@@ -598,7 +575,7 @@ void cmds::py(message *inMsg, table *outMsg)
 	PyObject *catcher = PyObject_GetAttrString(pModule, "catchOutErr");
 	PyErr_Print();
 	PyObject *output = PyObject_GetAttrString(catcher, "value");
-	cmd = PyUnicode_AsUTF8(output);
+	cmd = PyString_AsString(output);
 	Py_Finalize();
 
 	string temp = "";
@@ -1112,4 +1089,10 @@ void cmds::rgb(message *inMsg, table *outMsg)
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		lockOutP.unlock();
 	}
+}
+
+void cmds::pyinit(message *inMsg, table *outMsg)
+{
+    cmd::init();
+    (*outMsg)["message"] = "done";
 }

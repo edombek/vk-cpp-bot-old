@@ -15,16 +15,16 @@ namespace cmds
 	void moneysend(message *inMsg, table *outMsg);
 	void pixel(message *inMsg, table *outMsg);
 	void math(message *inMsg, table *outMsg);
-	void test(message *inMsg, table *outMsg);
+	void info(message *inMsg, table *outMsg);
 	void who(message *inMsg, table *outMsg);
 	void when(message *inMsg, table *outMsg);
-	void info(message *inMsg, table *outMsg);
 	void py(message *inMsg, table *outMsg);
 	void ip(message *inMsg, table *outMsg);
 	void game(message *inMsg, table *outMsg);
 	void neon(message *inMsg, table *outMsg);
 	void vox(message *inMsg, table *outMsg);
 	void rgb(message *inMsg, table *outMsg);
+	void pyinit(message *inMsg, table *outMsg);
 }
 
 #endif

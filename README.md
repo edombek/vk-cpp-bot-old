@@ -8,7 +8,8 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev python3-dev
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libbost-all-dev python-pip
+pip install psutil
 ````
 For install on Termux:
 ```
@@ -27,7 +28,7 @@ For install on Gentoo:
 ```
 git clone https://github.com/EVGESHAd/vk-cpp-bot/
 cd ./vk-cpp-bot
-git submodule update --init vox thr
+git submodule update --init vox thr py
 make
 cp ./vkbot ../
 ```

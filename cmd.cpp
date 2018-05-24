@@ -1,6 +1,9 @@
 #include "common.h"
 #include <iostream>
 #include <mutex>
+#include <boost/python.hpp>
+#include <Python.h>
+namespace py = boost::python;
 cmd::cmd_table cmd_d;
 
 /*
@@ -22,6 +25,7 @@ void help(message *inMsg, table *outMsg)
 
 void cmd::init()
 {
+    cmd_d = {};
 	// comand func print discripion cost cess
 	cmd::add("help", &help, false, "help", 0, 1);
 	cmd::add("погода", &cmds::weather, true, "погодка", 2, 1);
@@ -37,7 +41,6 @@ void cmd::init()
 	cmd::add("exe", &cmds::execute, true, "api", 0, 5);
 	cmd::add("pix", &cmds::pixel, true, "пиксельарт из атачмента)", 2, 1);
 	cmd::add("матеша", &cmds::math, true, "заработок", 0, 1);
-	cmd::add("i", &cmds::test, true, "info", 0, 1);
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, 1);
 	cmd::add("когда", &cmds::when, true, "когда чтолибо произойдёт", 0, 1);
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
@@ -47,15 +50,66 @@ void cmd::init()
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
 	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
+	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
+
+	//py init
+	Py_Initialize();
+    try
+    {
+        py::object main_module = py::import("__main__");
+        py::object main_namespace = main_module.attr("__dict__");
+        main_module.attr("init") = cmd::pyAdd;
+        py::exec_file("py/init.py", main_namespace);
+    }
+    catch(py::error_already_set const &)
+    {
+        PyErr_Print();
+    }
+    Py_Finalize();
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
 {
-	cmd_d[str::low(command)].func = func;
+	cmd_d[str::low(command)].ex.func = func;
+	cmd_d[str::low(command)].ex.pyPath = "";
 	cmd_d[str::low(command)].disp = disp;
 	cmd_d[str::low(command)].info = info;
 	cmd_d[str::low(command)].cost = cost;
 	cmd_d[str::low(command)].acess = acess;
+}
+
+void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost, int acess)
+{
+	cmd_d[str::low(command)].ex.func = NULL;
+	cmd_d[str::low(command)].ex.pyPath = pyPath;
+	cmd_d[str::low(command)].disp = disp;
+	cmd_d[str::low(command)].info = info;
+	cmd_d[str::low(command)].cost = cost;
+	cmd_d[str::low(command)].acess = acess;
+}
+
+// Converts a C++ map to a python dict
+template <class K, class V>
+py::dict toPythonDict(std::map<K, V> map) {
+    typename std::map<K, V>::iterator iter;
+	py::dict dictionary;
+	for (iter = map.begin(); iter != map.end(); ++iter) {
+		dictionary[iter->first] = iter->second;
+	}
+    return dictionary;
+}
+
+table toTable(py::dict dict)
+{
+    table dic;
+    for(unsigned int i =0; i < py::len(dict.keys()); i++)
+        dic[py::extract<string>(dict.keys()[i])] = py::extract<string>(dict[dict.keys()[i]]);
+    return dic;
+}
+
+string getTime()
+{
+    return other::getTime();
 }
 
 void cmd::start(message *inMsg, table *outMsg, string command)
@@ -90,7 +144,43 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
 		}
-		cmd_d[command].func(inMsg, outMsg);
+		if(cmd_d[command].ex.func!=NULL)
+            cmd_d[command].ex.func(inMsg, outMsg);
+        else
+        {
+            //py execute script
+            Py_Initialize();
+            try
+            {
+                py::object main_module = py::import("__main__");
+                py::object main_namespace = main_module.attr("__dict__");
+
+                main_module.attr("outMsg") = toPythonDict(*outMsg);
+                main_module.attr("chat_id") = inMsg->chat_id;
+                main_module.attr("user_id") = inMsg->user_id;
+                main_module.attr("msg_id") = inMsg->msg_id;
+                main_module.attr("msg_flags") = inMsg->flags;
+                main_module.attr("msg") = str::summ(inMsg->words, 1);
+                main_module.attr("lp_msg") = inMsg->js.dump(4);
+                main_module.attr("money_add") = module::money::add;
+                main_module.attr("money_get") = module::money::get;
+                main_module.attr("user_set") = module::user::set;
+                main_module.attr("user_get") = module::user::get;
+                main_module.attr("msg_count") = msg::Count;
+                main_module.attr("msg_countComplete") = msg::CountComplete;
+                main_module.attr("getStartTime") = getTime;
+
+
+                string path = "py/" + cmd_d[command].ex.pyPath;
+                py::exec_file(py::str(path), main_namespace);
+                *outMsg = toTable(py::extract<py::dict>(main_module.attr("outMsg")));
+            }
+            catch(py::error_already_set const &)
+            {
+                PyErr_Print();
+            }
+            Py_Finalize();
+        }
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}
 	else
