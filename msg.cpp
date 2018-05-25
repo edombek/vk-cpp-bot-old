@@ -3,6 +3,9 @@
 #include <mutex>
 #include "thr/include/ThreadPool.h"
 
+bool forwardmessages;
+json botname;
+
 ThreadPool pool(MAXTHREADS);
 mutex msgLock;
 unsigned long long int msgCount = 0;
@@ -74,10 +77,9 @@ void msg::func(message *inMsg, table *outMsg)
 	if (!inMsg->words.size())
 		inMsg->words.push_back("help");
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
-#ifdef forwardmessages
-	if (inMsg->chat_id)
-		(*outMsg)["forward_messages"] = to_string(inMsg->msg_id);
-#endif
+    if(forwardmessages)
+        if (inMsg->chat_id)
+            (*outMsg)["forward_messages"] = to_string(inMsg->msg_id);
 }
 
 void msg::send(table outMsg)

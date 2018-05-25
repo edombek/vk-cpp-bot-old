@@ -34,10 +34,5 @@ typedef struct{
 #include "cmd.h"
 #include "cmds.h"
 
-#define botname {"кот", "!", "пуся", "бот", "хуй"}
-
-#define friendsadd
-#define forwardmessages
-
 #define MAXTHREADS 20
 #endif

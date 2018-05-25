@@ -3,6 +3,10 @@
 #include <ctime>
 #include <mutex>
 
+extern json botname;
+extern bool friendsadd;
+extern bool forwardmessages;
+
 #define config "config.json"
 
 #define vk_version  "5.69"
@@ -24,8 +28,20 @@ void vk::init()
 	{
 		cout << "invalid vk_token" << endl;
 		data_temp["token"] = "put vk tocken here (vkhost.github.io)";
-		fs::writeData(config, data_temp.dump(4));
 	}
+	if(data_temp["names"].is_null())
+        data_temp["names"] =  {"кот", "!", "пуся", "бот"};
+    botname = data_temp["names"];
+
+    if(data_temp["friendsadd"].is_null())
+        data_temp["friendsadd"] =  true;
+    friendsadd = data_temp["friendsadd"];
+
+    if(data_temp["forwardmessages"].is_null())
+        data_temp["forwardmessages"] =  true;
+    forwardmessages = data_temp["forwardmessages"];
+
+    fs::writeData(config, data_temp.dump(4));
 }
 
 mutex l;

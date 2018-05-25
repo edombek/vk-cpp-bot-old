@@ -34,5 +34,4 @@ cp ./vkbot ../
 ```
 
 ### Configuration
-in common.h - botnames and in cmd.cpp commands
-after first launch put vk token to config.json
+after first launch configure bot in config.json

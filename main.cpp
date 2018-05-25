@@ -1,19 +1,18 @@
 #include "common.h"
 #include <iostream>
 
+bool friendsadd;
+
 int main()
 {
 	vk::init();
 	other::startTime();
 	module::start();
 	cmd::init();
-#ifdef friendsadd
-	thread friends(vk::friends);
-#endif
+        thread friends(vk::friends);
 	msg::init();
 	lp::loop();
-#ifdef friendsadd
-	friends.join();
-#endif
+    if(friendsadd)
+        friends.join();
 	return 0;
 }
