@@ -59,7 +59,7 @@ void cmd::init()
         py::object main_module = py::import("__main__");
         py::object main_namespace = main_module.attr("__dict__");
         main_module.attr("init") = cmd::pyAdd;
-        py::exec_file("py/init.py", main_namespace);
+        py::exec_file(py::str(fs::readData("py/init.py")), main_namespace);
     }
     catch(py::error_already_set const &)
     {
@@ -171,8 +171,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
                 main_module.attr("getStartTime") = getTime;
 
 
-                string path = "py/" + cmd_d[command].ex.pyPath;
-                py::exec_file(py::str(path), main_namespace);
+                py::exec_file(py::str(fs::readData("py/" + cmd_d[command].ex.pyPath)), main_namespace);
                 *outMsg = toTable(py::extract<py::dict>(main_module.attr("outMsg")));
             }
             catch(py::error_already_set const &)
