@@ -121,7 +121,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		return;
 	}
 	string t = cmd::easyGet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id));
-	if (t != "" && cmd_d.find(command)->first == "")
+	if (t != "" && cmd_d.find(command) == cmd_d.cend())
 	{
 		command = t;
 		args temp;
