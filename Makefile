@@ -12,6 +12,7 @@ SOURCES=	\
 	msg.cpp \
 	modules.cpp \
 	cmd.cpp \
+	py.cpp \
 	cmds.cpp \
 	main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)

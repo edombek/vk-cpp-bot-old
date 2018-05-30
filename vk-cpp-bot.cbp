@@ -69,6 +69,12 @@
 		<Unit filename="net.h" />
 		<Unit filename="other.cpp" />
 		<Unit filename="other.h" />
+		<Unit filename="py.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="py.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="str.cpp" />
 		<Unit filename="str.h" />
 		<Unit filename="vk.cpp" />
