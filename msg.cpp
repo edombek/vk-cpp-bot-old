@@ -1,5 +1,4 @@
 #include "common.h"
-#include <iostream>
 #include <mutex>
 #include "thr/include/ThreadPool.h"
 
@@ -86,7 +85,6 @@ void msg::send(table outMsg)
 {
 	if (outMsg["peer_id"] == "")return;
 	vk::send("messages.send", outMsg);
-	cout << other::getRealTime() + ": send(" + outMsg["peer_id"] + "): " + outMsg["message"] << endl;
 }
 
 bool msg::toMe(message *inMsg)
