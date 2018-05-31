@@ -324,7 +324,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 		if (!(i > 0 && out[i]["name"] == out[i - 1]["name"] && out[i]["photo"] == out[i - 1]["photo"] && out[i]["lvl"] == out[i - 1]["lvl"]))
 		{
 			args w = str::words(out[i]["photo"].get<string>(), '.');
-			string n = "avatar." + w[w.size() - 1];
+			string n = "avatar." +str::words( w[w.size() - 1], '?')[0];
 			/*gdImageFilledRectangle(outIm, out[i]["lvl"].get<int>()*100+150, y, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100+150, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));*/

@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -fsanitize=address
 CFLAGS=-std=c++11 -g -c -Ofast -ftree-vectorize `pkg-config --cflags python2`
 LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread `pkg-config --libs python2` -lboost_python -Wl,-rpath,.
 INCLUDES=
