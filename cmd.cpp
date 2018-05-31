@@ -63,9 +63,8 @@ void cmd::init()
 	{
 		PyErr_Print();
 	}
-	PyEval_InitThreads();
-	PyGILState_STATE mGilState = PyGILState_Ensure();
-	PyThreadState* mThreadState = PyEval_SaveThread();
+    PyEval_InitThreads();
+    PyEval_SaveThread();
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -126,12 +125,8 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		else
 		{
 			//py execute script
-			PyGILState_STATE  mMainGilState = PyGILState_Ensure();
-			PyThreadState* mOldThreadState = PyThreadState_Get();
-			PyThreadState* mNewThreadState = Py_NewInterpreter();
-			PyThreadState_Swap(mNewThreadState);
-			PyThreadState* mSubThreadState = PyEval_SaveThread();
-			PyGILState_STATE mSubGilState = PyGILState_Ensure();
+			PyEval_AcquireLock();
+            PyThreadState *myThreadState = Py_NewInterpreter();
 			try
 			{
 				py::object main_module = py::import("__main__");
@@ -165,11 +160,8 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			{
 				PyErr_Print();
 			}
-			PyGILState_Release( mSubGilState );
-			PyEval_RestoreThread( mSubThreadState );
-			Py_EndInterpreter( mNewThreadState );
-			PyThreadState_Swap( mOldThreadState );
-			PyGILState_Release( mMainGilState );
+			Py_EndInterpreter(myThreadState);
+            PyEval_ReleaseLock();
 		}
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}

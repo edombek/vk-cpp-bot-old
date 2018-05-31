@@ -568,12 +568,8 @@ void cmds::py(message *inMsg, table *outMsg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
-	PyGILState_STATE  mMainGilState = PyGILState_Ensure();
-    PyThreadState* mOldThreadState = PyThreadState_Get();
-	PyThreadState* mNewThreadState = Py_NewInterpreter();
-	PyThreadState_Swap(mNewThreadState);
-	PyThreadState* mSubThreadState = PyEval_SaveThread();
-	PyGILState_STATE mSubGilState = PyGILState_Ensure();
+	PyEval_AcquireLock();
+    PyThreadState *myThreadState = Py_NewInterpreter();
 	PyObject *pModule = PyImport_AddModule("__main__");
 	PyRun_SimpleString("import sys\nclass CatchOutErr:\n    def __init__(self):\n        self.value = ''\n    def write(self, txt):\n        self.value += txt\ncatchOutErr = CatchOutErr()\nsys.stdout = catchOutErr\nsys.stderr = catchOutErr\n");
 	PyRun_SimpleString(cmd.c_str());
@@ -581,11 +577,8 @@ void cmds::py(message *inMsg, table *outMsg)
 	PyErr_Print();
 	PyObject *output = PyObject_GetAttrString(catcher, "value");
 	cmd = PyString_AsString(output);
-	PyGILState_Release( mSubGilState );
-    PyEval_RestoreThread( mSubThreadState );
-    Py_EndInterpreter( mNewThreadState );
-    PyThreadState_Swap( mOldThreadState );
-    PyGILState_Release( mMainGilState );
+	Py_EndInterpreter(myThreadState);
+    PyEval_ReleaseLock();
 
 	string temp = "";
 	args out;
