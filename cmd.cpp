@@ -159,7 +159,9 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			}
 			catch(py::error_already_set const &)
 			{
-				PyErr_Print();
+				PyObject *ptype, *pvalue, *ptraceback;
+				PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+				(*outMsg)["message"]+=PyString_AsString(pvalue);
 			}
 			Py_EndInterpreter(myThreadState);
 			PyEval_ReleaseLock();
