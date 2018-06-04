@@ -11,7 +11,7 @@
 #include <random>
 #include <mutex>
 
-#define max_size 4000
+#define max_msg_size 4000
 
 mutex lockInP;
 mutex lockOutP;
@@ -69,7 +69,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	for (unsigned i = 0; i < cmd.size(); i++)
 	{
 		temp.push_back(cmd[i]);
-		if (temp.size() > max_size && (cmd.size() > i + 1 && cmd[i + 1] != '\n'))
+		if (temp.size() > max_msg_size && (cmd.size() > i + 1 && cmd[i + 1] != '\n'))
 		{
 			out.push_back(temp);
 			temp = "";
@@ -371,7 +371,7 @@ void cmds::execute(message *inMsg, table *outMsg)
 	for (unsigned i = 0; i < resp.size(); i++)
 	{
 		temp.push_back(resp[i]);
-		if (temp.size() > max_size && (resp.size() > i + 1 && resp[i + 1] != '\n'))
+		if (temp.size() > max_msg_size && (resp.size() > i + 1 && resp[i + 1] != '\n'))
 		{
 			out.push_back(temp);
 			temp = "";
@@ -554,11 +554,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
-#ifdef __linux__
-#include <Python.h>
-#elif _WIN32
-#include "win32deps/include/python/Python.h"
-#endif
+#include "py.h"
 void cmds::py(message *inMsg, table *outMsg)
 {
 	if (inMsg->words.size() < 2)
@@ -568,24 +564,56 @@ void cmds::py(message *inMsg, table *outMsg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
-	PyEval_AcquireLock();
+    PyEval_AcquireLock();
     PyThreadState *myThreadState = Py_NewInterpreter();
-	PyObject *pModule = PyImport_AddModule("__main__");
-	PyRun_SimpleString("import sys\nclass CatchOutErr:\n    def __init__(self):\n        self.value = ''\n    def write(self, txt):\n        self.value += txt\ncatchOutErr = CatchOutErr()\nsys.stdout = catchOutErr\nsys.stderr = catchOutErr\n");
-	PyRun_SimpleString(cmd.c_str());
-	PyObject *catcher = PyObject_GetAttrString(pModule, "catchOutErr");
-	PyErr_Print();
-	PyObject *output = PyObject_GetAttrString(catcher, "value");
-	cmd = PyString_AsString(output);
-	Py_EndInterpreter(myThreadState);
+	try
+	{
+		py::object main_module = py::import("__main__");
+		py::object main_namespace = main_module.attr("__dict__");
+		main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
+		main_module.attr("chat_id") = inMsg->chat_id;
+		main_module.attr("user_id") = inMsg->user_id;
+		main_module.attr("msg_id") = inMsg->msg_id;
+		main_module.attr("msg_flags") = inMsg->flags;
+		main_module.attr("msg") = str::summ(inMsg->words, 1);
+		main_module.attr("lp_msg") = inMsg->js.dump(4);
+		main_module.attr("money_add") = module::money::add;
+		main_module.attr("money_get") = module::money::get;
+		main_module.attr("user_set") = module::user::set;
+		main_module.attr("user_get") = module::user::get;
+		main_module.attr("msg_count") = msg::Count;
+		main_module.attr("msg_countComplete") = msg::CountComplete;
+		main_module.attr("getStartTime") = pyF::getTime;
+		main_module.attr("vk_upload") = vk::upload;
+		main_module.attr("vk_send") = pyF::vk_send;
+		main_module.attr("net_send") = pyF::net_send;
+		main_module.attr("net_upload") = net::upload;
+		main_module.attr("net_download") = net::download;
+		py::exec("import sys", main_namespace);
+		py::exec("from cStringIO import StringIO", main_namespace); //python2
+		//py::exec("from io import StringIO", main_namespace); //python3
+		py::exec("sys.stdout = mystdout = StringIO()", main_namespace);
+		py::exec(py::str(cmd), main_namespace);
+		py::exec("output = str(mystdout.getvalue())", main_namespace);
+		*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
+		cmd = py::extract<string>(main_module.attr("output"));
+	}
+	catch(py::error_already_set const &)
+	{
+		PyObject *ptype, *pvalue, *ptraceback;
+		PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+		cmd=PyString_AsString(pvalue);
+	}
+    Py_EndInterpreter(myThreadState);
     PyEval_ReleaseLock();
+
 
 	string temp = "";
 	args out;
 	for (unsigned i = 0; i < cmd.size(); i++)
 	{
 		temp.push_back(cmd[i]);
-		if (temp.size() > max_size && (cmd.size() > i + 1 && cmd[i + 1] != '\n'))
+		if (temp.size() > max_msg_size && (cmd.size() > i + 1 && cmd[i + 1] != '\n'))
 		{
 			out.push_back(temp);
 			temp = "";
