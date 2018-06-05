@@ -53,7 +53,8 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 	if (sendtoken) {
 		params["access_token"] = vk_token;
 	}
-	params["v"] = vk_version;
+	if(params.find("v") == params.cend())
+		params["v"] = vk_version;
 	nlohmann::json request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
 	if (!request["error"].is_null()) cout << other::getRealTime() + ": VK ERROR:" << endl << request/*.dump(4)*/ << endl;
 	while (!request["error"].is_null() && (request["error"]["error_code"] == 14 || request["error"]["error_code"] == 10))

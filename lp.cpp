@@ -18,27 +18,34 @@ void lp::loop()
 	getServer();
 	while (true)
 	{
-		table params = {
-			{ "key", key },
-			{ "ts", ts },
-			{ "wait", "90" },//25
-			{ "mode", "2" },
-			{ "version", "3" },
-			{ "act", "a_check" }
-		};
-		json data = json::parse(net::send("https://" + server, params));
-		if (!data["ts"].is_null()) ts = to_string((int)data["ts"]);
-		if (!data["failed"].is_null())
+		try
 		{
-			if (!lp::errors(data)) break;
-			continue;
+			table params = {
+				{ "key", key },
+				{ "ts", ts },
+				{ "wait", "90" },//25
+				{ "mode", "2" },
+				{ "version", "3" },
+				{ "act", "a_check" }
+			};
+			json data = json::parse(net::send("https://" + server, params));
+			if (!data["ts"].is_null()) ts = to_string((int)data["ts"]);
+			if (!data["failed"].is_null())
+			{
+				if (!lp::errors(data)) break;
+				continue;
+			}
+			else if (old_ts != ts)
+			{
+				lp::updates(data["updates"]);
+			}
+			old_ts = ts;
+			other::sleep(50);
 		}
-		else if (old_ts != ts)
+		catch (...)
 		{
-			lp::updates(data["updates"]);
+			std::cout << "Error!" << std::endl;
 		}
-		old_ts = ts;
-		other::sleep(50);
 	}
 }
 
