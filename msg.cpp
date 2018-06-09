@@ -19,7 +19,7 @@ void msg::in(json js) {
 	message inMsg;
 	msg::decode(js, &inMsg);
 	msgCount++;
-	if (inMsg.msg == "" || (inMsg.flags & 0x02))return;
+	if (inMsg.msg == "" || (inMsg.flags & 0x02) || inMsg.user_id<0)return;
 	if (!msg::toMe(&inMsg))return;
 	pool.submit(msg::treatment, inMsg);
 }
