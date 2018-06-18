@@ -128,43 +128,38 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			//py execute script
 			PyEval_AcquireLock();
 			PyThreadState *myThreadState = Py_NewInterpreter();
+			py::object main_module = py::import("__main__");
+			py::object main_namespace = main_module.attr("__dict__");
+			main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
+			main_module.attr("chat_id") = inMsg->chat_id;
+			main_module.attr("user_id") = inMsg->user_id;
+			main_module.attr("msg_id") = inMsg->msg_id;
+			main_module.attr("msg_flags") = inMsg->flags;
+			main_module.attr("msg") = str::summ(inMsg->words, 1);
+			main_module.attr("lp_msg") = inMsg->js.dump(4);
+			main_module.attr("money_add") = module::money::add;
+			main_module.attr("money_get") = module::money::get;
+			main_module.attr("user_set") = module::user::set;
+			main_module.attr("user_get") = module::user::get;
+			main_module.attr("msg_count") = msg::Count;
+			main_module.attr("msg_countComplete") = msg::CountComplete;
+			main_module.attr("getStartTime") = pyF::getTime;
+			main_module.attr("vk_upload") = vk::upload;
+			main_module.attr("vk_send") = pyF::vk_send;
+			main_module.attr("net_send") = pyF::net_send;
+			main_module.attr("net_upload") = net::upload;
+			main_module.attr("net_download") = net::download;
 			try
 			{
-				py::object main_module = py::import("__main__");
-				py::object main_namespace = main_module.attr("__dict__");
-
-				main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
-				main_module.attr("chat_id") = inMsg->chat_id;
-				main_module.attr("user_id") = inMsg->user_id;
-				main_module.attr("msg_id") = inMsg->msg_id;
-				main_module.attr("msg_flags") = inMsg->flags;
-				main_module.attr("msg") = str::summ(inMsg->words, 1);
-				main_module.attr("lp_msg") = inMsg->js.dump(4);
-				main_module.attr("money_add") = module::money::add;
-				main_module.attr("money_get") = module::money::get;
-				main_module.attr("user_set") = module::user::set;
-				main_module.attr("user_get") = module::user::get;
-				main_module.attr("msg_count") = msg::Count;
-				main_module.attr("msg_countComplete") = msg::CountComplete;
-				main_module.attr("getStartTime") = pyF::getTime;
-				main_module.attr("vk_upload") = vk::upload;
-				main_module.attr("vk_send") = pyF::vk_send;
-				main_module.attr("net_send") = pyF::net_send;
-				main_module.attr("net_upload") = net::upload;
-				main_module.attr("net_download") = net::download;
-
-
 				py::exec(py::str(fs::readData("py/" + cmd_d[command].ex.pyPath)), main_namespace);
 				*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 			}
-			catch(py::error_already_set const &)
+			catch(py::error_already_set&)
 			{
-				PyObject *ptype, *pvalue, *ptraceback;
-				PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-				(*outMsg)["message"]+=PyString_AsString(pvalue);
+				(*outMsg)["message"]+=pyF::error();
 			}
-			Py_EndInterpreter(myThreadState);
-			PyEval_ReleaseLock();
+    		Py_EndInterpreter(myThreadState);
+    		PyEval_ReleaseLock();
 		}
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}

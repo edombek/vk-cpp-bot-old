@@ -15,6 +15,7 @@ namespace pyF
     string vk_send(string method, py::dict params = {}, bool sendtoken = true);
     string net_send(string url, py::dict param = {}, bool post = true);
 
+	string error();
 }
 
 #endif // PY_H_INCLUDED
