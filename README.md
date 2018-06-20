@@ -10,12 +10,12 @@ For install on Ubuntu/Debian:
 ```
 sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-python-dev python-pip
 pip install psutil untangle
-export TERMUX=1
 ````
 For install on Termux:
 ```
 apt install libcurl-dev libgd-dev python2-dev boost-dev clang make git libcrypt-dev pkg-config
 pip2 install psutil untangle
+export TERMUX=1
 ```
 For install on Arch:
 ```
