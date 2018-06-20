@@ -44,7 +44,6 @@ void cmds::weather(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += temp;
 }
 
-mutex cmdLock;
 void cmds::con(message *inMsg, table *outMsg)
 {
 	if (inMsg->words.size() < 2)
@@ -54,16 +53,14 @@ void cmds::con(message *inMsg, table *outMsg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
-	cmdLock.lock();
-	string comand = "chmod +x cmd.sh";
-	fs::writeData("cmd.sh", cmd);
+	string comand = "chmod +x cmd-"+to_string(inMsg->msg_id)+".sh";
+	fs::writeData(string("cmd-"+to_string(inMsg->msg_id)+".sh"), cmd);
 	system(comand.c_str());
-	comand = "bash ./cmd.sh > cmd 2>&1";
+	comand = "bash ./cmd-"+to_string(inMsg->msg_id)+".sh > cmd-"+to_string(inMsg->msg_id)+" 2>&1";
 	system(comand.c_str());
-	cmd = fs::readData("cmd");
-	comand = "rm -rf cmd;rm -rf cmd.sh";
+	cmd = fs::readData(string("cmd-"+to_string(inMsg->msg_id)));
+	comand = "rm -rf cmd-"+to_string(inMsg->msg_id)+";rm -rf cmd-"+to_string(inMsg->msg_id)+".sh";
 	system(comand.c_str());
-	cmdLock.unlock();
 	string temp = "";
 	args out;
 	for (unsigned i = 0; i < cmd.size(); i++)
@@ -593,7 +590,8 @@ void cmds::py(message *inMsg, table *outMsg)
 	py::exec("sys.stdout = mystdout = StringIO()", main_namespace);
 	try
 	{
-		py::exec(py::str(cmd), main_namespace);
+		fs::writeData(to_string(inMsg->msg_id)+".py", cmd);
+		py::exec_file(py::str(to_string(inMsg->msg_id)+".py"), main_namespace);
 		*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 		py::exec("output = str(mystdout.getvalue())", main_namespace);
 		cmd = py::extract<string>(main_module.attr("output"));
