@@ -8,13 +8,13 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-python-dev python-pip
-pip install psutil untangle
+sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-python-dev python3-dev python3-pip
+pip3 install psutil untangle
 ````
 For install on Termux:
 ```
-apt install libcurl-dev libgd-dev python2-dev boost-dev clang make git libcrypt-dev pkg-config
-pip2 install psutil untangle
+apt install libcurl-dev libgd-dev python-dev boost-dev clang make git libcrypt-dev pkg-config
+pip install psutil untangle
 export TERMUX=1
 ```
 For install on Arch:

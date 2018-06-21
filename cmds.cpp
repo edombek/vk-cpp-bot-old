@@ -561,8 +561,6 @@ void cmds::py(message *inMsg, table *outMsg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
-    PyEval_AcquireLock();
-    PyThreadState *myThreadState = Py_NewInterpreter();
 	py::object main_module = py::import("__main__");
 	py::object main_namespace = main_module.attr("__dict__");
 	main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
@@ -585,8 +583,8 @@ void cmds::py(message *inMsg, table *outMsg)
 	main_module.attr("net_upload") = net::upload;
 	main_module.attr("net_download") = net::download;
 	py::exec("import sys", main_namespace);
-	py::exec("from cStringIO import StringIO", main_namespace); //python2
-	//py::exec("from io import StringIO", main_namespace); //python3
+	//py::exec("from cStringIO import StringIO", main_namespace); //python2
+	py::exec("from io import StringIO", main_namespace); //python3
 	py::exec("sys.stdout = mystdout = StringIO()", main_namespace);
 	try
 	{
@@ -599,9 +597,8 @@ void cmds::py(message *inMsg, table *outMsg)
 	catch(py::error_already_set&)
 	{
 		cmd = pyF::error();
+		PyErr_Print();
 	}
-    Py_EndInterpreter(myThreadState);
-    PyEval_ReleaseLock();
 
 	string temp = "";
 	args out;

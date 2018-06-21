@@ -7,8 +7,8 @@ bool friendsadd;
 int main()
 {
 	Py_Initialize();
-	PyEval_InitThreads();
-	PyEval_SaveThread();
+	//PyEval_InitThreads();
+	//PyEval_SaveThread();
 	vk::init();
 	other::startTime();
 	module::start();

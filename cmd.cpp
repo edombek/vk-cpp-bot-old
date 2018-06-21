@@ -51,8 +51,6 @@ void cmd::init()
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
 
 	//py init
-	PyEval_AcquireLock();
-	PyThreadState *myThreadState = Py_NewInterpreter();
 	try
 	{
 		py::object main_module = py::import("__main__");
@@ -64,8 +62,6 @@ void cmd::init()
 	{
 		PyErr_Print();
 	}
-	Py_EndInterpreter(myThreadState);
-	PyEval_ReleaseLock();
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -126,8 +122,6 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		else
 		{
 			//py execute script
-			PyEval_AcquireLock();
-			PyThreadState *myThreadState = Py_NewInterpreter();
 			py::object main_module = py::import("__main__");
 			py::object main_namespace = main_module.attr("__dict__");
 			main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
@@ -158,8 +152,6 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			{
 				(*outMsg)["message"]+=pyF::error();
 			}
-    		Py_EndInterpreter(myThreadState);
-    		PyEval_ReleaseLock();
 		}
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}

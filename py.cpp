@@ -33,18 +33,11 @@ string pyF::net_send(string url, py::dict param, bool post)
 	return net::send(url, pyF::toTable(param), post);
 }
 
+#include <iostream>
 // decode a Python exception into a string
 string pyF::error()
 {
-	PyObject *exc,*val,*tb;
-	py::object formatted_list, formatted;
-	PyErr_Fetch(&exc,&val,&tb);
-	py::handle<> hexc(exc),hval(py::allow_null(val)),htb(py::allow_null(tb)); 
-	py::object traceback(py::import("traceback"));
-	py::object format_exception(traceback.attr("format_exception"));
-	formatted_list = format_exception(hexc,hval,htb);
-	formatted = py::str("").join(formatted_list);
-	py::handle_exception();
-	PyErr_Clear();
-	return py::extract<string>(formatted);
+	PyObject *ptype, *pvalue, *ptraceback;
+    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+    return PyUnicode_AsUTF8(pvalue);
 }
