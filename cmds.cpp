@@ -561,6 +561,7 @@ void cmds::py(message *inMsg, table *outMsg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
+	PySubThread sub;
 	py::object main_module = py::import("__main__");
 	py::object main_namespace = main_module.attr("__dict__");
 	main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
@@ -597,7 +598,6 @@ void cmds::py(message *inMsg, table *outMsg)
 	catch(py::error_already_set&)
 	{
 		cmd = pyF::error();
-		PyErr_Print();
 	}
 
 	string temp = "";

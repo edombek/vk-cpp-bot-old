@@ -51,6 +51,7 @@ void cmd::init()
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
 
 	//py init
+	PySubThread sub;
 	try
 	{
 		py::object main_module = py::import("__main__");
@@ -122,6 +123,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		else
 		{
 			//py execute script
+			PySubThread sub;
 			py::object main_module = py::import("__main__");
 			py::object main_namespace = main_module.attr("__dict__");
 			main_module.attr("outMsg") = pyF::toPythonDict(*outMsg);
