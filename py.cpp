@@ -37,7 +37,10 @@ string pyF::net_send(string url, py::dict param, bool post)
 // decode a Python exception into a string
 string pyF::error()
 {
-	PyObject *ptype, *pvalue, *ptraceback;
-    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-    return PyUnicode_AsUTF8(pvalue);
+	PyObject *exc, *val, *tb;
+    PyErr_Fetch(&exc, &val, &tb);
+    PyErr_NormalizeException(&exc, &val, &tb);
+    py::handle<> hexc(exc), hval(py::allow_null(val)), htb(py::allow_null(tb));
+    py::object format_exception = py::import("traceback").attr("format_exception");
+    return py::extract<string>(py::str("").join(format_exception(hexc, hval, htb)));
 }

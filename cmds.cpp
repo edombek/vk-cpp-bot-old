@@ -59,7 +59,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	comand = "bash ./cmd-"+to_string(inMsg->msg_id)+".sh > cmd-"+to_string(inMsg->msg_id)+" 2>&1";
 	system(comand.c_str());
 	cmd = fs::readData(string("cmd-"+to_string(inMsg->msg_id)));
-	comand = "rm -rf cmd-"+to_string(inMsg->msg_id)+";rm -rf cmd-"+to_string(inMsg->msg_id)+".sh";
+	comand = "rm -rf cmd-"+to_string(inMsg->msg_id)+" cmd-"+to_string(inMsg->msg_id)+".sh";
 	system(comand.c_str());
 	string temp = "";
 	args out;
@@ -599,6 +599,7 @@ void cmds::py(message *inMsg, table *outMsg)
 	{
 		cmd = pyF::error();
 	}
+	system(string("rm -rf "+to_string(inMsg->msg_id)+".py").c_str());
 
 	string temp = "";
 	args out;
