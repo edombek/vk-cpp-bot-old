@@ -860,6 +860,7 @@ int delta(gdImagePtr im, int x, int y, int r)
 #define minC 0.2
 #define radD 20
 #define radG 2
+#define deltaP 5
 
 void cmds::neon(message *inMsg, table *outMsg)
 {
@@ -893,6 +894,7 @@ void cmds::neon(message *inMsg, table *outMsg)
 	}
 	photos["photos"] = p;
 	res = vk::send("photos.getById", photos)["response"];
+    (*outMsg)["message"]="0%";
 	for (unsigned i = 0; i < res.size(); i++)
 	{
 		std::chrono::time_point<std::chrono::system_clock> begin, end;
@@ -912,7 +914,15 @@ void cmds::neon(message *inMsg, table *outMsg)
 		gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
 
 		int max = 0;
+		int complete = 0;
+		string msg_id = to_string(vk::send("messages.send", (*outMsg))["response"].get<int>());
 		for (int xc = 0; xc < im->sx; xc++)
+		{
+            if((int)((float)xc/im->sx*100 - complete) >= deltaP)
+            {
+                complete = (int)((float)xc/im->sx*100);
+                vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(complete)+"%"}, {"peer_id", (*outMsg)["peer_id"]}}).dump(4);
+            }
 			for (int yc = 0; yc < im->sy; yc++)
 			{
 				int color = delta(im, xc, yc, radD);
@@ -926,6 +936,7 @@ void cmds::neon(message *inMsg, table *outMsg)
 					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
 				}
 			}
+        }
 		int minColor = max*minC;
 		for (int xc = 0; xc < im->sx; xc++)
 			for (int yc = 0; yc < im->sy; yc++)
@@ -954,15 +965,13 @@ void cmds::neon(message *inMsg, table *outMsg)
 		fclose(f);
 		gdImageDestroy(outIm);
 		gdImageDestroy(im);
-		(*outMsg)["attachment"] = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
+		string ph = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 		lockOutP.unlock();
 		end = std::chrono::system_clock::now();
 		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000;
-		(*outMsg)["message"] += to_string(t) + " сек.";
-		msg::send((*outMsg));
-		(*outMsg)["message"] = "";
-		(*outMsg)["attachment"] = "";
+		vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph}});
 	}
+    (*outMsg)["message"]="";
 }
 
 #define TPAUSE 0.1 //pause in sec
