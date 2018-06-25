@@ -33,6 +33,14 @@ string pyF::net_send(string url, py::dict param, bool post)
 	return net::send(url, pyF::toTable(param), post);
 }
 
+int pyF::user_get(int id)
+{
+	message m;
+	m.user_id=id;
+	m.chat_id=0;
+	return module::user::get(&m);
+}
+
 #include <iostream>
 // decode a Python exception into a string
 string pyF::error()

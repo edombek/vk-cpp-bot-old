@@ -136,7 +136,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			main_module.attr("money_add") = module::money::add;
 			main_module.attr("money_get") = module::money::get;
 			main_module.attr("user_set") = module::user::set;
-			main_module.attr("user_get") = module::user::get;
+			main_module.attr("user_get") = pyF::user_get;
 			main_module.attr("msg_count") = msg::Count;
 			main_module.attr("msg_countComplete") = msg::CountComplete;
 			main_module.attr("getStartTime") = pyF::getTime;

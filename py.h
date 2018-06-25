@@ -14,6 +14,8 @@ namespace pyF
 
     string vk_send(string method, py::dict params = {}, bool sendtoken = true);
     string net_send(string url, py::dict param = {}, bool post = true);
+    
+    int user_get(int id);
 
 	string error();
 }
