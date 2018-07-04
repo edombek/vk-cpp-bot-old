@@ -410,43 +410,10 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 
 void cmds::pixel(message *inMsg, table *outMsg)
 {
-	table params =
-	{
-		{"message_ids", to_string(inMsg->msg_id)}
-	};
-	json res = vk::send("messages.getById", params)["response"]["items"][0];
-	if (res["attachments"].is_null())
-	{
-		return;
-	}
-	params = {};
-	json photos;
-	string p = "";
-	photos =
-	{
-		{"photos", ""},
-		{"photo_sizes", "1"},
-		{"extended", "0"}
-	};
-	for (unsigned i = 0; i < res["attachments"].size(); i++)
-	{
-		if (res["attachments"][i]["type"] == "photo")
-		{
-			p += to_string((int)res["attachments"][i]["photo"]["owner_id"]) + "_" + to_string((int)res["attachments"][i]["photo"]["id"]);
-			if (!res["attachments"][i]["photo"]["access_key"].is_null())
-				p += "_" + res["attachments"][i]["photo"]["access_key"].get<string>();
-			p += ",";
-		}
-	}
-	photos["photos"] = p;
-	res = vk::send("photos.getById", photos)["response"];
+	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
-		int maxIndex = 0;
-		for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
-			if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
-				maxIndex = si;
-		string url = res[i]["sizes"][maxIndex]["src"];
+		string url = res[i];
 		args w = str::words(url, '.');
 		string name = "in." + w[w.size() - 1];
 		lockInP.lock();
@@ -864,51 +831,18 @@ int delta(gdImagePtr im, int x, int y, int r)
 
 void cmds::neon(message *inMsg, table *outMsg)
 {
-	table params =
-	{
-		{"message_ids", to_string(inMsg->msg_id)}
-	};
-	json res = vk::send("messages.getById", params)["response"]["items"][0];
-	if (res["attachments"].is_null())
-	{
-		return;
-	}
-	params = {};
-	json photos;
-	string p = "";
-	photos =
-	{
-		{"photos", ""},
-		{"photo_sizes", "1"},
-		{"extended", "0"}
-	};
-	for (unsigned i = 0; i < res["attachments"].size(); i++)
-	{
-		if (res["attachments"][i]["type"] == "photo")
-		{
-			p += to_string((int)res["attachments"][i]["photo"]["owner_id"]) + "_" + to_string((int)res["attachments"][i]["photo"]["id"]);
-			if (!res["attachments"][i]["photo"]["access_key"].is_null())
-				p += "_" + res["attachments"][i]["photo"]["access_key"].get<string>();
-			p += ",";
-		}
-	}
-	photos["photos"] = p;
-	res = vk::send("photos.getById", photos)["response"];
-    (*outMsg)["message"]="0%";
+	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
-		std::chrono::time_point<std::chrono::system_clock> begin, end;
-		begin = std::chrono::system_clock::now();
-		int maxIndex = 0;
-		for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
-			if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
-				maxIndex = si;
-		string url = res[i]["sizes"][maxIndex]["src"];
+		string url = res[i];
 		args w = str::words(url, '.');
 		string name = "in." + w[w.size() - 1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
+
+		std::chrono::time_point<std::chrono::system_clock> begin, end;
+		begin = std::chrono::system_clock::now();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
 		gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
@@ -1064,43 +998,10 @@ void cmds::vox(message *inMsg, table *outMsg)
 #define deltaS 0.01
 void cmds::rgb(message *inMsg, table *outMsg)
 {
-	table params =
-	{
-		{"message_ids", to_string(inMsg->msg_id)}
-	};
-	json res = vk::send("messages.getById", params)["response"]["items"][0];
-	if (res["attachments"].is_null())
-	{
-		return;
-	}
-	params = {};
-	json photos;
-	string p = "";
-	photos =
-	{
-		{"photos", ""},
-		{"photo_sizes", "1"},
-		{"extended", "0"}
-	};
-	for (unsigned i = 0; i < res["attachments"].size(); i++)
-	{
-		if (res["attachments"][i]["type"] == "photo")
-		{
-			p += to_string((int)res["attachments"][i]["photo"]["owner_id"]) + "_" + to_string((int)res["attachments"][i]["photo"]["id"]);
-			if (!res["attachments"][i]["photo"]["access_key"].is_null())
-				p += "_" + res["attachments"][i]["photo"]["access_key"].get<string>();
-			p += ",";
-		}
-	}
-	photos["photos"] = p;
-	res = vk::send("photos.getById", photos)["response"];
+	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
-		int maxIndex = 0;
-		for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
-			if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
-				maxIndex = si;
-		string url = res[i]["sizes"][maxIndex]["src"];
+		string url = res[i];
 		args w = str::words(url, '.');
 		string name = "in." + w[w.size() - 1];
 		lockInP.lock();
