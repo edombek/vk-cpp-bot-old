@@ -57,12 +57,14 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 		params["v"] = vk_version;
 	nlohmann::json request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
 	if (!request["error"].is_null()) cout << other::getRealTime() + ": VK ERROR:" << endl << request/*.dump(4)*/ << endl;
+	unsigned int sleept=0;
 	while (!request["error"].is_null() && (request["error"]["error_code"] == 14 || request["error"]["error_code"] == 10))
 	{
-		other::sleep(300000);
+		sleept+=60000;
+		other::sleep(sleept);
 		request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
 	}
-	other::sleep(333);
+	//other::sleep(333);
 	l.unlock();
 	return request;
 }

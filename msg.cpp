@@ -78,7 +78,7 @@ void msg::func(message *inMsg, table *outMsg)
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
     if(forwardmessages)
         if (inMsg->chat_id)
-            (*outMsg)["forward_messages"] = to_string(inMsg->msg_id);
+            (*outMsg)["forward_messages"] += to_string(inMsg->msg_id);
 }
 
 void msg::send(table outMsg)

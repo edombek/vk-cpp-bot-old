@@ -860,7 +860,7 @@ int delta(gdImagePtr im, int x, int y, int r)
 #define minC 0.2
 #define radD 20
 #define radG 2
-#define deltaP 5
+#define deltaP 25
 
 void cmds::neon(message *inMsg, table *outMsg)
 {
