@@ -24,6 +24,7 @@ namespace cmds
 	void neon(message *inMsg, table *outMsg);
 	void vox(message *inMsg, table *outMsg);
 	void rgb(message *inMsg, table *outMsg);
+	void art(message *inMsg, table *outMsg);
 	void pyinit(message *inMsg, table *outMsg);
 }
 

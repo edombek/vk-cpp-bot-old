@@ -1024,6 +1024,38 @@ void cmds::rgb(message *inMsg, table *outMsg)
 	}
 }
 
+#define dColor 64
+void cmds::art(message *inMsg, table *outMsg)
+{
+	args res = other::msgPhotos(inMsg);
+	for (unsigned i = 0; i < res.size(); i++)
+	{
+		string url = res[i];
+		args w = str::words(url, '.');
+		string name = "in." + w[w.size() - 1];
+		lockInP.lock();
+		net::download(url, name);
+		lockInP.unlock();
+		gdImagePtr in = gdImageCreateFromFile(name.c_str());
+		gdImagePtr im = gdImageCopyGaussianBlurred(in, 6, -1.0);
+		gdImageDestroy(in);
+		for (unsigned int xc = 0; xc < im->sx; xc++)
+			for (unsigned int yc = 0; yc < im->sy; yc++)
+			{
+                int color = gdImageGetPixel(im, xc, yc);
+                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor+dColor/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor+dColor/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor+dColor/2));
+			}
+        gdImageMeanRemoval(im);
+        lockOutP.lock();
+		FILE *out = fopen("out.png", "wb");
+		gdImagePng(im, out);
+		fclose(out);
+		gdImageDestroy(im);
+		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
+		lockOutP.unlock();
+	}
+}
+
 void cmds::pyinit(message *inMsg, table *outMsg)
 {
     cmd::init();

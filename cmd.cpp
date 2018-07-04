@@ -48,6 +48,7 @@ void cmd::init()
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
 	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
+	cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
 
 	//py init
