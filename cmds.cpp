@@ -831,6 +831,7 @@ int delta(gdImagePtr im, int x, int y, int r)
 
 void cmds::neon(message *inMsg, table *outMsg)
 {
+	(*outMsg)["message"]="0%";
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
