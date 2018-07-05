@@ -831,6 +831,7 @@ int delta(gdImagePtr im, int x, int y, int r)
 
 void cmds::neon(message *inMsg, table *outMsg)
 {
+	(*outMsg)["message"]="0%";
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
@@ -1037,7 +1038,7 @@ void cmds::art(message *inMsg, table *outMsg)
 		net::download(url, name);
 		lockInP.unlock();
 		gdImagePtr in = gdImageCreateFromFile(name.c_str());
-		gdImagePtr im = gdImageCopyGaussianBlurred(in, 6, -1.0);
+		gdImagePtr im = gdImageCopyGaussianBlurred(in, 15, -1.0);
 		gdImageDestroy(in);
 		for (unsigned int xc = 0; xc < im->sx; xc++)
 			for (unsigned int yc = 0; yc < im->sy; yc++)
