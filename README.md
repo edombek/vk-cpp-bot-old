@@ -11,7 +11,7 @@ For install on Ubuntu/Debian:
 sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-python-dev python3-dev python3-pip
 pip3 install psutil untangle
 ````
-For install on Termux:
+For install on Android/Termux(termux.com):
 ```
 apt install libcurl-dev libgd-dev python-dev boost-dev clang make git libcrypt-dev pkg-config
 pip install psutil untangle
@@ -32,7 +32,6 @@ git clone https://github.com/EVGESHAd/vk-cpp-bot/
 cd ./vk-cpp-bot
 git submodule update --init vox thr py
 make
-cp ./vkbot ../
 ```
 
 ### Configuration
