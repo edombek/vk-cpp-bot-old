@@ -550,6 +550,7 @@ void cmds::py(message *inMsg, table *outMsg)
 	main_module.attr("net_send") = pyF::net_send;
 	main_module.attr("net_upload") = net::upload;
 	main_module.attr("net_download") = net::download;
+	main_module.attr("msg_imgs") = pyF::toPythonList(other::msgPhotos(inMsg));
 	py::exec("import sys", main_namespace);
 	//py::exec("from cStringIO import StringIO", main_namespace); //python2
 	py::exec("from io import StringIO", main_namespace); //python3

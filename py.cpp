@@ -18,6 +18,14 @@ table pyF::toTable(py::dict dict)
 	return dic;
 }
 
+py::list pyF::toPythonList(args a)
+{
+    py::list out;
+    for(auto s: a)
+        out.append(s);
+    return out;
+}
+
 string pyF::getTime()
 {
 	return other::getTime();

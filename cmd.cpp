@@ -146,6 +146,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			main_module.attr("net_send") = pyF::net_send;
 			main_module.attr("net_upload") = net::upload;
 			main_module.attr("net_download") = net::download;
+			main_module.attr("msg_imgs") = pyF::toPythonList(other::msgPhotos(inMsg));
 			try
 			{
 				py::exec_file(py::str("py/" + cmd_d[command].ex.pyPath), main_namespace);

@@ -10,11 +10,12 @@ namespace pyF
 {
     py::dict toPythonDict(table map);
     table toTable(py::dict dict);
+    py::list toPythonList(args a);
     string getTime();
 
     string vk_send(string method, py::dict params = {}, bool sendtoken = true);
     string net_send(string url, py::dict param = {}, bool post = true);
-    
+
     int user_get(int id);
 
 	string error();
@@ -57,15 +58,15 @@ public:
         mMainGilState = PyGILState_Ensure();    // забираем блокировку основного интерпретатора
         mOldThreadState = PyThreadState_Get();  // сохраняем текущее состояние порождённого потока
         mNewThreadState = Py_NewInterpreter();  // создаём в потоке под-интерпретатор
-        //PyThreadState_Swap( mNewThreadState );  // с этого момента для потока актуален уже под-интерпретатор
-        //mSubThreadState = PyEval_SaveThread();  // не забываем освободить предыдущую блокировку GIL
-        //mSubGilState = PyGILState_Ensure();     // и заблокировать GIL уже для под-интерпретатора
+        PyThreadState_Swap( mNewThreadState );  // с этого момента для потока актуален уже под-интерпретатор --
+        mSubThreadState = PyEval_SaveThread();  // не забываем освободить предыдущую блокировку GIL --
+        mSubGilState = PyGILState_Ensure();     // и заблокировать GIL уже для под-интерпретатора --
     }
 
     ~PySubThread()  // по завершении работы потока нужно корректно освободить ресурсы под-интепретатора Python
     {
-        //PyGILState_Release( mSubGilState );         // разблокируем GIL для под-интерпретатора
-        //PyEval_RestoreThread( mSubThreadState );    // восстанавливаем блокировку и состояние потока для основного интерпретатора
+        PyGILState_Release( mSubGilState );         // разблокируем GIL для под-интерпретатора --
+        PyEval_RestoreThread( mSubThreadState );    // восстанавливаем блокировку и состояние потока для основного интерпретатора --
         Py_EndInterpreter( mNewThreadState );       // завершаем работу под-интерпретатора
         PyThreadState_Swap( mOldThreadState );      // возвращаем состояние потока для основного интерпретатора
         PyGILState_Release( mMainGilState );        // освобождаем блокировку GIL для основного интерпретатора
