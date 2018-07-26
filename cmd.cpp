@@ -58,7 +58,7 @@ void cmd::init()
 		py::object main_module = py::import("__main__");
 		py::object main_namespace = main_module.attr("__dict__");
 		main_module.attr("init") = cmd::pyAdd;
-		py::exec_file("py/init.py", main_namespace);
+		py::exec(py::str(fs::readData("py/init.py")), main_namespace);
 	}
 	catch(py::error_already_set const &)
 	{
@@ -149,7 +149,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			main_module.attr("msg_imgs") = pyF::toPythonList(other::msgPhotos(inMsg));
 			try
 			{
-				py::exec_file(py::str("py/" + cmd_d[command].ex.pyPath), main_namespace);
+				py::exec(py::str(fs::readData("py/" + cmd_d[command].ex.pyPath)), main_namespace);
 				*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 			}
 			catch(py::error_already_set&)
