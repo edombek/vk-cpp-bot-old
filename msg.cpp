@@ -21,8 +21,8 @@ void msg::in(json js) {
 	msgCount++;
 	if (inMsg.msg == "" || (inMsg.flags & 0x02) || inMsg.user_id<0)return;
 	if (!msg::toMe(&inMsg))return;
-	//pool.submit(msg::treatment, inMsg);
-	msg::treatment(inMsg);
+	pool.submit(msg::treatment, inMsg);
+	//msg::treatment(inMsg);
 }
 
 void msg::treatment(message inMsg)

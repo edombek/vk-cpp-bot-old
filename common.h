@@ -34,5 +34,5 @@ typedef struct{
 #include "cmd.h"
 #include "cmds.h"
 
-#define MAXTHREADS 20
+#define MAXTHREADS 5
 #endif
