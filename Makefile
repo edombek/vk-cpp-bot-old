@@ -19,7 +19,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=vkbot
 
 ifdef TERMUX
-	LDFLAGS+= -lboost_python36
+	LDFLAGS+= -lboost_python36 -latomic
 else
 	LDFLAGS+= -lboost_python-py35
 endif
