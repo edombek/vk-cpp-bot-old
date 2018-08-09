@@ -8,7 +8,7 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-gnutls-dev libgd-dev libboost-python-dev python3-dev python3-pip
+sudo apt-get install git gcc g++ make libcurl4-openssl-dev libgd-dev libboost-python-dev python3-dev python3-pip
 pip3 install psutil untangle
 ````
 For install on Android/Termux(termux.com):
