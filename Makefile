@@ -21,7 +21,7 @@ EXECUTABLE=vkbot
 ifdef TERMUX
 	LDFLAGS+= -lboost_python36 -latomic
 else
-	LDFLAGS+= -lboost_python-py35
+	LDFLAGS+= -lboost_python-py36
 endif
 
 all: $(SOURCES) $(EXECUTABLE)
