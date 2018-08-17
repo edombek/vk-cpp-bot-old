@@ -64,7 +64,11 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 		other::sleep(sleept);
 		request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
 	}
-	//other::sleep(333);
+	while (!request["error"].is_null() && request["error"]["error_code"] == 6)
+	{
+		other::sleep(500);
+		request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
+	}
 	l.unlock();
 	return request;
 }

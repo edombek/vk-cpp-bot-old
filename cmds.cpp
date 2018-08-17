@@ -565,7 +565,10 @@ void cmds::py(message *inMsg, table *outMsg)
 	}
 	catch(py::error_already_set&)
 	{
-		cmd = pyF::error();
+		string err = pyF::error();
+		py::exec("output = str(mystdout.getvalue())", main_namespace);
+		cmd = py::extract<string>(main_module.attr("output"));
+		cmd += "\n" + err;
 	}
 	system(string("rm -rf "+to_string(inMsg->msg_id)+".py").c_str());
 
