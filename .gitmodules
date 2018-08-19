@@ -13,3 +13,6 @@
 [submodule "py"]
 	path = py
 	url = https://github.com/EVGESHAd/vk-cpp-bot-py
+[submodule "json"]
+	path = json
+	url = https://github.com/nlohmann/json
