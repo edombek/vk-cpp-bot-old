@@ -9,9 +9,19 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <mutex>
 
 #define net_agent "EVGESHAd vk-cpp-bot"
 //#define printOut
+
+mutex infoLock;
+
+long long unsigned int send_dl(0);
+long long unsigned int send_ul(0);
+long long unsigned int upload_dl(0);
+long long unsigned int upload_ul(0);
+long long unsigned int download_dl(0);
+long long unsigned int download_ul(0);
 
 /* Init network settings */
 void net::init()
@@ -74,6 +84,13 @@ string net::send(string url, string params)
 		result = curl_easy_perform(curl);
 		if (result != CURLE_OK)
 			cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
+		double ul, dl;
+		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
+		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
+		infoLock.lock();
+		send_dl+=dl;
+		send_ul+=ul;
+		infoLock.unlock();
 	}
 	curl_easy_cleanup(curl);
 #ifdef printOut
@@ -120,6 +137,13 @@ string net::upload(string url, string filename, string params)
 		result = curl_easy_perform(curl);
 		if (result != CURLE_OK)
 			cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
+		double ul, dl;
+		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
+		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
+		infoLock.lock();
+		upload_dl+=dl;
+		upload_ul+=ul;
+		infoLock.unlock();
 	}
 	curl_easy_cleanup(curl);
 #ifdef printOut
@@ -154,6 +178,18 @@ void net::download(string url, string filename, string params)
 				cout << other::getRealTime() << ": CURL ERROR: " << errorBuffer << endl;
 			fclose(file);
 		}
+		double ul, dl;
+		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
+		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
+		infoLock.lock();
+		download_dl+=dl;
+		download_ul+=ul;
+		infoLock.unlock();
 	}
 	curl_easy_cleanup(curl);
+}
+
+string net::getInfo()
+{
+	return to_string(send_dl) + " " + to_string(send_ul) + " " + to_string(upload_dl) + " " + to_string(upload_ul) + " " + to_string(download_dl) + " " + to_string(download_ul);
 }

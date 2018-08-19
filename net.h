@@ -8,6 +8,7 @@ namespace net{
 	string send(string url, table param = {}, bool post = true);
 	string upload(string url, string filename, string params = "");
 	void download(string url, string filename, string params = "");
+	string getInfo();
 }
 
 #endif
