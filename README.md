@@ -30,7 +30,7 @@ For install on Gentoo:
 ```
 git clone https://github.com/EVGESHAd/vk-cpp-bot/
 cd ./vk-cpp-bot
-git submodule update --init vox thr py
+git submodule update --init vox thr py json
 make
 ```
 
