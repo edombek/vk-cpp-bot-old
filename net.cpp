@@ -144,6 +144,7 @@ string net::upload(string url, string filename, string params)
 		upload_dl+=dl;
 		upload_ul+=ul;
 		infoLock.unlock();
+		curl_formfree(formpost);
 	}
 	curl_easy_cleanup(curl);
 #ifdef printOut

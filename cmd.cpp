@@ -88,6 +88,12 @@ void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost,
 
 void cmd::start(message *inMsg, table *outMsg, string command)
 {
+	if (module::user::get(inMsg) < 2)
+	{
+		inMsg->msg = str::replase(inMsg->msg, ". ", "@#$%&");
+		inMsg->msg = str::replase(str::replase(inMsg->msg, "&#", "-"), ".", "-");
+		inMsg->msg = str::replase(inMsg->msg, "@#$%&", ". ");
+	}
 	if (str::low(command) == "exit")
 	{
 		cmd::easySet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id), "");
@@ -164,13 +170,6 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	{
 		(*outMsg)["message"] = (*outMsg)["message"] + "незнаю такого" + "(" + command + "), введите команду help и уточните";
 		//(*outMsg)["peer_id"]="";
-	}
-
-	if (module::user::get(inMsg) < 2)
-	{
-		(*outMsg)["message"] = str::replase((*outMsg)["message"], ". ", "@#$%&");
-		(*outMsg)["message"] = str::replase(str::replase((*outMsg)["message"], "&#", "-"), ".", "-");
-		(*outMsg)["message"] = str::replase((*outMsg)["message"], "@#$%&", ". ");
 	}
 	return;
 }

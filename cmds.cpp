@@ -1042,7 +1042,7 @@ void cmds::art(message *inMsg, table *outMsg)
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
-		gdImagePtr in = gdImageCreateFromFile(name.c_str());
+		gdImagePtr in = gdImageCreateFromFile( name.c_str());
 		gdImagePtr im = gdImageCopyGaussianBlurred(in, 15, -1.0);
 		gdImageDestroy(in);
 		for (unsigned int xc = 0; xc < im->sx; xc++)
