@@ -1,5 +1,5 @@
-CC=gcc# -fsanitize=address
-CFLAGS=-std=c++11 -c -Ofast -ftree-vectorize $(shell pkg-config --cflags python3) -I json/include -I json/include/nlohmann/ -Wno-psabi
+CC=gcc# -fsanitize=address -Ofast -ftree-vectorize
+CFLAGS=-std=c++11 -c  $(shell pkg-config --cflags python3) -I json/include -I json/include/nlohmann/ -Wno-psabi
 LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread $(shell pkg-config --libs python3) -Wl,-rpath,.
 INCLUDES=
 SOURCES=	\

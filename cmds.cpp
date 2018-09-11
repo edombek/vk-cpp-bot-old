@@ -339,10 +339,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 		y += out[i]["y"].get<int>();
 	}
 	lockOutP.lock();
-	FILE *in;
-	in = fopen("out.png", "wb");
-	gdImagePng(outIm, in);
-	fclose(in);
+	gdImageFile(outIm, "out.png");
 	gdImageDestroy(outIm);
 	(*outMsg)["attachment"] += "," + vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 	lockOutP.unlock();
@@ -423,9 +420,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 		int size = 4 + rand() % 6;
 		gdImagePixelate(im, size, GD_PIXELATE_UPPERLEFT);
 		lockOutP.lock();
-		FILE *out = fopen("out.png", "wb");
-		gdImagePng(im, out);
-		fclose(out);
+		gdImageFile(im, "out.png");
 		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		lockOutP.unlock();
@@ -899,10 +894,7 @@ void cmds::neon(message *inMsg, table *outMsg)
 		}
 
 		lockOutP.lock();
-		FILE *f;
-		f = fopen("out.png", "w");
-		gdImagePng(outIm, f);
-		fclose(f);
+		gdImageFile(outIm, "out.png");
 		gdImageDestroy(outIm);
 		gdImageDestroy(im);
 		string ph = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
@@ -1021,9 +1013,7 @@ void cmds::rgb(message *inMsg, table *outMsg)
 		gdImageCopyMerge(outIm, im, 0, 0, 0, 0, im->sx, im->sy, 50);
 		gdImageDestroy(im);
 		lockOutP.lock();
-		FILE *out = fopen("out.png", "wb");
-		gdImagePng(outIm, out);
-		fclose(out);
+		gdImageFile(outIm, "out.png");
 		gdImageDestroy(outIm);
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		lockOutP.unlock();
@@ -1041,10 +1031,9 @@ void cmds::art(message *inMsg, table *outMsg)
 		string name = "in." + w[w.size() - 1];
 		lockInP.lock();
 		net::download(url, name);
-		lockInP.unlock();
 		gdImagePtr in = gdImageCreateFromFile( name.c_str());
+		lockInP.unlock();
 		gdImagePtr im = gdImageCopyGaussianBlurred(in, 15, -1.0);
-		gdImageDestroy(in);
 		for (unsigned int xc = 0; xc < im->sx; xc++)
 			for (unsigned int yc = 0; yc < im->sy; yc++)
 			{
@@ -1053,10 +1042,9 @@ void cmds::art(message *inMsg, table *outMsg)
 			}
         gdImageMeanRemoval(im);
         lockOutP.lock();
-		FILE *out = fopen("out.png", "wb");
-		gdImagePng(im, out);
-		fclose(out);
+		gdImageFile(im, "out.png");
 		gdImageDestroy(im);
+		gdImageDestroy(in);
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		lockOutP.unlock();
 	}
