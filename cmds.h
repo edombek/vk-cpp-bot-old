@@ -18,14 +18,18 @@ namespace cmds
 	void info(message *inMsg, table *outMsg);
 	void who(message *inMsg, table *outMsg);
 	void when(message *inMsg, table *outMsg);
+#ifndef NO_PYTHON
 	void py(message *inMsg, table *outMsg);
+#endif
 	void ip(message *inMsg, table *outMsg);
 	void game(message *inMsg, table *outMsg);
 	void neon(message *inMsg, table *outMsg);
 	void vox(message *inMsg, table *outMsg);
 	void rgb(message *inMsg, table *outMsg);
 	void art(message *inMsg, table *outMsg);
+#ifndef NO_PYTHON
 	void pyinit(message *inMsg, table *outMsg);
+#endif
 }
 
 #endif

@@ -1,7 +1,9 @@
 #include "common.h"
 #include <iostream>
 #include <mutex>
+#ifndef NO_PYTHON
 #include "py.h"
+#endif
 cmd::cmd_table cmd_d;
 
 /*
@@ -42,15 +44,17 @@ void cmd::init()
 	cmd::add("кто", &cmds::who, true, "рандом в чате", 0, 1);
 	cmd::add("когда", &cmds::when, true, "когда чтолибо произойдёт", 0, 1);
 	cmd::add("инфа", &cmds::info, true, "вероятности)", 0, 1);
-	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
 	cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
 	cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
 	cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
 	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
 	cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
+	
+#ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
-
+	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
+	
 	//py init
 	PySubThread sub;
 	try
@@ -64,6 +68,7 @@ void cmd::init()
 	{
 		PyErr_Print();
 	}
+#endif
 }
 
 void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
@@ -76,6 +81,7 @@ void cmd::add(string command, cmd::msg_func func, bool disp, string info, int co
 	cmd_d[str::low(command)].acess = acess;
 }
 
+#ifndef NO_PYTHON
 void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost, int acess)
 {
 	cmd_d[str::low(command)].ex.func = NULL;
@@ -85,6 +91,7 @@ void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost,
 	cmd_d[str::low(command)].cost = cost;
 	cmd_d[str::low(command)].acess = acess;
 }
+#endif
 
 void cmd::start(message *inMsg, table *outMsg, string command)
 {
@@ -127,6 +134,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		}
 		if(cmd_d[command].ex.func!=NULL)
 			cmd_d[command].ex.func(inMsg, outMsg);
+#ifndef NO_PYTHON
 		else
 		{
 			//py execute script
@@ -164,6 +172,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 				(*outMsg)["message"]+=pyF::error();
 			}
 		}
+#endif
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
 	}
 	else

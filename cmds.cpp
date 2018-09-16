@@ -513,6 +513,7 @@ void cmds::info(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += "Вероятность того, что " + info + " - " + to_string(i) + "%";
 }
 
+#ifndef NO_PYTHON
 #include "py.h"
 void cmds::py(message *inMsg, table *outMsg)
 {
@@ -591,6 +592,7 @@ void cmds::py(message *inMsg, table *outMsg)
 		(*outMsg)["message"] = "";
 	}
 }
+#endif
 
 void cmds::ip(message *inMsg, table *outMsg)
 {
@@ -1050,8 +1052,10 @@ void cmds::art(message *inMsg, table *outMsg)
 	}
 }
 
+#ifndef NO_PYTHON
 void cmds::pyinit(message *inMsg, table *outMsg)
 {
     cmd::init();
     (*outMsg)["message"] = "done";
 }
+#endif

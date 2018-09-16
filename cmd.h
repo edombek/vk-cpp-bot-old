@@ -19,7 +19,9 @@ namespace cmd
 
 	void init();
 	void add(string command, cmd::msg_func func, bool disp=false, string info="", int cost=0, int acess=1);
+	#ifndef NO_PYTHON
 	void pyAdd(string command, string pyPath, bool disp=false, string info="", int cost=0, int acess=1);
+	#endif
 	void start(message *inMsg, table *outMsg, string command);
 	string helpList(message *inMsg);
     void easySet(string id, string cmd);

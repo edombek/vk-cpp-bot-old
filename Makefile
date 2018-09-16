@@ -1,6 +1,6 @@
 CC=gcc# -fsanitize=address -Ofast -ftree-vectorize
-CFLAGS=-std=c++11 -c  $(shell pkg-config --cflags python3) -I json/include -I json/include/nlohmann/ -Wno-psabi
-LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread $(shell pkg-config --libs python3) -Wl,-rpath,.
+CFLAGS=-std=c++11 -c -I json/include -I json/include/nlohmann/
+LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread
 INCLUDES=
 SOURCES=	\
 	fs.cpp \
@@ -12,17 +12,26 @@ SOURCES=	\
 	msg.cpp \
 	modules.cpp \
 	cmd.cpp \
-	py.cpp \
 	cmds.cpp \
 	main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=vkbot
 
-ifdef TERMUX
-	LDFLAGS+= -lboost_python36 -latomic
+ifdef NO_PYTHON
+	CFLAGS+= -DNO_PYTHON
 else
-	LDFLAGS+= -lboost_python-py36
+	CFLAGS+= $(shell pkg-config --cflags python3)
+	LDFLAGS+= $(shell pkg-config --libs python3)
+	ifdef TERMUX
+		LDFLAGS+= -lboost_python36 -latomic
+	else
+		LDFLAGS+= -lboost_python-py36
+	endif
+	SOURCES+= 	py.cpp
 endif
+
+CFLAGS+= -Wno-psabi
+LDFLAGS+= -Wl,-rpath,.
 
 all: $(SOURCES) $(EXECUTABLE)
 
