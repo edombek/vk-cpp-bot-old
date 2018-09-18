@@ -1,5 +1,4 @@
 #include "common.h"
-#include <iostream>
 #include <mutex>
 #ifndef NO_PYTHON
 #include "py.h"
@@ -121,7 +120,6 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		command = str::low(command);
 	if (cmd_d.find(command) != cmd_d.cend())
 	{
-		cout << other::getRealTime() + ": start(" + to_string(inMsg->user_id) + "/" + to_string(inMsg->chat_id) + "): " + command << endl;
 		if (module::money::get(to_string(inMsg->user_id)) < cmd_d[command].cost)
 		{
 			(*outMsg)["message"] += "чот тебе $ нехватаит";

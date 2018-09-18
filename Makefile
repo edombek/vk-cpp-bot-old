@@ -23,11 +23,15 @@ else
 	CFLAGS+= $(shell pkg-config --cflags python3)
 	LDFLAGS+= $(shell pkg-config --libs python3)
 	ifdef TERMUX
-		LDFLAGS+= -lboost_python36 -latomic
+		LDFLAGS+= -lboost_python36
 	else
 		LDFLAGS+= -lboost_python-py36
 	endif
 	SOURCES+= 	py.cpp
+endif
+
+ifdef TERMUX
+	LDFLAGS+= -latomic
 endif
 
 CFLAGS+= -Wno-psabi

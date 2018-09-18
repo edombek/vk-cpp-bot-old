@@ -1,5 +1,6 @@
 #include "common.h"
 #include <mutex>
+#include <iostream>
 #include "thr/include/ThreadPool.h"
 
 bool forwardmessages;
@@ -21,12 +22,15 @@ void msg::in(json js) {
 	msgCount++;
 	if (inMsg.msg == "" || (inMsg.flags & 0x02) || inMsg.user_id<0)return;
 	if (!msg::toMe(&inMsg))return;
+	if (!inMsg.words.size())
+		inMsg.words.push_back("help");
 	pool.submit(msg::treatment, inMsg);
 	//msg::treatment(inMsg);
 }
 
 void msg::treatment(message inMsg)
 {
+	cout << other::getRealTime() + ": start(" + to_string(inMsg.msg_id) + ", " +  to_string(inMsg.user_id) + "/" + to_string(inMsg.chat_id) + "): " + inMsg.words[0] << endl;
 	table outMsg = {};
 	string id;
 	if (inMsg.chat_id)
@@ -42,6 +46,7 @@ void msg::treatment(message inMsg)
 	msgCountComplete++;
 	msgLock.unlock();
 	msg::send(outMsg);
+	cout << other::getRealTime() + ": done(" + to_string(inMsg.msg_id) + "): " + inMsg.words[0]  << endl;
 }
 
 void msg::decode(json js, message *inMsg)
@@ -74,8 +79,6 @@ void msg::func(message *inMsg, table *outMsg)
 		(*outMsg)["peer_id"] = to_string(inMsg->chat_id + 2000000000);
 	else
 		(*outMsg)["peer_id"] = to_string(inMsg->user_id);
-	if (!inMsg->words.size())
-		inMsg->words.push_back("help");
 	cmd::start(inMsg, outMsg, inMsg->words[0]);
     if(forwardmessages)
         if (inMsg->chat_id)
