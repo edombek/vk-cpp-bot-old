@@ -619,6 +619,7 @@ typedef struct {
 	int user;
 	int map[sizeGame][sizeGame][2]; // user/level
 	int step;
+	unsigned int count = 0;
 }game_t;
 map<int, game_t*> gameNew = {};
 map<int, map<int, game_t*>> gameUsers = {};
@@ -764,7 +765,7 @@ void cmds::game(message *inMsg, table *outMsg)
 				(*outMsg)["message"] += levels[t->map[x][y][0]][t->map[x][y][1]];
 			(*outMsg)["message"] += "\n";
 		}
-
+		t->count++;
 		msg::send((*outMsg));
 
 		if (gameWin(t))
@@ -775,8 +776,9 @@ void cmds::game(message *inMsg, table *outMsg)
 			}
 			else
 			{
-				(*outMsg)["message"] = "выйграл первый игрок";
+				(*outMsg)["message"] = "выйграл первый игрок\n";
 			}
+			(*outMsg)["message"] += "за "+to_string(t->count-1)+" ходов";
 			module::money::add(to_string(t->users_id[t->user]), 100);
 			gameDeleteMap(t, inMsg->chat_id);
 		}
