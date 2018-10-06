@@ -799,43 +799,10 @@ void cmds::game(message *inMsg, table *outMsg)
 	other::sleep(1000);
 }
 
-int delta(gdImagePtr im, int x, int y, int r)
-{
-	int rr = r*r;
-	long long summ[3] = { 0, 0, 0 };
-	int colors[3];
-	unsigned int c = 0;
-	for (int xc = x - r; xc <= x + r; xc++)
-	{
-		for (int yc = y - r; yc <= y + r; yc++)
-		{
-			if (rr >= (xc - x)*(xc - x) + (yc - y)*(yc - y) && xc >= 0 && yc >= 0 && xc < im->sx&&yc < im->sy)
-			{
-				int color = gdImageGetTrueColorPixel(im, xc, yc);
-				summ[0] += gdTrueColorGetRed(color);
-				summ[1] += gdTrueColorGetGreen(color);
-				summ[2] += gdTrueColorGetBlue(color);
-				c++;
-			}
-		}
-	}
-	int color = gdImageGetTrueColorPixel(im, x, y);
-	colors[0] = gdTrueColorGetRed(color) - summ[0] / c;
-	colors[1] = gdTrueColorGetGreen(color) - summ[1] / c;
-	colors[2] = gdTrueColorGetBlue(color) - summ[2] / c;
-	for (int i = 0; i < 3; i++)
-		if (colors[i] < 0)colors[i] = 0;
-	return gdImageColorClosest(im, colors[0], colors[1], colors[2]);
-}
-
-#define minC 0.2
-#define radD 20
-#define radG 2
-#define deltaP 25
-
+#define dColor 8
 void cmds::neon(message *inMsg, table *outMsg)
 {
-	(*outMsg)["message"]="0%";
+	(*outMsg)["message"]="started";
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i++)
 	{
@@ -850,52 +817,17 @@ void cmds::neon(message *inMsg, table *outMsg)
 		begin = std::chrono::system_clock::now();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
-		gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
-
-		int max = 0;
-		int complete = 0;
+		
 		string msg_id = to_string(vk::send("messages.send", (*outMsg))["response"].get<int>());
-		for (int xc = 0; xc < im->sx; xc++)
-		{
-            if((int)((float)xc/im->sx*100 - complete) >= deltaP)
-            {
-                complete = (int)((float)xc/im->sx*100);
-                vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(complete)+"%"}, {"peer_id", (*outMsg)["peer_id"]}}).dump(4);
-            }
-			for (int yc = 0; yc < im->sy; yc++)
+		for (unsigned int xc = 0; xc < im->sx; xc++)
+			for (unsigned int yc = 0; yc < im->sy; yc++)
 			{
-				int color = delta(im, xc, yc, radD);
-				int colors[3];
-				colors[0] = gdTrueColorGetRed(color);
-				colors[1] = gdTrueColorGetGreen(color);
-				colors[2] = gdTrueColorGetBlue(color);
-				for (int i = 0; i < 3; i++)
-				{
-					if (colors[i] > max)max = colors[i];
-					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
-				}
+                int color = gdImageGetPixel(im, xc, yc);
+                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor+dColor/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor+dColor/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor+dColor/2));
 			}
-        }
-		int minColor = max*minC;
-		for (int xc = 0; xc < im->sx; xc++)
-			for (int yc = 0; yc < im->sy; yc++)
-			{
-				int color = gdImageGetPixel(outIm, xc, yc);
-				int colors[3];
-				colors[0] = gdTrueColorGetRed(color);
-				colors[1] = gdTrueColorGetGreen(color);
-				colors[2] = gdTrueColorGetBlue(color);
-				for (int i = 0; i < 3; i++)
-					if (colors[i] < minColor) colors[i] = 0;
-					else colors[i] = 255;
-					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
-			}
-		gdImagePtr result = gdImageCopyGaussianBlurred(outIm, radG, -1.0);
-		if (result)
-		{
-			gdImageDestroy(outIm);
-			outIm = result;
-		}
+		gdImageEmboss(im);
+		gdImageContrast(im, -500);
+		gdImagePtr outIm = gdImageCopyGaussianBlurred(im, 4, -1.0);
 
 		lockOutP.lock();
 		gdImageFile(outIm, "out.png");
@@ -1024,7 +956,7 @@ void cmds::rgb(message *inMsg, table *outMsg)
 	}
 }
 
-#define dColor 64
+#define dColor2 64
 void cmds::art(message *inMsg, table *outMsg)
 {
 	args res = other::msgPhotos(inMsg);
@@ -1042,7 +974,7 @@ void cmds::art(message *inMsg, table *outMsg)
 			for (unsigned int yc = 0; yc < im->sy; yc++)
 			{
                 int color = gdImageGetPixel(im, xc, yc);
-                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor+dColor/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor+dColor/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor+dColor/2));
+                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor2+dColor2/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor2+dColor2/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor2+dColor2/2));
 			}
         gdImageMeanRemoval(im);
         lockOutP.lock();
