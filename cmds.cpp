@@ -825,11 +825,11 @@ void cmds::neon(message *inMsg, table *outMsg)
 			}
 		gdImageEmboss(im);
 		gdImageContrast(im, -500);
-		gdImagePtr outIm = gdImageCopyGaussianBlurred(im, 4, -1.0);
-
+		//gdImagePtr outIm = gdImageCopyGaussianBlurred(im, 4, -1.0);
+		gdImageGaussianBlur(im);
 		lockOutP.lock();
-		gdImageFile(outIm, "out.png");
-		gdImageDestroy(outIm);
+		gdImageFile(im, "out.png");
+		//gdImageDestroy(outIm);
 		gdImageDestroy(im);
 		string ph = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 		lockOutP.unlock();

@@ -83,10 +83,13 @@ string vk::upload(string path, string peer_id, string type)
 	if(type=="photo")
 	{
 		gdImagePtr im = gdImageCreateFromFile(path.c_str());
-		bool f = im->sx > 2000 || im->sy > 2000;
-		gdImageDestroy(im);
-		if(f)
-			out = vk::upload(path, peer_id, "doc")+",";
+		if(im)
+		{
+			bool f = im->sx > 2000 || im->sy > 2000;
+			gdImageDestroy(im);
+			if(f)
+				out = vk::upload(path, peer_id, "doc")+",";
+		}
 	}
 	json res;
 	table params =
