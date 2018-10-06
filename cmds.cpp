@@ -408,11 +408,10 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 void cmds::pixel(message *inMsg, table *outMsg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i++)
+	for (unsigned i = 0; i < res.size(); i+=2)
 	{
 		string url = res[i];
-		args w = str::words(url, '.');
-		string name = "in." + w[w.size() - 1];
+		string name = "in." + res[i+1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -804,11 +803,10 @@ void cmds::neon(message *inMsg, table *outMsg)
 {
 	(*outMsg)["message"]="started";
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i++)
+	for (unsigned i = 0; i < res.size(); i+=2)
 	{
 		string url = res[i];
-		args w = str::words(url, '.');
-		string name = "in." + w[w.size() - 1];
+		string name = "in." + res[i+1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -933,11 +931,10 @@ void cmds::vox(message *inMsg, table *outMsg)
 void cmds::rgb(message *inMsg, table *outMsg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i++)
+	for (unsigned i = 0; i < res.size(); i+=2)
 	{
 		string url = res[i];
-		args w = str::words(url, '.');
-		string name = "in." + w[w.size() - 1];
+		string name = "in." + res[i+1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -960,11 +957,10 @@ void cmds::rgb(message *inMsg, table *outMsg)
 void cmds::art(message *inMsg, table *outMsg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i++)
+	for (unsigned i = 0; i < res.size(); i+=2)
 	{
 		string url = res[i];
-		args w = str::words(url, '.');
-		string name = "in." + w[w.size() - 1];
+		string name = "in." + res[i+1];
 		lockInP.lock();
 		net::download(url, name);
 		gdImagePtr in = gdImageCreateFromFile( name.c_str());

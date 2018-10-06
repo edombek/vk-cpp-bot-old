@@ -123,7 +123,10 @@ args other::msgPhotos(message *inMsg)
             for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
                 if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
                     maxIndex = si;
-            out.push_back(res[i]["sizes"][maxIndex]["src"]);
+            string url = res[i]["sizes"][maxIndex]["src"];
+			args w = str::words(url, '.');
+            out.push_back(url);
+            out.push_back(w[w.size() - 1]);
         }
 		return out;
 	}
@@ -145,6 +148,12 @@ args other::msgPhotos(message *inMsg)
 				p += "_" + res["attachments"][i]["photo"]["access_key"].get<string>();
 			p += ",";
 		}
+		if (res["attachments"][i]["type"] == "doc")
+			if(res["attachments"][i]["doc"]["ext"]=="jpg" || res["attachments"][i]["doc"]["ext"]=="png")
+			{
+				out.push_back(res["attachments"][i]["doc"]["url"]);
+				out.push_back(res["attachments"][i]["doc"]["ext"]);
+			}
 	}
 	photos["photos"] = p;
 	res = vk::send("photos.getById", photos)["response"];
@@ -154,7 +163,10 @@ args other::msgPhotos(message *inMsg)
 		for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
 			if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
 				maxIndex = si;
-        out.push_back(res[i]["sizes"][maxIndex]["src"]);
+        string url = res[i]["sizes"][maxIndex]["src"];
+		args w = str::words(url, '.');
+        out.push_back(url);
+        out.push_back(w[w.size() - 1]);
     }
     return out;
 }

@@ -74,10 +74,20 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 	return request;
 }
 
+#include <gd.h>
 string vk::upload(string path, string peer_id, string type)
 {
+	string out = "";
 	if (!other::getFileSize(path.c_str()))
 		return "";
+	if(type=="photo")
+	{
+		gdImagePtr im = gdImageCreateFromFile(path.c_str());
+		bool f = im->sx > 2640 || im->sy > 2640;
+		gdImageDestroy(im);
+		if(f)
+			out = vk::upload(path, peer_id, "doc")+",";
+	}
 	json res;
 	table params =
 	{
@@ -112,7 +122,7 @@ string vk::upload(string path, string peer_id, string type)
 	}
 	if (type == "audio_message")
 		type = "doc";
-	return type + to_string((int)res["response"][0]["owner_id"]) + "_" + to_string((int)res["response"][0]["id"]);
+	return out + type + to_string((int)res["response"][0]["owner_id"]) + "_" + to_string((int)res["response"][0]["id"]);
 }
 
 void vk::friends()
