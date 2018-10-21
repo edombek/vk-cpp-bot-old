@@ -30,6 +30,7 @@ namespace cmds
 #ifndef NO_PYTHON
 	void pyinit(message *inMsg, table *outMsg);
 #endif
+	void ascii(message *inMsg, table *outMsg);
 }
 
 #endif

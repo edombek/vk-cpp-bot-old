@@ -104,7 +104,7 @@ string vk::upload(string path, string peer_id, string type)
 	string tmp = net::upload(res["upload_url"], path);
 	if (tmp == "" || str::at(tmp, "504 Gateway Time-out"))
 	{
-		return "";
+		return out;
 	}
 	res = json::parse(tmp);
 	params = {};
@@ -121,7 +121,7 @@ string vk::upload(string path, string peer_id, string type)
 		}
 	if (res["response"].is_null())
 	{
-		return "";
+		return out;
 	}
 	if (type == "audio_message")
 		type = "doc";

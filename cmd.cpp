@@ -49,6 +49,7 @@ void cmd::init()
 	cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
 	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
 	cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
+	cmd::add("ascii", &cmds::ascii, true, "asciiart из фото", 1, 1);
 	
 #ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
@@ -94,7 +95,7 @@ void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost,
 
 void cmd::start(message *inMsg, table *outMsg, string command)
 {
-	if (module::user::get(inMsg) < 2)
+	if (module::user::get(inMsg) < 3)
 	{
 		inMsg->msg = str::replase(inMsg->msg, ". ", "@#$%&");
 		inMsg->msg = str::replase(str::replase(inMsg->msg, "&#", "-"), ".", "-");

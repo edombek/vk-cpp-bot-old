@@ -989,3 +989,55 @@ void cmds::pyinit(message *inMsg, table *outMsg)
     (*outMsg)["message"] = "done";
 }
 #endif
+
+#include <gdfonts.h>
+#define fsx 6
+#define fsy 12
+#define lenS "128"
+const string gscale("$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:, ");
+void cmds::ascii(message *inMsg, table *outMsg)
+{
+	args res = other::msgPhotos(inMsg);
+	for (unsigned i = 0; i < res.size(); i+=2)
+	{
+		string url = res[i];
+		string name = "in." + res[i+1];
+		lockInP.lock();
+		net::download(url, name);
+		gdImagePtr in = gdImageCreateFromFile( name.c_str());
+		lockInP.unlock();
+		inMsg->words.push_back(lenS);
+		unsigned int w = str::fromString(inMsg->words[1]);
+		if(w>1024)
+			w=1024;
+		unsigned int h = w*in->sy/in->sx*fsx/fsy;
+		gdImageSetInterpolationMethod(in, GD_BILINEAR_FIXED);
+		gdImagePtr out = gdImageScale(in, w, h);
+		gdImageDestroy(in);
+		gdImageGrayScale(out);
+		bool dark=false;
+		if(gdTrueColorGetRed(gdImageGetTrueColorPixel(out, 0, 0))<128)
+			dark = true;
+		gdImagePtr im = gdImageCreateTrueColor(w*fsx, h*fsy);
+		for(unsigned int y = 0; y < out->sy; y++)
+		{
+			for(unsigned int x = 0; x < out->sx; x++)
+			{
+				int c = gdImageGetTrueColorPixel(out, x, y);
+				if(dark)
+					c = gscale.size()-(gdTrueColorGetRed(c)*gscale.size()/255);
+				else
+					c = gdTrueColorGetRed(c)*(gscale.size()-1)/255;
+				gdImageChar(im, gdFontSmall, x*fsx, y*fsy, (unsigned char)gscale[c], 0xFFFFFF);
+			}
+		}
+		gdImageDestroy(out);
+		if(!dark)
+			gdImageNegate(im);
+        lockOutP.lock();
+		gdImageFile(im, "out.png");
+		gdImageDestroy(im);
+		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
+		lockOutP.unlock();
+	}
+}
