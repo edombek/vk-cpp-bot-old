@@ -35,4 +35,7 @@ typedef struct{
 #include "cmds.h"
 
 #define MAXTHREADS 3
+#ifdef _MSC_VER
+#define NO_PYTHON 1
+#endif
 #endif

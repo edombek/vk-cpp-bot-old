@@ -48,6 +48,9 @@
     <ClCompile Include="vk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="py.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cmd.h">
@@ -83,7 +86,7 @@
     <ClInclude Include="vk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="json.hpp">
+    <ClInclude Include="py.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

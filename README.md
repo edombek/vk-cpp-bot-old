@@ -34,5 +34,13 @@ git submodule update --init vox thr py json
 make
 ```
 
+On Windows(no python)
+```
+git submodule update --init win32deps
+and compile in Project
+
+copy *.exe vox and win32deps/libs to bot folder
+```
+
 ### Configuration
 after first launch configure bot in config.json
