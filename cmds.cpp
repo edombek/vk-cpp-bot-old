@@ -1010,7 +1010,11 @@ void cmds::ascii(message *inMsg, table *outMsg)
 		unsigned int w = str::fromString(inMsg->words[1]);
 		if(w>1024)
 			w=1024;
+		if(w < 2)
+			w = 2;
 		unsigned int h = w*in->sy/in->sx*fsx/fsy;
+		if(h < 2)
+			h = 2;
 		gdImageSetInterpolationMethod(in, GD_BILINEAR_FIXED);
 		gdImagePtr out = gdImageScale(in, w, h);
 		gdImageDestroy(in);
@@ -1019,6 +1023,7 @@ void cmds::ascii(message *inMsg, table *outMsg)
 		if(gdTrueColorGetRed(gdImageGetTrueColorPixel(out, 0, 0))<128)
 			dark = true;
 		gdImagePtr im = gdImageCreateTrueColor(w*fsx, h*fsy);
+		string s = "";
 		for(unsigned int y = 0; y < out->sy; y++)
 		{
 			for(unsigned int x = 0; x < out->sx; x++)
@@ -1029,15 +1034,19 @@ void cmds::ascii(message *inMsg, table *outMsg)
 				else
 					c = gdTrueColorGetRed(c)*(gscale.size()-1)/255;
 				gdImageChar(im, gdFontSmall, x*fsx, y*fsy, (unsigned char)gscale[c], 0xFFFFFF);
+				s+=gscale[c];
 			}
+			s+="\n";
 		}
 		gdImageDestroy(out);
 		if(!dark)
 			gdImageNegate(im);
         lockOutP.lock();
+        fs::writeData("out.txt", s);
 		gdImageFile(im, "out.png");
 		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
+		(*outMsg)["attachment"] += vk::upload("out.txt", (*outMsg)["peer_id"], "doc") + ",";
 		lockOutP.unlock();
 	}
 }
