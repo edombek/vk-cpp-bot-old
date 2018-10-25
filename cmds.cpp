@@ -15,6 +15,7 @@
 
 mutex lockInP;
 mutex lockOutP;
+mutex lockOutG;
 
 void cmds::weather(message *inMsg, table *outMsg)
 {
@@ -1048,5 +1049,176 @@ void cmds::ascii(message *inMsg, table *outMsg)
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
 		(*outMsg)["attachment"] += vk::upload("out.txt", (*outMsg)["peer_id"], "doc") + ",";
 		lockOutP.unlock();
+	}
+}
+
+typedef struct {
+	double r;       // a fraction between 0 and 1
+	double g;       // a fraction between 0 and 1
+	double b;       // a fraction between 0 and 1
+} rgb_t;
+
+typedef struct {
+	double h;       // angle in degrees
+	double s;       // a fraction between 0 and 1
+	double v;       // a fraction between 0 and 1
+} hsv_t;
+
+hsv_t rgb2hsv(rgb_t in)
+{
+	hsv_t out;
+	double min, max, delta;
+
+	min = in.r < in.g ? in.r : in.g;
+	min = min  < in.b ? min : in.b;
+
+	max = in.r > in.g ? in.r : in.g;
+	max = max  > in.b ? max : in.b;
+
+	out.v = max;                                // v
+	delta = max - min;
+	if (delta < 0.00001)
+	{
+		out.s = 0;
+		out.h = 0; // undefined, maybe nan?
+		return out;
+	}
+	if (max > 0.0) { // NOTE: if Max is == 0, this divide would cause a crash
+		out.s = (delta / max);                  // s
+	}
+	else {
+		// if max is 0, then r = g = b = 0              
+		// s = 0, h is undefined
+		out.s = 0.0;
+		out.h = NAN;                            // its now undefined
+		return out;
+	}
+	if (in.r >= max)                           // > is bogus, just keeps compilor happy
+		out.h = (in.g - in.b) / delta;        // between yellow & magenta
+	else
+		if (in.g >= max)
+			out.h = 2.0 + (in.b - in.r) / delta;  // between cyan & yellow
+		else
+			out.h = 4.0 + (in.r - in.g) / delta;  // between magenta & cyan
+
+	out.h *= 60.0;                              // degrees
+
+	if (out.h < 0.0)
+		out.h += 360.0;
+
+	return out;
+}
+
+
+rgb_t hsv2rgb(hsv_t in)
+{
+	double hh, p, q, t, ff;
+	long i;
+	rgb_t out;
+
+	if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
+		out.r = in.v;
+		out.g = in.v;
+		out.b = in.v;
+		return out;
+	}
+	hh = in.h;
+	if (hh >= 360.0) hh = 0.0;
+	hh /= 60.0;
+	i = (long)hh;
+	ff = hh - i;
+	p = in.v * (1.0 - in.s);
+	q = in.v * (1.0 - (in.s * ff));
+	t = in.v * (1.0 - (in.s * (1.0 - ff)));
+
+	switch (i) {
+	case 0:
+		out.r = in.v;
+		out.g = t;
+		out.b = p;
+		break;
+	case 1:
+		out.r = q;
+		out.g = in.v;
+		out.b = p;
+		break;
+	case 2:
+		out.r = p;
+		out.g = in.v;
+		out.b = t;
+		break;
+
+	case 3:
+		out.r = p;
+		out.g = q;
+		out.b = in.v;
+		break;
+	case 4:
+		out.r = t;
+		out.g = p;
+		out.b = in.v;
+		break;
+	case 5:
+	default:
+		out.r = in.v;
+		out.g = p;
+		out.b = q;
+		break;
+	}
+	return out;
+}
+
+#define dDegress 5
+void cmds::hsv(message *inMsg, table *outMsg)
+{
+	args res = other::msgPhotos(inMsg);
+	for (unsigned i = 0; i < res.size(); i += 2)
+	{
+		string url = res[i];
+		string name = "in." + res[i + 1];
+		lockInP.lock();
+		net::download(url, name);
+		gdImagePtr in = gdImageCreateFromFile(name.c_str());
+		lockInP.unlock();
+		inMsg->words.push_back(lenS);
+		unsigned int w = str::fromString(inMsg->words[1]);
+		if (w>1024)
+			w = 1024;
+		if (w < 2)
+			w = 2;
+		unsigned int h = w*in->sy / in->sx;
+		if (h < 2)
+			h = 2;
+		gdImageSetInterpolationMethod(in, GD_BILINEAR_FIXED);
+		gdImagePtr im = gdImageScale(in, w, h);
+		gdImageDestroy(in);
+
+		lockOutG.lock();
+		FILE *out = fopen("out.gif", "wb");
+		gdImageGifAnimBegin(im, out, 0, 0);
+		gdImagePtr frame = gdImageCreateTrueColor(w, h);
+		for (unsigned int d = 0; d < 360; d += dDegress)
+		{
+			for (unsigned int y = 0; y < h; y++)
+				for (unsigned int x = 0; x < w; x++)
+				{
+					int color = gdImageGetPixel(im, x, y);
+					hsv_t cHsv = rgb2hsv({gdTrueColorGetRed(color)/255.0, gdTrueColorGetGreen(color)/255.0, gdTrueColorGetBlue(color)/255.0});
+					cHsv.h += d;
+					if (cHsv.h > 360)
+						cHsv.h -= 360;
+					rgb_t cRgb = hsv2rgb(cHsv);
+					gdImageSetPixel(frame, x, y, gdImageColorClosest(im, cRgb.r * 255, cRgb.g * 255, cRgb.b * 255));
+				}
+			//gdImageFile(frame, (to_string(d) + ".png").c_str());
+			gdImageGifAnimAdd(frame, out, 1, 0, 0, 1, 1, NULL);
+		}
+		gdImageDestroy(frame);
+		gdImageGifAnimEnd(out);
+		fclose(out);
+		(*outMsg)["attachment"] += vk::upload("out.gif", (*outMsg)["peer_id"], "doc") + ",";
+		lockOutG.unlock();
+
+		gdImageDestroy(im);
 	}
 }

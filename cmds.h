@@ -1,36 +1,39 @@
 #ifndef CMDS_H_INCLUDED
 #define CMDS_H_INCLUDED
 
+#define addCmd(c) void ((c))(message *inMsg, table *outMsg);
+
 namespace cmds
 {
-	void weather(message *inMsg, table *outMsg);
-	void con(message *inMsg, table *outMsg);
-	void upload(message *inMsg, table *outMsg);
-	void video(message *inMsg, table *outMsg);
-	void f(message *inMsg, table *outMsg);
-	void doc(message *inMsg, table *outMsg);
-	void set(message *inMsg, table *outMsg);
-	void citata(message *inMsg, table *outMsg);
-	void execute(message *inMsg, table *outMsg);
-	void moneysend(message *inMsg, table *outMsg);
-	void pixel(message *inMsg, table *outMsg);
-	void math(message *inMsg, table *outMsg);
-	void info(message *inMsg, table *outMsg);
-	void who(message *inMsg, table *outMsg);
-	void when(message *inMsg, table *outMsg);
+	addCmd(weather)
+	addCmd(con)
+	addCmd(upload)
+	addCmd(video)
+	addCmd(f)
+	addCmd(doc)
+	addCmd(set)
+	addCmd(citata)
+	addCmd(execute)
+	addCmd(moneysend)
+	addCmd(pixel)
+	addCmd(math)
+	addCmd(info)
+	addCmd(who)
+	addCmd(when)
 #ifndef NO_PYTHON
-	void py(message *inMsg, table *outMsg);
+	addCmd(py)
 #endif
-	void ip(message *inMsg, table *outMsg);
-	void game(message *inMsg, table *outMsg);
-	void neon(message *inMsg, table *outMsg);
-	void vox(message *inMsg, table *outMsg);
-	void rgb(message *inMsg, table *outMsg);
-	void art(message *inMsg, table *outMsg);
+	addCmd(ip)
+	addCmd(game)
+	addCmd(neon)
+	addCmd(vox)
+	addCmd(rgb)
+	addCmd(art)
 #ifndef NO_PYTHON
-	void pyinit(message *inMsg, table *outMsg);
+	addCmd(pyinit)
 #endif
-	void ascii(message *inMsg, table *outMsg);
+	addCmd(ascii)
+	addCmd(hsv)
 }
 
 #endif

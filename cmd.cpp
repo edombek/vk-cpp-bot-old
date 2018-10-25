@@ -25,7 +25,7 @@ void help(message *inMsg, table *outMsg)
 void cmd::init()
 {
 	cmd_d = {};
-	// comand func print discripion cost cess
+	// comand func print discripion cost acess
 	cmd::add("help", &help, false, "help", 0, 1);
 	cmd::add("погода", &cmds::weather, true, "погодка", 2, 1);
 	cmd::add("con", &cmds::con, true, "консолька)", 0, 5);
@@ -50,6 +50,7 @@ void cmd::init()
 	cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
 	cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
 	cmd::add("ascii", &cmds::ascii, true, "asciiart из фото", 1, 1);
+	cmd::add("hsv", &cmds::hsv, true, "hsv гифка из фото", 1, 1);
 	
 #ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
