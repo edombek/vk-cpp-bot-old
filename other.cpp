@@ -105,17 +105,20 @@ long long int other::getFileSize(const char * fileName)
 	stat(fileName, &file_stat);
 	return file_stat.st_size;
 }
-args other::msgPhotos(message *inMsg)
+
+args msgPhotosR(json res)
 {
-    args out;
-    table params =
+	args out;
+	if(!res["fwd_messages"].is_null())
+		for(json m: res["fwd_messages"])
+		{
+			args temp = msgPhotosR(m);
+			for(auto t:temp)
+				out.push_back(t);
+		}
+	else if (res["attachments"].is_null())
 	{
-		{"message_ids", to_string(inMsg->msg_id)}
-	};
-	json res = vk::send("messages.getById", params)["response"]["items"][0];
-	if (res["attachments"].is_null())
-	{
-        string id = vk::send("users.get", {{"fields", "photo_id"}, {"user_ids", to_string(inMsg->user_id)}})["response"][0]["photo_id"];
+        string id = vk::send("users.get", {{"fields", "photo_id"}, {"user_ids", to_string((int)res["user_id"])}})["response"][0]["photo_id"];
         res = vk::send("photos.getById", {{"photos", id},{"photo_sizes", "1"},{"extended", "0"}})["response"];
         for (unsigned i = 0; i < res.size(); i++)
         {
@@ -130,7 +133,7 @@ args other::msgPhotos(message *inMsg)
         }
 		return out;
 	}
-	params = {};
+	table params = {};
 	json photos;
 	string p = "";
 	photos =
@@ -169,4 +172,14 @@ args other::msgPhotos(message *inMsg)
         out.push_back(w[w.size() - 1]);
     }
     return out;
+}
+
+args other::msgPhotos(message *inMsg)
+{
+    table params =
+	{
+		{"message_ids", to_string(inMsg->msg_id)}
+	};
+	json res = vk::send("messages.getById", params)["response"]["items"][0];
+	return msgPhotosR(res);
 }

@@ -17,7 +17,7 @@ mutex lockInP;
 mutex lockOutP;
 mutex lockOutG;
 
-void cmds::weather(message *inMsg, table *outMsg)
+void cmds::weather(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -45,7 +45,7 @@ void cmds::weather(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += temp;
 }
 
-void cmds::con(message *inMsg, table *outMsg)
+void cmds::con(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -87,7 +87,7 @@ void cmds::con(message *inMsg, table *outMsg)
 	}
 }
 
-void cmds::upload(message *inMsg, table *outMsg)
+void cmds::upload(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -106,7 +106,7 @@ void cmds::upload(message *inMsg, table *outMsg)
 	return;
 }
 
-void cmds::video(message *inMsg, table *outMsg)
+void cmds::video(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -151,7 +151,7 @@ void cmds::video(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += to_string(videos.size());
 }
 
-void cmds::f(message *inMsg, table *outMsg)
+void cmds::f(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -207,7 +207,7 @@ void cmds::f(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += to_string(videos.size());
 }
 
-void cmds::doc(message *inMsg, table *outMsg)
+void cmds::doc(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -249,7 +249,7 @@ void cmds::doc(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += to_string(docs.size());
 }
 
-void cmds::set(message *inMsg, table *outMsg)
+void cmds::set(cmdArg)
 {
 	if (inMsg->words.size() < 3)
 	{
@@ -272,7 +272,7 @@ void cmds::set(message *inMsg, table *outMsg)
 
 #define TXT_SIZE 40
 #define TITLE_SIZE 30
-void cmds::citata(message *inMsg, table *outMsg)
+void cmds::citata(cmdArg)
 {
 	table params =
 	{
@@ -346,7 +346,7 @@ void cmds::citata(message *inMsg, table *outMsg)
 	lockOutP.unlock();
 }
 
-void cmds::execute(message *inMsg, table *outMsg)
+void cmds::execute(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -385,7 +385,7 @@ void cmds::execute(message *inMsg, table *outMsg)
 	}
 }
 
-void cmds::moneysend(message *inMsg, table *outMsg)
+void cmds::moneysend(cmdArg)
 {
 	if (inMsg->words.size() < 3)
 	{
@@ -406,7 +406,7 @@ void cmds::moneysend(message *inMsg, table *outMsg)
 	module::money::add(to_string(id), m);
 }
 
-void cmds::pixel(message *inMsg, table *outMsg)
+void cmds::pixel(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i+=2)
@@ -429,7 +429,7 @@ void cmds::pixel(message *inMsg, table *outMsg)
 
 map<string, int> mathDat;
 mutex mathLock;
-void cmds::math(message *inMsg, table *outMsg)
+void cmds::math(cmdArg)
 {
 	cmd::easySet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id), "матеша");
 	mathLock.lock();
@@ -461,7 +461,7 @@ void cmds::math(message *inMsg, table *outMsg)
 	mathLock.unlock();
 }
 
-void cmds::who(message *inMsg, table *outMsg)
+void cmds::who(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -486,7 +486,7 @@ void cmds::who(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += "Я считаю, что " + who + " - [id" + to_string((int)res[i]["id"]) + "|" + res[i]["first_name"].get<string>() + "]";
 }
 
-void cmds::when(message *inMsg, table *outMsg)
+void cmds::when(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -499,7 +499,7 @@ void cmds::when(message *inMsg, table *outMsg)
 	(*outMsg)["message"] += "Я считаю, что " + when + " произойдёт " + other::getDate(time(NULL) + rand() % 100000000);
 }
 
-void cmds::info(message *inMsg, table *outMsg)
+void cmds::info(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -515,7 +515,7 @@ void cmds::info(message *inMsg, table *outMsg)
 
 #ifndef NO_PYTHON
 #include "py.h"
-void cmds::py(message *inMsg, table *outMsg)
+void cmds::py(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -594,7 +594,7 @@ void cmds::py(message *inMsg, table *outMsg)
 }
 #endif
 
-void cmds::ip(message *inMsg, table *outMsg)
+void cmds::ip(cmdArg)
 {
 	json ip = json::parse(net::send("http://ip-api.com/json/" + str::summ(inMsg->words, 1)));
 	(*outMsg)["message"] = ip.dump(4);
@@ -696,7 +696,7 @@ void gameDeleteMap(game_t *t, int chat_id)
 	delete t;
 }
 
-void cmds::game(message *inMsg, table *outMsg)
+void cmds::game(cmdArg)
 {
 	if (!inMsg->chat_id)
 	{
@@ -800,7 +800,7 @@ void cmds::game(message *inMsg, table *outMsg)
 }
 
 #define dColor 8
-void cmds::neon(message *inMsg, table *outMsg)
+void cmds::neon(cmdArg)
 {
 	(*outMsg)["message"]="started";
 	args res = other::msgPhotos(inMsg);
@@ -866,7 +866,7 @@ struct chunk_t
 	char ID[4]; //"data" = 0x61746164
 	unsigned long size;  //Chunk data bytes
 };
-void cmds::vox(message *inMsg, table *outMsg)
+void cmds::vox(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
@@ -929,7 +929,7 @@ void cmds::vox(message *inMsg, table *outMsg)
 }
 
 #define deltaS 0.01
-void cmds::rgb(message *inMsg, table *outMsg)
+void cmds::rgb(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i+=2)
@@ -955,7 +955,7 @@ void cmds::rgb(message *inMsg, table *outMsg)
 }
 
 #define dColor2 64
-void cmds::art(message *inMsg, table *outMsg)
+void cmds::art(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i+=2)
@@ -984,7 +984,7 @@ void cmds::art(message *inMsg, table *outMsg)
 }
 
 #ifndef NO_PYTHON
-void cmds::pyinit(message *inMsg, table *outMsg)
+void cmds::pyinit(cmdArg)
 {
     cmd::init();
     (*outMsg)["message"] = "done";
@@ -996,7 +996,7 @@ void cmds::pyinit(message *inMsg, table *outMsg)
 #define fsy 12
 #define lenS "128"
 const string gscale("$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:, ");
-void cmds::ascii(message *inMsg, table *outMsg)
+void cmds::ascii(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i+=2)
@@ -1168,8 +1168,8 @@ rgb_t hsv2rgb(hsv_t in)
 	return out;
 }
 
-#define dDegress 5
-void cmds::hsv(message *inMsg, table *outMsg)
+#define dDegress 15
+void cmds::hsv(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i += 2)
@@ -1182,13 +1182,13 @@ void cmds::hsv(message *inMsg, table *outMsg)
 		lockInP.unlock();
 		inMsg->words.push_back(lenS);
 		unsigned int w = str::fromString(inMsg->words[1]);
-		if (w>1024)
-			w = 1024;
-		if (w < 2)
-			w = 2;
+		if (w>2048)
+			w = 2048;
+		if (w < 64)
+			w = 64;
 		unsigned int h = w*in->sy / in->sx;
-		if (h < 2)
-			h = 2;
+		if (h < 64)
+			h = 64;
 		gdImageSetInterpolationMethod(in, GD_BILINEAR_FIXED);
 		gdImagePtr im = gdImageScale(in, w, h);
 		gdImageDestroy(in);

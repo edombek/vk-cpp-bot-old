@@ -1,7 +1,9 @@
 #ifndef CMDS_H_INCLUDED
 #define CMDS_H_INCLUDED
 
-#define addCmd(c) void ((c))(message *inMsg, table *outMsg);
+#define cmdArg message *inMsg, table *outMsg
+#define addCmd(c) void ((c))(cmdArg);
+#define cmdHead(c) void cmd::((c))
 
 namespace cmds
 {
