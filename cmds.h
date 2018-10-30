@@ -36,6 +36,7 @@ namespace cmds
 #endif
 	addCmd(ascii)
 	addCmd(hsv)
+	addCmd(face)
 }
 
 #endif

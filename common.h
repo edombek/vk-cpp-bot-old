@@ -13,14 +13,14 @@ using json = nlohmann::json;
 
 typedef vector<string> args;
 typedef map<string, string> table;
-typedef struct{
-    json js;
-    char flags;
-    int msg_id;
-    int user_id;
-    string msg;
-    int chat_id;
-    args words;
+typedef struct {
+	json js;
+	char flags;
+	int msg_id;
+	int user_id;
+	string msg;
+	int chat_id;
+	args words;
 } message;
 
 #include "fs.h"
@@ -35,7 +35,4 @@ typedef struct{
 #include "cmds.h"
 
 #define MAXTHREADS 3
-#ifdef _MSC_VER
-#define NO_PYTHON 1
-#endif
 #endif

@@ -29,19 +29,19 @@ void vk::init()
 		cout << "invalid vk_token" << endl;
 		data_temp["token"] = "put vk tocken here (vkhost.github.io)";
 	}
-	if(data_temp["names"].is_null())
-        data_temp["names"] =  {"кот", "!", "пуся", "бот"};
-    botname = data_temp["names"];
+	if (data_temp["names"].is_null())
+		data_temp["names"] = { "кот", "!", "пуся", "бот" };
+	botname = data_temp["names"];
 
-    if(data_temp["friendsadd"].is_null())
-        data_temp["friendsadd"] =  true;
-    friendsadd = data_temp["friendsadd"];
+	if (data_temp["friendsadd"].is_null())
+		data_temp["friendsadd"] = true;
+	friendsadd = data_temp["friendsadd"];
 
-    if(data_temp["forwardmessages"].is_null())
-        data_temp["forwardmessages"] =  true;
-    forwardmessages = data_temp["forwardmessages"];
+	if (data_temp["forwardmessages"].is_null())
+		data_temp["forwardmessages"] = true;
+	forwardmessages = data_temp["forwardmessages"];
 
-    fs::writeData(config, data_temp.dump(4));
+	fs::writeData(config, data_temp.dump(4));
 }
 
 mutex l;
@@ -53,13 +53,13 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 	if (sendtoken) {
 		params["access_token"] = vk_token;
 	}
-	if(params.find("v") == params.cend())
+	if (params.find("v") == params.cend())
 		params["v"] = vk_version;
 	nlohmann::json request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
-	unsigned int sleept=0;
+	unsigned int sleept = 0;
 	while (!request["error"].is_null() && (request["error"]["error_code"] == 14 || request["error"]["error_code"] == 10))
 	{
-		sleept+=60000;
+		sleept += 60000;
 		cout << other::getRealTime() + ": VK ERROR: capcha! wait " << sleept << "ms" << endl;
 		other::sleep(sleept);
 		request = nlohmann::json::parse(net::send("https://api.vk.com/method/" + method, params));
@@ -80,15 +80,15 @@ string vk::upload(string path, string peer_id, string type)
 	string out = "";
 	if (!other::getFileSize(path.c_str()))
 		return "";
-	if(type=="photo")
+	if (type == "photo")
 	{
 		gdImagePtr im = gdImageCreateFromFile(path.c_str());
-		if(im)
+		if (im)
 		{
 			bool f = im->sx > 2000 || im->sy > 2000;
 			gdImageDestroy(im);
-			if(f)
-				out = vk::upload(path, peer_id, "doc")+",";
+			if (f)
+				out = vk::upload(path, peer_id, "doc") + ",";
 		}
 	}
 	json res;

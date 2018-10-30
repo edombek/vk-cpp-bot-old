@@ -1,3 +1,7 @@
+#ifndef NO_PYTHON
+#include <boost/python.hpp>
+#include <Python.h>
+#endif
 #include "common.h"
 #include <iostream>
 #ifndef NO_PYTHON
@@ -15,10 +19,10 @@ int main()
 	other::startTime();
 	module::start();
 	cmd::init();
-        thread friends(vk::friends);
+	thread friends(vk::friends);
 	msg::init();
 	lp::loop();
-    if(friendsadd)
-        friends.join();
+	if (friendsadd)
+		friends.join();
 	return 0;
 }

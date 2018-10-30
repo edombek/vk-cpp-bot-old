@@ -6,7 +6,7 @@ namespace module
 	void start();
 	void TR(message *inMsg, table *outMsg, long long int *oldbalance);
 	void postTR(message *inMsg, table *outMsg, long long int *oldbalance);
-	
+
 	namespace money
 	{
 		void read();
@@ -14,7 +14,7 @@ namespace module
 		long long int get(string id);
 		void add(string id, long long int money);
 	}
-	
+
 	namespace user
 	{
 		void read();

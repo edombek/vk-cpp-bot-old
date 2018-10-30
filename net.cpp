@@ -89,8 +89,8 @@ string net::send(string url, string params)
 		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
 		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
 		infoLock.lock();
-		send_dl+=dl;
-		send_ul+=ul;
+		send_dl += dl;
+		send_ul += ul;
 		infoLock.unlock();
 	}
 	curl_easy_cleanup(curl);
@@ -121,7 +121,7 @@ string net::upload(string url, string filename, string params)
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, net_agent);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 600L);
 		if (params != "") {
 			curl_easy_setopt(curl, CURLOPT_POST, 1);
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
@@ -143,8 +143,8 @@ string net::upload(string url, string filename, string params)
 		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
 		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
 		infoLock.lock();
-		upload_dl+=dl;
-		upload_ul+=ul;
+		upload_dl += dl;
+		upload_ul += ul;
 		infoLock.unlock();
 		curl_formfree(formpost);
 	}
@@ -169,7 +169,7 @@ void net::download(string url, string filename, string params)
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, net_agent);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 600L);
 		if (params != "") {
 			curl_easy_setopt(curl, CURLOPT_POST, 1);
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
@@ -186,8 +186,8 @@ void net::download(string url, string filename, string params)
 		curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD, &ul);
 		curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dl);
 		infoLock.lock();
-		download_dl+=dl;
-		download_ul+=ul;
+		download_dl += dl;
+		download_ul += ul;
 		infoLock.unlock();
 	}
 	curl_easy_cleanup(curl);

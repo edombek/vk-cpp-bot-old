@@ -1,5 +1,10 @@
 //команды тут
 
+#ifndef NO_PYTHON
+#include <boost/python.hpp>
+#include <Python.h>
+#endif
+
 #include "common.h"
 #ifdef __linux__
 #include <gd.h>
@@ -54,13 +59,13 @@ void cmds::con(cmdArg)
 	}
 	string cmd = str::summ(inMsg->words, 1);
 	cmd = str::convertHtml(cmd);
-	string comand = "chmod +x cmd-"+to_string(inMsg->msg_id)+".sh";
-	fs::writeData(string("cmd-"+to_string(inMsg->msg_id)+".sh"), cmd);
+	string comand = "chmod +x cmd-" + to_string(inMsg->msg_id) + ".sh";
+	fs::writeData(string("cmd-" + to_string(inMsg->msg_id) + ".sh"), cmd);
 	system(comand.c_str());
-	comand = "bash ./cmd-"+to_string(inMsg->msg_id)+".sh > cmd-"+to_string(inMsg->msg_id)+" 2>&1";
+	comand = "bash ./cmd-" + to_string(inMsg->msg_id) + ".sh > cmd-" + to_string(inMsg->msg_id) + " 2>&1";
 	system(comand.c_str());
-	cmd = fs::readData(string("cmd-"+to_string(inMsg->msg_id)));
-	comand = "rm -rf cmd-"+to_string(inMsg->msg_id)+" cmd-"+to_string(inMsg->msg_id)+".sh";
+	cmd = fs::readData(string("cmd-" + to_string(inMsg->msg_id)));
+	comand = "rm -rf cmd-" + to_string(inMsg->msg_id) + " cmd-" + to_string(inMsg->msg_id) + ".sh";
 	system(comand.c_str());
 	string temp = "";
 	args out;
@@ -322,7 +327,7 @@ void cmds::citata(cmdArg)
 		if (!(i > 0 && out[i]["name"] == out[i - 1]["name"] && out[i]["photo"] == out[i - 1]["photo"] && out[i]["lvl"] == out[i - 1]["lvl"]))
 		{
 			args w = str::words(out[i]["photo"].get<string>(), '.');
-			string n = "avatar." +str::words( w[w.size() - 1], '?')[0];
+			string n = "avatar." + str::words(w[w.size() - 1], '?')[0];
 			/*gdImageFilledRectangle(outIm, out[i]["lvl"].get<int>()*100+150, y, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100+150, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));
 			gdImageFilledEllipse(outIm, out[i]["lvl"].get<int>()*100 + out[i]["tx"].get<int>()-50, y+50, 100, 100, gdImageColorClosest(outIm, 50, 50, 50));*/
@@ -409,10 +414,10 @@ void cmds::moneysend(cmdArg)
 void cmds::pixel(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i+=2)
+	for (unsigned i = 0; i < res.size(); i += 2)
 	{
 		string url = res[i];
-		string name = "in." + res[i+1];
+		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -554,20 +559,20 @@ void cmds::py(cmdArg)
 	py::exec("sys.stdout = mystdout = StringIO()", main_namespace);
 	try
 	{
-		fs::writeData(to_string(inMsg->msg_id)+".py", cmd);
-		py::exec_file(py::str(to_string(inMsg->msg_id)+".py"), main_namespace);
+		fs::writeData(to_string(inMsg->msg_id) + ".py", cmd);
+		py::exec_file(py::str(to_string(inMsg->msg_id) + ".py"), main_namespace);
 		*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 		py::exec("output = str(mystdout.getvalue())", main_namespace);
 		cmd = py::extract<string>(main_module.attr("output"));
 	}
-	catch(py::error_already_set&)
+	catch (py::error_already_set&)
 	{
 		string err = pyF::error();
 		py::exec("output = str(mystdout.getvalue())", main_namespace);
 		cmd = py::extract<string>(main_module.attr("output"));
 		cmd += "\n" + err;
 	}
-	system(string("rm -rf "+to_string(inMsg->msg_id)+".py").c_str());
+	system(string("rm -rf " + to_string(inMsg->msg_id) + ".py").c_str());
 
 	string temp = "";
 	args out;
@@ -778,7 +783,7 @@ void cmds::game(cmdArg)
 			{
 				(*outMsg)["message"] = "выйграл первый игрок\n";
 			}
-			(*outMsg)["message"] += "за "+to_string(t->count-1)+" ходов";
+			(*outMsg)["message"] += "за " + to_string(t->count - 1) + " ходов";
 			module::money::add(to_string(t->users_id[t->user]), 100);
 			gameDeleteMap(t, inMsg->chat_id);
 		}
@@ -802,12 +807,12 @@ void cmds::game(cmdArg)
 #define dColor 8
 void cmds::neon(cmdArg)
 {
-	(*outMsg)["message"]="started";
+	(*outMsg)["message"] = "started";
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i+=2)
+	for (unsigned i = 0; i < res.size(); i += 2)
 	{
 		string url = res[i];
-		string name = "in." + res[i+1];
+		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -816,13 +821,13 @@ void cmds::neon(cmdArg)
 		begin = std::chrono::system_clock::now();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
-		
+
 		string msg_id = to_string(vk::send("messages.send", (*outMsg))["response"].get<int>());
 		for (unsigned int xc = 0; xc < im->sx; xc++)
 			for (unsigned int yc = 0; yc < im->sy; yc++)
 			{
-                int color = gdImageGetPixel(im, xc, yc);
-                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor+dColor/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor+dColor/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor+dColor/2));
+				int color = gdImageGetPixel(im, xc, yc);
+				gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color) - gdTrueColorGetRed(color) % dColor + dColor / 2, gdTrueColorGetGreen(color) - gdTrueColorGetGreen(color) % dColor + dColor / 2, gdTrueColorGetBlue(color) - gdTrueColorGetBlue(color) % dColor + dColor / 2));
 			}
 		gdImageEmboss(im);
 		gdImageContrast(im, -500);
@@ -836,9 +841,9 @@ void cmds::neon(cmdArg)
 		lockOutP.unlock();
 		end = std::chrono::system_clock::now();
 		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000;
-		vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph}});
+		vk::send("messages.edit", { {"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph} });
 	}
-    (*outMsg)["message"]="";
+	(*outMsg)["message"] = "";
 }
 
 #define TPAUSE 0.1 //pause in sec
@@ -932,10 +937,10 @@ void cmds::vox(cmdArg)
 void cmds::rgb(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i+=2)
+	for (unsigned i = 0; i < res.size(); i += 2)
 	{
 		string url = res[i];
-		string name = "in." + res[i+1];
+		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
 		lockInP.unlock();
@@ -958,23 +963,23 @@ void cmds::rgb(cmdArg)
 void cmds::art(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i+=2)
+	for (unsigned i = 0; i < res.size(); i += 2)
 	{
 		string url = res[i];
-		string name = "in." + res[i+1];
+		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
-		gdImagePtr in = gdImageCreateFromFile( name.c_str());
+		gdImagePtr in = gdImageCreateFromFile(name.c_str());
 		lockInP.unlock();
 		gdImagePtr im = gdImageCopyGaussianBlurred(in, 15, -1.0);
 		for (unsigned int xc = 0; xc < im->sx; xc++)
 			for (unsigned int yc = 0; yc < im->sy; yc++)
 			{
-                int color = gdImageGetPixel(im, xc, yc);
-                gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color)-gdTrueColorGetRed(color)%dColor2+dColor2/2, gdTrueColorGetGreen(color)-gdTrueColorGetGreen(color)%dColor2+dColor2/2, gdTrueColorGetBlue(color)-gdTrueColorGetBlue(color)%dColor2+dColor2/2));
+				int color = gdImageGetPixel(im, xc, yc);
+				gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color) - gdTrueColorGetRed(color) % dColor2 + dColor2 / 2, gdTrueColorGetGreen(color) - gdTrueColorGetGreen(color) % dColor2 + dColor2 / 2, gdTrueColorGetBlue(color) - gdTrueColorGetBlue(color) % dColor2 + dColor2 / 2));
 			}
-        gdImageMeanRemoval(im);
-        lockOutP.lock();
+		gdImageMeanRemoval(im);
+		lockOutP.lock();
 		gdImageFile(im, "out.png");
 		gdImageDestroy(im);
 		gdImageDestroy(in);
@@ -986,8 +991,8 @@ void cmds::art(cmdArg)
 #ifndef NO_PYTHON
 void cmds::pyinit(cmdArg)
 {
-    cmd::init();
-    (*outMsg)["message"] = "done";
+	cmd::init();
+	(*outMsg)["message"] = "done";
 }
 #endif
 
@@ -999,51 +1004,51 @@ const string gscale("$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!l
 void cmds::ascii(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);
-	for (unsigned i = 0; i < res.size(); i+=2)
+	for (unsigned i = 0; i < res.size(); i += 2)
 	{
 		string url = res[i];
-		string name = "in." + res[i+1];
+		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
-		gdImagePtr in = gdImageCreateFromFile( name.c_str());
+		gdImagePtr in = gdImageCreateFromFile(name.c_str());
 		lockInP.unlock();
 		inMsg->words.push_back(lenS);
 		unsigned int w = str::fromString(inMsg->words[1]);
-		if(w>1024)
-			w=1024;
-		if(w < 2)
+		if (w > 1024)
+			w = 1024;
+		if (w < 2)
 			w = 2;
-		unsigned int h = w*in->sy/in->sx*fsx/fsy;
-		if(h < 2)
+		unsigned int h = w*in->sy / in->sx*fsx / fsy;
+		if (h < 2)
 			h = 2;
 		gdImageSetInterpolationMethod(in, GD_BILINEAR_FIXED);
 		gdImagePtr out = gdImageScale(in, w, h);
 		gdImageDestroy(in);
 		gdImageGrayScale(out);
-		bool dark=false;
-		if(gdTrueColorGetRed(gdImageGetTrueColorPixel(out, 0, 0))<128)
+		bool dark = false;
+		if (gdTrueColorGetRed(gdImageGetTrueColorPixel(out, 0, 0)) < 128)
 			dark = true;
 		gdImagePtr im = gdImageCreateTrueColor(w*fsx, h*fsy);
 		string s = "";
-		for(unsigned int y = 0; y < out->sy; y++)
+		for (unsigned int y = 0; y < out->sy; y++)
 		{
-			for(unsigned int x = 0; x < out->sx; x++)
+			for (unsigned int x = 0; x < out->sx; x++)
 			{
 				int c = gdImageGetTrueColorPixel(out, x, y);
-				if(dark)
-					c = gscale.size()-(gdTrueColorGetRed(c)*gscale.size()/255);
+				if (dark)
+					c = gscale.size() - (gdTrueColorGetRed(c)*gscale.size() / 255);
 				else
-					c = gdTrueColorGetRed(c)*(gscale.size()-1)/255;
+					c = gdTrueColorGetRed(c)*(gscale.size() - 1) / 255;
 				gdImageChar(im, gdFontSmall, x*fsx, y*fsy, (unsigned char)gscale[c], 0xFFFFFF);
-				s+=gscale[c];
+				s += gscale[c];
 			}
-			s+="\n";
+			s += "\n";
 		}
 		gdImageDestroy(out);
-		if(!dark)
+		if (!dark)
 			gdImageNegate(im);
-        lockOutP.lock();
-        fs::writeData("out.txt", s);
+		lockOutP.lock();
+		fs::writeData("out.txt", s);
 		gdImageFile(im, "out.png");
 		gdImageDestroy(im);
 		(*outMsg)["attachment"] += vk::upload("out.png", (*outMsg)["peer_id"], "photo") + ",";
@@ -1070,10 +1075,10 @@ hsv_t rgb2hsv(rgb_t in)
 	double min, max, delta;
 
 	min = in.r < in.g ? in.r : in.g;
-	min = min  < in.b ? min : in.b;
+	min = min < in.b ? min : in.b;
 
 	max = in.r > in.g ? in.r : in.g;
-	max = max  > in.b ? max : in.b;
+	max = max > in.b ? max : in.b;
 
 	out.v = max;                                // v
 	delta = max - min;
@@ -1182,7 +1187,7 @@ void cmds::hsv(cmdArg)
 		lockInP.unlock();
 		inMsg->words.push_back(lenS);
 		unsigned int w = str::fromString(inMsg->words[1]);
-		if (w>2048)
+		if (w > 2048)
 			w = 2048;
 		if (w < 64)
 			w = 64;
@@ -1203,7 +1208,7 @@ void cmds::hsv(cmdArg)
 				for (unsigned int x = 0; x < w; x++)
 				{
 					int color = gdImageGetPixel(im, x, y);
-					hsv_t cHsv = rgb2hsv({gdTrueColorGetRed(color)/255.0, gdTrueColorGetGreen(color)/255.0, gdTrueColorGetBlue(color)/255.0});
+					hsv_t cHsv = rgb2hsv({ gdTrueColorGetRed(color) / 255.0, gdTrueColorGetGreen(color) / 255.0, gdTrueColorGetBlue(color) / 255.0 });
 					cHsv.h += d;
 					if (cHsv.h > 360)
 						cHsv.h -= 360;
@@ -1220,5 +1225,43 @@ void cmds::hsv(cmdArg)
 		lockOutG.unlock();
 
 		gdImageDestroy(im);
+	}
+}
+
+#include <opencv2/opencv.hpp>
+using namespace cv;
+#ifdef _WIN32
+#pragma comment(lib,"opencv_core2413.lib")
+#pragma comment(lib,"opencv_objdetect2413.lib")
+#pragma comment(lib,"opencv_highgui2413.lib")
+#pragma comment(lib,"opencv_imgproc2413.lib")
+#endif
+void cmds::face(cmdArg)
+{
+	args res = other::msgPhotos(inMsg);
+	for (unsigned i = 0; i < res.size(); i += 2)
+	{
+		string url = res[i];
+		string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
+		net::download(url, name);
+
+		gdImagePtr in = gdImageCreateFromFile(name.c_str());
+
+		cv::CascadeClassifier cascade;
+		cascade.load("./haarcascade_frontalcatface.xml");
+		Mat img = imread(name, CV_LOAD_IMAGE_COLOR);
+		Mat gray;
+		cv::cvtColor(img, gray, COLOR_BGR2GRAY);
+		vector<Rect> faces;
+		cascade.detectMultiScale(gray, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(64, 64));
+		for (size_t i = 0; i < faces.size(); i++)
+		{
+			gdImageRectangle(in, faces[i].x, faces[i].y, faces[i].x + faces[i].width, faces[i].y + faces[i].height, gdImageColorClosest(in, 255, 0, 0));
+		}
+
+		name = "out-" + name;
+		gdImageFile(in, name.c_str());
+		gdImageDestroy(in);
+		(*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";
 	}
 }

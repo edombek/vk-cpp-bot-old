@@ -1,8 +1,13 @@
+#ifndef NO_PYTHON
+#include <boost/python.hpp>
+#include <Python.h>
+#endif
 #include "common.h"
-#include <mutex>
 #ifndef NO_PYTHON
 #include "py.h"
 #endif
+#include <mutex>
+#include <iostream>
 cmd::cmd_table cmd_d;
 
 /*
@@ -51,11 +56,12 @@ void cmd::init()
 	cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
 	cmd::add("ascii", &cmds::ascii, true, "asciiart из фото", 1, 1);
 	cmd::add("hsv", &cmds::hsv, true, "hsv гифка из фото", 1, 1);
-	
+	cmd::add("face", &cmds::face, true, "ищет лица на фото", 1, 1);
+
 #ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
-	
+
 	//py init
 	PySubThread sub;
 	try
@@ -65,10 +71,10 @@ void cmd::init()
 		main_module.attr("init") = cmd::pyAdd;
 		py::exec(py::str(fs::readData("py/init.py")), main_namespace);
 	}
-	catch(py::error_already_set const &)
+	catch (py::error_already_set const &)
 	{
-		PyErr_Print();
-	}
+		cout << pyF::error() << endl;
+}
 #endif
 }
 
@@ -132,7 +138,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
 		}
-		if(cmd_d[command].ex.func!=NULL)
+		if (cmd_d[command].ex.func != NULL)
 			cmd_d[command].ex.func(inMsg, outMsg);
 #ifndef NO_PYTHON
 		else
@@ -167,14 +173,14 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 				py::exec(py::str(fs::readData("py/" + cmd_d[command].ex.pyPath)), main_namespace);
 				*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 			}
-			catch(py::error_already_set&)
+			catch (py::error_already_set&)
 			{
-				(*outMsg)["message"]+=pyF::error();
+				(*outMsg)["message"] += pyF::error();
 			}
-		}
+	}
 #endif
 		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
-	}
+}
 	else
 	{
 		(*outMsg)["message"] = (*outMsg)["message"] + "незнаю такого" + "(" + command + "), введите команду help и уточните";

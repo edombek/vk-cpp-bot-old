@@ -109,28 +109,28 @@ long long int other::getFileSize(const char * fileName)
 args msgPhotosR(json res)
 {
 	args out;
-	if(!res["fwd_messages"].is_null())
-		for(json m: res["fwd_messages"])
+	if (!res["fwd_messages"].is_null())
+		for (json m : res["fwd_messages"])
 		{
 			args temp = msgPhotosR(m);
-			for(auto t:temp)
+			for (auto t : temp)
 				out.push_back(t);
 		}
 	else if (res["attachments"].is_null())
 	{
-        string id = vk::send("users.get", {{"fields", "photo_id"}, {"user_ids", to_string((int)res["user_id"])}})["response"][0]["photo_id"];
-        res = vk::send("photos.getById", {{"photos", id},{"photo_sizes", "1"},{"extended", "0"}})["response"];
-        for (unsigned i = 0; i < res.size(); i++)
-        {
-            int maxIndex = 0;
-            for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
-                if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
-                    maxIndex = si;
-            string url = res[i]["sizes"][maxIndex]["src"];
+		string id = vk::send("users.get", { {"fields", "photo_id"}, {"user_ids", to_string((int)res["user_id"])} })["response"][0]["photo_id"];
+		res = vk::send("photos.getById", { {"photos", id},{"photo_sizes", "1"},{"extended", "0"} })["response"];
+		for (unsigned i = 0; i < res.size(); i++)
+		{
+			int maxIndex = 0;
+			for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
+				if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
+					maxIndex = si;
+			string url = res[i]["sizes"][maxIndex]["src"];
 			args w = str::words(url, '.');
-            out.push_back(url);
-            out.push_back(w[w.size() - 1]);
-        }
+			out.push_back(url);
+			out.push_back(w[w.size() - 1]);
+		}
 		return out;
 	}
 	table params = {};
@@ -152,7 +152,7 @@ args msgPhotosR(json res)
 			p += ",";
 		}
 		if (res["attachments"][i]["type"] == "doc")
-			if(res["attachments"][i]["doc"]["ext"]=="jpg" || res["attachments"][i]["doc"]["ext"]=="png")
+			if (res["attachments"][i]["doc"]["ext"] == "jpg" || res["attachments"][i]["doc"]["ext"] == "png")
 			{
 				out.push_back(res["attachments"][i]["doc"]["url"]);
 				out.push_back(res["attachments"][i]["doc"]["ext"]);
@@ -166,17 +166,17 @@ args msgPhotosR(json res)
 		for (unsigned int si = 0; si < res[i]["sizes"].size(); si++)
 			if (res[i]["sizes"][si]["width"] > res[i]["sizes"][maxIndex]["width"])
 				maxIndex = si;
-        string url = res[i]["sizes"][maxIndex]["src"];
+		string url = res[i]["sizes"][maxIndex]["src"];
 		args w = str::words(url, '.');
-        out.push_back(url);
-        out.push_back(w[w.size() - 1]);
-    }
-    return out;
+		out.push_back(url);
+		out.push_back(w[w.size() - 1]);
+	}
+	return out;
 }
 
 args other::msgPhotos(message *inMsg)
 {
-    table params =
+	table params =
 	{
 		{"message_ids", to_string(inMsg->msg_id)}
 	};

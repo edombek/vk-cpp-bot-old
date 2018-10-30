@@ -34,9 +34,14 @@ git submodule update --init vox thr py json
 make
 ```
 
-On Windows(no python)
+On Windows
 ```
+install python3 to global PATH
+
 git submodule update --init win32deps
+pip install psutil untangle py-cpuinfo
+winlib.bat
+
 and compile in Project
 
 copy *.exe vox and win32deps/libs to bot folder
