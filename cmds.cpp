@@ -1228,7 +1228,9 @@ void cmds::hsv(cmdArg)
 	}
 }
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/objdetect.hpp>
 using namespace cv;
 #ifdef _WIN32
 #pragma comment(lib,"opencv_core2413.lib")
@@ -1253,7 +1255,7 @@ void cmds::face(cmdArg)
 		Mat gray;
 		cv::cvtColor(img, gray, COLOR_BGR2GRAY);
 		vector<Rect> faces;
-		cascade.detectMultiScale(gray, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(64, 64));
+		cascade.detectMultiScale(gray, faces, 1.1, 5, 0 | CASCADE_SCALE_IMAGE, Size(64, 64));
 		for (size_t i = 0; i < faces.size(); i++)
 		{
 			gdImageRectangle(in, faces[i].x, faces[i].y, faces[i].x + faces[i].width, faces[i].y + faces[i].height, gdImageColorClosest(in, 255, 0, 0));
