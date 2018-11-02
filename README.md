@@ -1,4 +1,4 @@
-# VK C++ BOT
+# VK C++ BOT  [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/EVGESHAd/vk-cpp-bot?svg=true)](https://ci.appveyor.com/project/EVGESHAd/vk-cpp-bot)
 
 VK based bot on C++
 
