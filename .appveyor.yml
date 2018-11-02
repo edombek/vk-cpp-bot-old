@@ -31,6 +31,6 @@ after_build:
   - copy haarcascade_frontalface_default.xml build\
   - copy Release\vk-cpp-bot.exe build\
   # Create archive
-  - 7z a -t7z vk-cpp-bot-win.7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on build
+  - 7z a -t7z vk-cpp-bot-win.7z -r build\*
   - appveyor PushArtifact vk-cpp-bot-win.7z
   - curl --upload-file vk-cpp-bot-win.7z https://transfer.sh/vk-cpp-bot-win.7z
