@@ -158,6 +158,8 @@ args msgPhotosR(json res)
 				out.push_back(res["attachments"][i]["doc"]["ext"]);
 			}
 	}
+	if (p == "")
+		return out;
 	photos["photos"] = p;
 	res = vk::send("photos.getById", photos)["response"];
 	for (unsigned i = 0; i < res.size(); i++)

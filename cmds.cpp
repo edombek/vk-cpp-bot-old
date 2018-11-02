@@ -1250,12 +1250,13 @@ void cmds::face(cmdArg)
 		gdImagePtr in = gdImageCreateFromFile(name.c_str());
 
 		cv::CascadeClassifier cascade;
-		cascade.load("./haarcascade_frontalcatface.xml");
+		cascade.load("./haarcascade_frontalface_default.xml");
 		Mat img = imread(name, CV_LOAD_IMAGE_COLOR);
 		Mat gray;
 		cv::cvtColor(img, gray, COLOR_BGR2GRAY);
+		cv::equalizeHist(gray, gray);
 		vector<Rect> faces;
-		cascade.detectMultiScale(gray, faces, 1.1, 5, 0 | CASCADE_SCALE_IMAGE, Size(64, 64));
+		cascade.detectMultiScale(gray, faces, 1.1, 5, 0 | CASCADE_SCALE_IMAGE, Size(16, 16));
 		for (size_t i = 0; i < faces.size(); i++)
 		{
 			gdImageRectangle(in, faces[i].x, faces[i].y, faces[i].x + faces[i].width, faces[i].y + faces[i].height, gdImageColorClosest(in, 255, 0, 0));
