@@ -33,4 +33,4 @@ after_build:
   # Create archive
   - 7z a -t7z vk-cpp-bot-win.7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on build
   - appveyor PushArtifact vk-cpp-bot-win.7z
-  - curl --upload-file xash3d-win.7z https://transfer.sh/vk-cpp-bot-win.7z
+  - curl --upload-file vk-cpp-bot-win.7z https://transfer.sh/vk-cpp-bot-win.7z
