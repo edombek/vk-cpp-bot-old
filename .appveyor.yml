@@ -24,12 +24,12 @@ before_build:
   - git submodule update --init json thr win32deps py vox
 
 after_build:
-  - mkdir build
-  - copy win32deps\libs\ build
-  - copy vox build\
-  - copy py build\
-  - copy haarcascade_frontalface_default.xml build\
-  - copy Release\vk-cpp-bot.exe build\
+  - mkdir vk-cpp-bot
+  - move win32deps\libs\* vk-cpp-bot
+  - move vox vk-cpp-bot\
+  - move py vk-cpp-bot\
+  - move haarcascade_frontalface_default.xml vk-cpp-bot\
+  - move Release\vk-cpp-bot.exe vk-cpp-bot\
   # Create archive
   - 7z a -t7z vk-cpp-bot-win.7z -r build\*
   - appveyor PushArtifact vk-cpp-bot-win.7z
