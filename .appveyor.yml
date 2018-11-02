@@ -21,7 +21,7 @@ configuration:
   - Release
 
 before_build:
-  - git submodule update --init vox thr py win32deps
+  - git submodule update --init json thr win32deps py vox
 
 after_build:
   - mkdir build
