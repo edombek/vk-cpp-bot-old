@@ -8,7 +8,7 @@ First of all, we need to install a lot of packages.
 
 For install on Ubuntu/Debian:
 ```
-sudo apt-get install git gcc g++ make libcurl4-openssl-dev libgd-dev libboost-python-dev python3-dev python3-pip
+sudo apt-get install git gcc g++ make libcurl4-openssl-dev libgd-dev libboost-python-dev python3-dev python3-pip libopencv-highgui-dev libopencv-imgproc-dev libopencv-objdetect-dev
 pip3 install psutil untangle py-cpuinfo
 ````
 For install on Android/Termux(termux.com):
@@ -30,7 +30,7 @@ For install on Gentoo:
 ```
 git clone https://github.com/EVGESHAd/vk-cpp-bot/
 cd ./vk-cpp-bot
-git submodule update --init vox thr py json
+git submodule update --init vox thr py
 make
 ```
 
