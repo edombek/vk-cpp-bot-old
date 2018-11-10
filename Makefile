@@ -1,6 +1,6 @@
 CC=gcc# -fsanitize=address -Ofast -ftree-vectorize
 CFLAGS=-std=c++11 -c -I json/include -I json/include/nlohmann/
-LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs
+LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm
 INCLUDES=
 SOURCES=	\
 	fs.cpp \

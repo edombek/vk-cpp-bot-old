@@ -202,7 +202,7 @@ string module::corp::get(message *inMsg)
 		msg += "Клан: " + name + "\n";
 		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "\n";
 		msg += "Уровень: " + to_string(corps["corps"][name]["lvl"].get<int>()) + "\n";
-		msg += "Заработок: " + to_string(mCoff * (int)pow(1.5, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size()) + "$/мин\n";
+		msg += "Заработок: " + to_string(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size()) + "$/мин\n";
 		msg += "Повысить клан можно за: " + to_string(costUp * corps["corps"][name]["lvl"].get<int>()) + "$\n";
 		cLock.unlock();
 		return msg;
@@ -214,7 +214,7 @@ string module::corp::get(message *inMsg)
 void module::corp::money(string name)
 {
 	int t = time(NULL) / 60;
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["users"].size() * (t - corps["corps"][name]["money_time"].get<int>());
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size() * (t - corps["corps"][name]["money_time"].get<int>());
 	corps["corps"][name]["money_time"] = t;
 	module::corp::save();
 }
@@ -293,6 +293,7 @@ int module::corp::moneysend(message *inMsg)
 		cLock.unlock();
 		return 0;
 	}
+	module::corp::money(name);
 	int sended = corps["corps"][name]["money"].get<int>() / corps["corps"][name]["users"].size();
 	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() - sended * corps["corps"][name]["users"].size();
 	for (auto id : corps["corps"][name]["users"])
