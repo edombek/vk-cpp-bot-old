@@ -22,6 +22,19 @@ namespace module
 		int get(message *inMsg);
 		void set(string id, int acess);
 	}
+
+	namespace corp
+	{
+		void read();
+		void save();
+		string get(message *inMsg);
+		bool add(string name, string id);
+		void money(string name);
+		bool addUser(message *inMsg);
+		bool up(message *inMsg);
+		int moneysend(message *inMsg);
+		void moneyad(message *inMsg, long long int cost);
+	}
 }
 
 #endif

@@ -1268,3 +1268,54 @@ void cmds::face(cmdArg)
 		(*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";
 	}
 }
+
+void cmds::corp(cmdArg)
+{
+	if (inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"] += module::corp::get(inMsg);
+		return;
+	}
+	string name = str::summ(inMsg->words, 1);
+	if (module::corp::add(name, to_string(inMsg->user_id)))
+		(*outMsg)["message"] += "корпорация создана! теперь можешь добавить участников (корпад)";
+	else
+		(*outMsg)["message"] += "корпорация уже существует";
+}
+
+void cmds::corpAdd(cmdArg)
+{
+	if (module::corp::addUser(inMsg))
+		(*outMsg)["message"] += "добавлен!";
+	else
+		(*outMsg)["message"] += "невозможно";
+}
+
+void cmds::corpUp(cmdArg)
+{
+	if (module::corp::up(inMsg))
+		(*outMsg)["message"] += "повысил!";
+	else
+		(*outMsg)["message"] += "невозможно";
+}
+
+void cmds::corpSend(cmdArg)
+{
+	int m = module::corp::moneysend(inMsg);
+	if (m)
+		(*outMsg)["message"] += "Каждому участнику выплаченно по: " + to_string(m) + "$";
+	else
+		(*outMsg)["message"] += "невозможно";
+}
+
+void cmds::corpMAdd(cmdArg)
+{
+	if (inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"] += "неуказал переисляемое значение!";
+		return;
+	}
+	int m = str::fromString(inMsg->words[1]);
+	module::corp::moneyad(inMsg, m);
+	(*outMsg)["message"] += "внесено!";
+}

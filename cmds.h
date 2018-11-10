@@ -37,6 +37,12 @@ namespace cmds
 	addCmd(ascii)
 	addCmd(hsv)
 	addCmd(face)
+	
+	addCmd(corp)
+	addCmd(corpAdd)
+	addCmd(corpUp)
+	addCmd(corpSend)
+	addCmd(corpMAdd)
 }
 
 #endif

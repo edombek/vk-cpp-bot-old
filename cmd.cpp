@@ -58,6 +58,12 @@ void cmd::init()
 	cmd::add("hsv", &cmds::hsv, true, "hsv гифка из фото", 1, 1);
 	cmd::add("face", &cmds::face, true, "ищет лица на фото", 1, 1);
 
+	cmd::add("корп", &cmds::corp, true, "инфо о корпорации, переименование или создание нового", 0, 1);
+	cmd::add("корпад", &cmds::corpAdd, true, "добавление участника", 0, 1);
+	cmd::add("корпап", &cmds::corpUp, true, "повышение уровня", 0, 1);
+	cmd::add("корпзп", &cmds::corpSend, true, "выплата зп", 0, 1);
+	cmd::add("корпвз", &cmds::corpMAdd, true, "взнос", 0, 1);
+
 #ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
 	cmd::add("py", &cmds::py, true, "python 3", 0, 3);
