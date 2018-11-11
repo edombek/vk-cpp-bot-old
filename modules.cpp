@@ -5,6 +5,7 @@
 #include <mutex>
 #include <cmath>
 #include <ctime>
+#include <algorithm>
 
 void module::start()
 {
@@ -210,7 +211,7 @@ void module::corp::leave(message *inMsg)
 	{
 		string id = to_string(inMsg->user_id);
 		corps["users"].erase(id);
-		corps["corps"][name]["users"].erase(id);
+		corps["corps"][name]["users"].erase(find(corps["corps"][name]["users"].begin(), corps["corps"][name]["users"].end(), id));
 	}
 	module::corp::save();
 	cLock.unlock();
@@ -226,11 +227,12 @@ string module::corp::get(message *inMsg)
 		string msg = "";
 		string name = corps["users"][to_string(inMsg->user_id)];
 		module::corp::money(name);
-		msg += "Корп: " + name + "\n";
-		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "\n";
+		msg += "Корп.: " + name + "\n";
+		msg += "Участников: " + to_string(corps["corps"][name]["users"].size()) + "\n";
+		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "$\n";
 		msg += "Уровень: " + to_string(corps["corps"][name]["lvl"].get<int>()) + "\n";
 		msg += "Заработок: " + to_string(int(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size())) + "$/мин\n";
-		msg += "Повысить клан можно за: " + to_string(costUp * corps["corps"][name]["lvl"].get<int>()) + "$\n";
+		msg += "Повысить можно за: " + to_string(costUp * corps["corps"][name]["lvl"].get<int>()) + "$\n";
 		cLock.unlock();
 		return msg;
 	}
@@ -310,13 +312,13 @@ bool module::corp::dropUser(message *inMsg)
 		if (m["user_id"].is_number())
 		{
 			string id = to_string(m["user_id"].get<int>());
-			if (corps["users"][id].is_null())
+			if (!corps["users"][id].is_null())
 			{
 				f = true;
-				if (corps["users"][id] == name)
+				if (corps["users"][id].get<string>() == name)
 				{
 					corps["users"].erase(id);
-					corps["corps"][name]["users"].erase(id);
+					corps["corps"][name]["users"].erase(find(corps["corps"][name]["users"].begin(), corps["corps"][name]["users"].end(), id));
 				}
 			}
 		}

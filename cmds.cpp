@@ -1336,7 +1336,7 @@ void cmds::corpMAdd(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
-		(*outMsg)["message"] += "неуказал переисляемое значение!";
+		(*outMsg)["message"] += "неуказал перечсляемое значение!";
 		return;
 	}
 	int m = str::fromString(inMsg->words[1]);
