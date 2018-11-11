@@ -29,8 +29,10 @@ namespace module
 		void save();
 		string get(message *inMsg);
 		bool add(string name, string id);
+		void leave(message *inMsg);
 		void money(string name);
 		bool addUser(message *inMsg);
+		bool dropUser(message *inMsg);
 		bool up(message *inMsg);
 		int moneysend(message *inMsg);
 		void moneyad(message *inMsg, long long int cost);

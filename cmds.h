@@ -43,6 +43,8 @@ namespace cmds
 	addCmd(corp)
 	addCmd(corpCreate)
 	addCmd(corpAdd)
+	addCmd(corpLeave)
+	addCmd(corpDrop)
 	addCmd(corpUp)
 	addCmd(corpSend)
 	addCmd(corpMAdd)

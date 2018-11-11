@@ -30,6 +30,8 @@ void cmds::init()
 	cmd::add("ап", &cmds::corpUp, true, "повышение уровня", 0, 1, &corpcmd);
 	cmd::add("зп", &cmds::corpSend, true, "выплата зп", 0, 1, &corpcmd);
 	cmd::add("вз", &cmds::corpMAdd, true, "взнос", 0, 1, &corpcmd);
+	cmd::add("покинуть", &cmds::corpLeave, true, "выйти", 0, 1, &corpcmd);
+	cmd::add("дроп", &cmds::corpDrop, true, "выгнать", 0, 1, &corpcmd);
 }
 
 void cmds::weather(cmdArg)
@@ -1340,4 +1342,14 @@ void cmds::corpMAdd(cmdArg)
 	int m = str::fromString(inMsg->words[1]);
 	module::corp::moneyad(inMsg, m);
 	(*outMsg)["message"] += "внесено!";
+}
+
+void cmds::corpLeave(cmdArg)
+{
+	module::corp::leave(inMsg);
+}
+
+void cmds::corpDrop(cmdArg)
+{
+	module::corp::dropUser(inMsg);
 }

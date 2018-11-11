@@ -189,6 +189,33 @@ bool module::corp::add(string name, string id)
 	return true;
 }
 
+void module::corp::leave(message *inMsg)
+{
+	cLock.lock();
+	if (corps["users"][to_string(inMsg->user_id)].is_null())
+	{
+		cLock.unlock();
+		return;
+	}
+	string name = corps["users"][to_string(inMsg->user_id)];
+	if (corps["corps"][name]["admin_id"] == to_string(inMsg->user_id)) // drop corp
+	{
+		for (auto id : corps["corps"][name]["users"])
+		{
+			corps["users"].erase(id.get<string>());
+		}
+		corps["corps"].erase(name);
+	}
+	else
+	{
+		string id = to_string(inMsg->user_id);
+		corps["users"].erase(id);
+		corps["corps"][name]["users"].erase(id);
+	}
+	module::corp::save();
+	cLock.unlock();
+}
+
 #define mCoff 1
 #define costUp 500
 string module::corp::get(message *inMsg)
@@ -202,7 +229,7 @@ string module::corp::get(message *inMsg)
 		msg += "Корп: " + name + "\n";
 		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "\n";
 		msg += "Уровень: " + to_string(corps["corps"][name]["lvl"].get<int>()) + "\n";
-		msg += "Заработок: " + to_string(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size()) + "$/мин\n";
+		msg += "Заработок: " + to_string(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * pow(1.4, corps["corps"][name]["users"].size())) + "$/мин\n";
 		msg += "Повысить клан можно за: " + to_string(costUp * corps["corps"][name]["lvl"].get<int>()) + "$\n";
 		cLock.unlock();
 		return msg;
@@ -214,7 +241,7 @@ string module::corp::get(message *inMsg)
 void module::corp::money(string name)
 {
 	int t = time(NULL) / 60;
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size() * (t - corps["corps"][name]["money_time"].get<int>());
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * pow(1.4, corps["corps"][name]["users"].size()) * (t - corps["corps"][name]["money_time"].get<int>());
 	corps["corps"][name]["money_time"] = t;
 	module::corp::save();
 }
@@ -250,6 +277,47 @@ bool module::corp::addUser(message *inMsg)
 				f = true;
 				corps["users"][id] = name;
 				corps["corps"][name]["users"].push_back(id);
+			}
+		}
+	module::corp::save();
+	cLock.unlock();
+	return f;
+}
+
+bool module::corp::dropUser(message *inMsg)
+{
+	cLock.lock();
+	if (corps["users"][to_string(inMsg->user_id)].is_null())
+	{
+		cLock.unlock();
+		return false;
+	}
+	string name = corps["users"][to_string(inMsg->user_id)];
+	if (corps["corps"][name]["admin_id"] != to_string(inMsg->user_id))
+	{
+		cLock.unlock();
+		return false;
+	}
+	json resp = vk::send("messages.getById", { { "message_ids", to_string(inMsg->msg_id) } })["response"]["items"][0];
+	if (resp["fwd_messages"].is_null())
+	{
+		cLock.unlock();
+		return false;
+	}
+	money(name);
+	bool f = false;
+	for (auto m : resp["fwd_messages"])
+		if (m["user_id"].is_number())
+		{
+			string id = to_string(m["user_id"].get<int>());
+			if (corps["users"][id].is_null())
+			{
+				f = true;
+				if (corps["users"][id] == name)
+				{
+					corps["users"].erase(id);
+					corps["corps"][name]["users"].erase(id);
+				}
 			}
 		}
 	module::corp::save();
@@ -298,6 +366,7 @@ int module::corp::moneysend(message *inMsg)
 	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() - sended * corps["corps"][name]["users"].size();
 	for (auto id : corps["corps"][name]["users"])
 		module::money::add(id, sended);
+	module::corp::save();
 	cLock.unlock();
 	return sended;
 }
@@ -313,5 +382,6 @@ void module::corp::moneyad(message * inMsg, long long int cost)
 	string name = corps["users"][to_string(inMsg->user_id)];
 	module::money::add(to_string(inMsg->user_id), -cost);
 	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + cost;
+	module::corp::save();
 	cLock.unlock();
 }
