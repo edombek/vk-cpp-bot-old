@@ -58,11 +58,9 @@ void cmd::init()
 	cmd::add("hsv", &cmds::hsv, true, "hsv гифка из фото", 1, 1);
 	cmd::add("face", &cmds::face, true, "ищет лица на фото", 1, 1);
 
-	cmd::add("корп", &cmds::corp, true, "инфо о корпорации, переименование или создание нового", 0, 1);
-	cmd::add("корпад", &cmds::corpAdd, true, "добавление участника", 0, 1);
-	cmd::add("корпап", &cmds::corpUp, true, "повышение уровня", 0, 1);
-	cmd::add("корпзп", &cmds::corpSend, true, "выплата зп", 0, 1);
-	cmd::add("корпвз", &cmds::corpMAdd, true, "взнос", 0, 1);
+	cmd::add("корп", &cmds::corp, true, "инфо о корпорации", 0, 1);
+
+	cmds::init();
 
 #ifndef NO_PYTHON
 	cmd::add("pyinit", &cmds::pyinit, true, "re init py cmds", 0, 5);
@@ -84,14 +82,16 @@ void cmd::init()
 #endif
 }
 
-void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess)
+void cmd::add(string command, cmd::msg_func func, bool disp, string info, int cost, int acess, cmd::cmd_table *cmdptr)
 {
-	cmd_d[str::low(command)].ex.func = func;
-	cmd_d[str::low(command)].ex.pyPath = "";
-	cmd_d[str::low(command)].disp = disp;
-	cmd_d[str::low(command)].info = info;
-	cmd_d[str::low(command)].cost = cost;
-	cmd_d[str::low(command)].acess = acess;
+	if (!cmdptr)
+		cmdptr = &cmd_d;
+	(*cmdptr)[str::low(command)].ex.func = func;
+	(*cmdptr)[str::low(command)].ex.pyPath = "";
+	(*cmdptr)[str::low(command)].disp = disp;
+	(*cmdptr)[str::low(command)].info = info;
+	(*cmdptr)[str::low(command)].cost = cost;
+	(*cmdptr)[str::low(command)].acess = acess;
 }
 
 #ifndef NO_PYTHON
@@ -106,7 +106,7 @@ void cmd::pyAdd(string command, string pyPath, bool disp, string info, int cost,
 }
 #endif
 
-void cmd::start(message *inMsg, table *outMsg, string command)
+void cmd::start(message *inMsg, table *outMsg, string command, cmd::cmd_table *cmdptr)
 {
 	if (module::user::get(inMsg) < 3)
 	{
@@ -120,8 +120,10 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 		(*outMsg)["message"] += "вышел";
 		return;
 	}
+	if (!cmdptr)
+		cmdptr = &cmd_d;
 	string t = cmd::easyGet(to_string(inMsg->chat_id) + "_" + to_string(inMsg->user_id));
-	if (t != "" && cmd_d.find(command) == cmd_d.cend())
+	if (t != "" && cmdptr->find(command) == cmdptr->cend())
 	{
 		command = t;
 		args temp;
@@ -132,20 +134,20 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	}
 	else
 		command = str::low(command);
-	if (cmd_d.find(command) != cmd_d.cend())
+	if (cmdptr->find(command) != cmdptr->cend())
 	{
-		if (module::money::get(to_string(inMsg->user_id)) < cmd_d[command].cost)
+		if (module::money::get(to_string(inMsg->user_id)) < cmdptr->at(command).cost)
 		{
 			(*outMsg)["message"] += "чот тебе $ нехватаит";
 			return;
 		}
-		if (module::user::get(inMsg) < cmd_d[command].acess)
+		if (module::user::get(inMsg) < cmdptr->at(command).acess)
 		{
 			(*outMsg)["message"] += "и куды это мы лезем?";
 			return;
 		}
-		if (cmd_d[command].ex.func != NULL)
-			cmd_d[command].ex.func(inMsg, outMsg);
+		if (cmdptr->at(command).ex.func != NULL)
+			cmdptr->at(command).ex.func(inMsg, outMsg);
 #ifndef NO_PYTHON
 		else
 		{
@@ -176,7 +178,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			main_module.attr("msg_imgs") = pyF::toPythonList(other::msgPhotos(inMsg));
 			try
 			{
-				py::exec(py::str(fs::readData("py/" + cmd_d[command].ex.pyPath)), main_namespace);
+				py::exec(py::str(fs::readData("py/" + cmdptr->at(command).ex.pyPath)), main_namespace);
 				*outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
 			}
 			catch (py::error_already_set&)
@@ -185,7 +187,7 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 			}
 	}
 #endif
-		module::money::add(to_string(inMsg->user_id), 0 - cmd_d[command].cost);
+		module::money::add(to_string(inMsg->user_id), 0 - cmdptr->at(command).cost);
 }
 	else
 	{
@@ -195,10 +197,12 @@ void cmd::start(message *inMsg, table *outMsg, string command)
 	return;
 }
 
-string cmd::helpList(message *inMsg)
+string cmd::helpList(message *inMsg, cmd::cmd_table *cmdptr)
 {
 	string out = "";
-	for (auto cmds : cmd_d)
+	if (!cmdptr)
+		cmdptr = &cmd_d;
+	for (auto cmds : *cmdptr)
 	{
 		if (!cmds.second.disp&&module::user::get(inMsg) != 5)continue;
 		if (module::user::get(inMsg) < cmds.second.acess) continue;

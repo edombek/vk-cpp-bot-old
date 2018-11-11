@@ -199,7 +199,7 @@ string module::corp::get(message *inMsg)
 		string msg = "";
 		string name = corps["users"][to_string(inMsg->user_id)];
 		module::corp::money(name);
-		msg += "Клан: " + name + "\n";
+		msg += "Корп: " + name + "\n";
 		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "\n";
 		msg += "Уровень: " + to_string(corps["corps"][name]["lvl"].get<int>()) + "\n";
 		msg += "Заработок: " + to_string(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * corps["corps"][name]["users"].size()) + "$/мин\n";

@@ -22,6 +22,16 @@ mutex lockInP;
 mutex lockOutP;
 mutex lockOutG;
 
+cmd::cmd_table corpcmd;
+void cmds::init()
+{
+	cmd::add("кр", &cmds::corpCreate, true, "создание/переименование корпорации", 0, 1, &corpcmd);
+	cmd::add("ад", &cmds::corpAdd, true, "добавление участника", 0, 1, &corpcmd);
+	cmd::add("ап", &cmds::corpUp, true, "повышение уровня", 0, 1, &corpcmd);
+	cmd::add("зп", &cmds::corpSend, true, "выплата зп", 0, 1, &corpcmd);
+	cmd::add("вз", &cmds::corpMAdd, true, "взнос", 0, 1, &corpcmd);
+}
+
 void cmds::weather(cmdArg)
 {
 	if (inMsg->words.size() < 2)
@@ -1273,12 +1283,24 @@ void cmds::corp(cmdArg)
 {
 	if (inMsg->words.size() < 2)
 	{
-		(*outMsg)["message"] += module::corp::get(inMsg);
+		(*outMsg)["message"] += module::corp::get(inMsg) + "\n\nРабота с корпорациями(подкоманда):";
+		(*outMsg)["message"] += cmd::helpList(inMsg, &corpcmd);
+		return;
+	}
+	inMsg->words.erase(inMsg->words.begin());
+	cmd::start(inMsg, outMsg, inMsg->words[0], &corpcmd);
+}
+
+void cmds::corpCreate(cmdArg)
+{
+	if (inMsg->words.size() < 2)
+	{
+		(*outMsg)["message"] += "Ничего не хочешь уточнить?";
 		return;
 	}
 	string name = str::summ(inMsg->words, 1);
 	if (module::corp::add(name, to_string(inMsg->user_id)))
-		(*outMsg)["message"] += "корпорация создана! теперь можешь добавить участников (корпад)";
+		(*outMsg)["message"] += "Выполнено!";
 	else
 		(*outMsg)["message"] += "корпорация уже существует";
 }

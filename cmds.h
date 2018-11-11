@@ -7,6 +7,8 @@
 
 namespace cmds
 {
+	void init();
+
 	addCmd(weather)
 	addCmd(con)
 	addCmd(upload)
@@ -39,6 +41,7 @@ namespace cmds
 	addCmd(face)
 	
 	addCmd(corp)
+	addCmd(corpCreate)
 	addCmd(corpAdd)
 	addCmd(corpUp)
 	addCmd(corpSend)

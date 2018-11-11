@@ -18,12 +18,12 @@ namespace cmd
 	typedef map<string, cmd_dat> cmd_table;
 
 	void init();
-	void add(string command, cmd::msg_func func, bool disp = false, string info = "", int cost = 0, int acess = 1);
+	void add(string command, cmd::msg_func func, bool disp = false, string info = "", int cost = 0, int acess = 1, cmd::cmd_table *cmdptr = NULL);
 #ifndef NO_PYTHON
 	void pyAdd(string command, string pyPath, bool disp = false, string info = "", int cost = 0, int acess = 1);
 #endif
-	void start(message *inMsg, table *outMsg, string command);
-	string helpList(message *inMsg);
+	void start(message *inMsg, table *outMsg, string command, cmd::cmd_table *cmdptr = NULL);
+	string helpList(message *inMsg, cmd::cmd_table *cmdptr = NULL);
 	void easySet(string id, string cmd);
 	string easyGet(string id);
 }
