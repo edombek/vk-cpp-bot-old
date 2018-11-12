@@ -229,9 +229,9 @@ string module::corp::get(message *inMsg)
 		module::corp::money(name);
 		msg += "Корп.: " + name + "\n";
 		msg += "Участников: " + to_string(corps["corps"][name]["users"].size()) + "\n";
-		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<int>()) + "$\n";
+		msg += "Бюджет: " + to_string(corps["corps"][name]["money"].get<unsigned long int>()) + "$\n";
 		msg += "Уровень: " + to_string(corps["corps"][name]["lvl"].get<int>()) + "\n";
-		msg += "Заработок: " + to_string(int(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size())) + "$/мин\n";
+		msg += "Заработок: " + to_string(int(mCoff * (int)sqrt(64 * corps["corps"][name]["lvl"].get<int>()) * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size())) + "$/мин\n";
 		msg += "Повысить можно за: " + to_string(costUp * corps["corps"][name]["lvl"].get<int>()) + "$\n";
 		cLock.unlock();
 		return msg;
@@ -243,7 +243,7 @@ string module::corp::get(message *inMsg)
 void module::corp::money(string name)
 {
 	int t = time(NULL) / 60;
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + int(mCoff * (int)pow(1.1, corps["corps"][name]["lvl"].get<int>()) * corps["corps"][name]["lvl"].get<int>() * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size()) * (t - corps["corps"][name]["money_time"].get<int>());
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() + int(mCoff * (int)sqrt(64 * corps["corps"][name]["lvl"].get<int>()) * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size());
 	corps["corps"][name]["money_time"] = t;
 	module::corp::save();
 }
@@ -337,12 +337,12 @@ bool module::corp::up(message *inMsg)
 	}
 	string name = corps["users"][to_string(inMsg->user_id)];
 	module::corp::money(name);
-	if (corps["corps"][name]["money"].get<int>() < costUp * corps["corps"][name]["lvl"].get<int>())
+	if (corps["corps"][name]["money"].get<unsigned long int>() < costUp * corps["corps"][name]["lvl"].get<int>())
 	{
 		cLock.unlock();
 		return false;
 	}
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() - costUp * corps["corps"][name]["lvl"].get<int>();
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() - costUp * corps["corps"][name]["lvl"].get<int>();
 	corps["corps"][name]["lvl"] = corps["corps"][name]["lvl"].get<int>() + 1;
 	module::corp::save();
 	cLock.unlock();
@@ -364,8 +364,8 @@ int module::corp::moneysend(message *inMsg)
 		return 0;
 	}
 	module::corp::money(name);
-	int sended = corps["corps"][name]["money"].get<int>() / corps["corps"][name]["users"].size();
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() - sended * corps["corps"][name]["users"].size();
+	int sended = corps["corps"][name]["money"].get<unsigned long int>() / corps["corps"][name]["users"].size();
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() - sended * corps["corps"][name]["users"].size();
 	for (auto id : corps["corps"][name]["users"])
 		module::money::add(id, sended);
 	module::corp::save();
@@ -383,7 +383,7 @@ void module::corp::moneyad(message * inMsg, long long int cost)
 	}
 	string name = corps["users"][to_string(inMsg->user_id)];
 	module::money::add(to_string(inMsg->user_id), -cost);
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<int>() + cost;
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() + cost;
 	module::corp::save();
 	cLock.unlock();
 }
