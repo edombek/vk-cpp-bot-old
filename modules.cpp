@@ -243,7 +243,7 @@ string module::corp::get(message *inMsg)
 void module::corp::money(string name)
 {
 	int t = time(NULL) / 60;
-	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() + int(mCoff * (int)sqrt(64 * corps["corps"][name]["lvl"].get<int>()) * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size());
+	corps["corps"][name]["money"] = corps["corps"][name]["money"].get<unsigned long int>() + int(mCoff * (int)sqrt(64 * corps["corps"][name]["lvl"].get<int>()) * pow(0.95, corps["corps"][name]["users"].size()) * corps["corps"][name]["users"].size()) * (t - corps["corps"][name]["money_time"].get<int>());
 	corps["corps"][name]["money_time"] = t;
 	module::corp::save();
 }
