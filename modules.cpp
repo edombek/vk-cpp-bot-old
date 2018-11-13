@@ -177,7 +177,7 @@ bool module::corp::add(string name, string id)
 		}
 		else // leave and create
 		{
-			corps["corps"][corps["users"][id].get<string>()].erase(id);
+			corps["corps"][corps["users"][id].get<string>()].erase(find(corps["corps"][corps["users"][id].get<string>()].begin(), corps["corps"][corps["users"][id].get<string>()].end(), id));
 			corps["users"][id] = name;
 			corps["corps"][name]["admin_id"] = id;
 			corps["corps"][name]["users"] = { id };
