@@ -118,7 +118,10 @@ args msgPhotosR(json res)
 		}
 	else if (res["attachments"].is_null())
 	{
-		string id = vk::send("users.get", { {"fields", "photo_id"}, {"user_ids", to_string((int)res["user_id"])} })["response"][0]["photo_id"];
+		res = vk::send("users.get", { {"fields", "photo_id"}, {"user_ids", to_string((int)res["user_id"])} })["response"];
+		if(res[0]["photo_id"].is_null())
+			return out;
+		string id = res[0]["photo_id"];
 		res = vk::send("photos.getById", { {"photos", id},{"photo_sizes", "1"},{"extended", "0"} })["response"];
 		for (unsigned i = 0; i < res.size(); i++)
 		{
