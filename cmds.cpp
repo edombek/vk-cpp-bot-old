@@ -1240,9 +1240,9 @@ void cmds::hsv(cmdArg)
 	}
 }
 
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/objdetect.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 using namespace cv;
 #ifdef _WIN32
 #pragma comment(lib,"opencv_core2413.lib")
