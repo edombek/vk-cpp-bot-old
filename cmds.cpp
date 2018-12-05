@@ -816,10 +816,43 @@ void cmds::game(cmdArg)
 	other::sleep(1000);
 }
 
-#define dColor 8
-void cmds::neon(cmdArg)
+int delta(gdImagePtr im, int x, int y, int r)
 {
-	(*outMsg)["message"] = "started";
+	int rr = r*r;
+	long long summ[3] = { 0, 0, 0 };
+	int colors[3];
+	unsigned int c = 0;
+	for (int xc = x - r; xc <= x + r; xc++)
+	{
+		for (int yc = y - r; yc <= y + r; yc++)
+		{
+			if (rr >= (xc - x)*(xc - x) + (yc - y)*(yc - y) && xc >= 0 && yc >= 0 && xc < im->sx&&yc < im->sy)
+			{
+				int color = gdImageGetTrueColorPixel(im, xc, yc);
+				summ[0] += gdTrueColorGetRed(color);
+				summ[1] += gdTrueColorGetGreen(color);
+				summ[2] += gdTrueColorGetBlue(color);
+				c++;
+			}
+		}
+	}
+	int color = gdImageGetTrueColorPixel(im, x, y);
+	colors[0] = gdTrueColorGetRed(color) - summ[0] / c;
+	colors[1] = gdTrueColorGetGreen(color) - summ[1] / c;
+	colors[2] = gdTrueColorGetBlue(color) - summ[2] / c;
+	for (int i = 0; i < 3; i++)
+		if (colors[i] < 0)colors[i] = 0;
+	return gdImageColorClosest(im, colors[0], colors[1], colors[2]);
+}
+
+#define minC 0.2
+#define radD 20
+#define radG 2
+#define deltaP 25
+
+void cmds::neon(message *inMsg, table *outMsg)
+{
+	(*outMsg)["message"]="0%";
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i += 2)
 	{
@@ -833,29 +866,64 @@ void cmds::neon(cmdArg)
 		begin = std::chrono::system_clock::now();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
+		gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
 
+		int max = 0;
+		int complete = 0;
 		string msg_id = to_string(vk::send("messages.send", (*outMsg))["response"].get<int>());
-		for (unsigned int xc = 0; xc < im->sx; xc++)
-			for (unsigned int yc = 0; yc < im->sy; yc++)
+		for (int xc = 0; xc < im->sx; xc++)
+		{
+            if((int)((float)xc/im->sx*100 - complete) >= deltaP)
+            {
+                complete = (int)((float)xc/im->sx*100);
+                vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(complete)+"%"}, {"peer_id", (*outMsg)["peer_id"]}}).dump(4);
+            }
+			for (int yc = 0; yc < im->sy; yc++)
 			{
-				int color = gdImageGetPixel(im, xc, yc);
-				gdImageSetPixel(im, xc, yc, gdImageColorClosest(im, gdTrueColorGetRed(color) - gdTrueColorGetRed(color) % dColor + dColor / 2, gdTrueColorGetGreen(color) - gdTrueColorGetGreen(color) % dColor + dColor / 2, gdTrueColorGetBlue(color) - gdTrueColorGetBlue(color) % dColor + dColor / 2));
+				int color = delta(im, xc, yc, radD);
+				int colors[3];
+				colors[0] = gdTrueColorGetRed(color);
+				colors[1] = gdTrueColorGetGreen(color);
+				colors[2] = gdTrueColorGetBlue(color);
+				for (int i = 0; i < 3; i++)
+				{
+					if (colors[i] > max)max = colors[i];
+					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
+				}
 			}
-		gdImageEmboss(im);
-		gdImageContrast(im, -500);
-		//gdImagePtr outIm = gdImageCopyGaussianBlurred(im, 4, -1.0);
-		gdImageGaussianBlur(im);
+        }
+		int minColor = max*minC;
+		for (int xc = 0; xc < im->sx; xc++)
+			for (int yc = 0; yc < im->sy; yc++)
+			{
+				int color = gdImageGetPixel(outIm, xc, yc);
+				int colors[3];
+				colors[0] = gdTrueColorGetRed(color);
+				colors[1] = gdTrueColorGetGreen(color);
+				colors[2] = gdTrueColorGetBlue(color);
+				for (int i = 0; i < 3; i++)
+					if (colors[i] < minColor) colors[i] = 0;
+					else colors[i] = 255;
+					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
+			}
+		gdImagePtr result = gdImageCopyGaussianBlurred(outIm, radG, -1.0);
+		if (result)
+		{
+			gdImageDestroy(outIm);
+			outIm = result;
+		}
+
 		lockOutP.lock();
-		gdImageFile(im, "out.png");
-		//gdImageDestroy(outIm);
+		gdImageFile(outIm, "out.png");
+		gdImageDestroy(outIm);
 		gdImageDestroy(im);
 		string ph = vk::upload("out.png", (*outMsg)["peer_id"], "photo");
 		lockOutP.unlock();
 		end = std::chrono::system_clock::now();
 		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000;
-		vk::send("messages.edit", { {"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph} });
+		vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph}});
 	}
-	(*outMsg)["message"] = "";
+    (*outMsg)["message"]="";
 }
 
 #define TPAUSE 0.1 //pause in sec
