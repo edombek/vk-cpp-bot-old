@@ -48,6 +48,7 @@ namespace cmds
 	addCmd(corpUp)
 	addCmd(corpSend)
 	addCmd(corpMAdd)
+	addCmd(cartoon)
 }
 
 #endif

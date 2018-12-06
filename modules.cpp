@@ -172,7 +172,7 @@ bool module::corp::add(string name, string id)
 			corps["corps"][name] = corps["corps"][corps["users"][id].get<string>()];
 			corps["corps"].erase(corps["users"][id].get<string>());
 			corps["users"][id] = name;
-			for(auto i: corps["corps"][name]["users"])
+			for (auto i : corps["corps"][name]["users"])
 				corps["users"][i.get<string>()] = name;
 		}
 		else // leave and create
@@ -257,7 +257,7 @@ bool module::corp::addUser(message *inMsg)
 		return false;
 	}
 	string name = corps["users"][to_string(inMsg->user_id)];
-	if(corps["corps"][name]["admin_id"] != to_string(inMsg->user_id))
+	if (corps["corps"][name]["admin_id"] != to_string(inMsg->user_id))
 	{
 		cLock.unlock();
 		return false;
@@ -270,7 +270,7 @@ bool module::corp::addUser(message *inMsg)
 	}
 	money(name);
 	bool f = false;
-	for(auto m: resp["fwd_messages"])
+	for (auto m : resp["fwd_messages"])
 		if (m["user_id"].is_number())
 		{
 			string id = to_string(m["user_id"].get<int>());
@@ -376,7 +376,7 @@ int module::corp::moneysend(message *inMsg)
 void module::corp::moneyad(message * inMsg, long long int cost)
 {
 	cLock.lock();
-	if(cost < 0 || module::money::get(to_string(inMsg->user_id)) < cost)
+	if (cost < 0 || module::money::get(to_string(inMsg->user_id)) < cost)
 	{
 		cLock.unlock();
 		return;

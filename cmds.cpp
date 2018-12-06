@@ -850,9 +850,9 @@ int delta(gdImagePtr im, int x, int y, int r)
 #define radG 2
 #define deltaP 25
 
-void cmds::neon(message *inMsg, table *outMsg)
+void cmds::neon(cmdArg)
 {
-	(*outMsg)["message"]="0%";
+	(*outMsg)["message"] = "0%";
 	args res = other::msgPhotos(inMsg);
 	for (unsigned i = 0; i < res.size(); i += 2)
 	{
@@ -860,12 +860,12 @@ void cmds::neon(message *inMsg, table *outMsg)
 		string name = "in." + res[i + 1];
 		lockInP.lock();
 		net::download(url, name);
-		lockInP.unlock();
 
 		std::chrono::time_point<std::chrono::system_clock> begin, end;
 		begin = std::chrono::system_clock::now();
 
 		gdImagePtr im = gdImageCreateFromFile(name.c_str());
+		lockInP.unlock();
 		gdImagePtr outIm = gdImageCreateTrueColor(im->sx, im->sy);
 
 		int max = 0;
@@ -873,11 +873,11 @@ void cmds::neon(message *inMsg, table *outMsg)
 		string msg_id = to_string(vk::send("messages.send", (*outMsg))["response"].get<int>());
 		for (int xc = 0; xc < im->sx; xc++)
 		{
-            if((int)((float)xc/im->sx*100 - complete) >= deltaP)
-            {
-                complete = (int)((float)xc/im->sx*100);
-                vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(complete)+"%"}, {"peer_id", (*outMsg)["peer_id"]}}).dump(4);
-            }
+			if ((int)((float)xc / im->sx * 100 - complete) >= deltaP)
+			{
+				complete = (int)((float)xc / im->sx * 100);
+				vk::send("messages.edit", { {"message_id", msg_id}, {"message", to_string(complete) + "%"}, {"peer_id", (*outMsg)["peer_id"]} }).dump(4);
+			}
 			for (int yc = 0; yc < im->sy; yc++)
 			{
 				int color = delta(im, xc, yc, radD);
@@ -891,7 +891,7 @@ void cmds::neon(message *inMsg, table *outMsg)
 					gdImageSetPixel(outIm, xc, yc, gdImageColorClosest(im, colors[0], colors[1], colors[2]));
 				}
 			}
-        }
+		}
 		int minColor = max*minC;
 		for (int xc = 0; xc < im->sx; xc++)
 			for (int yc = 0; yc < im->sy; yc++)
@@ -921,9 +921,9 @@ void cmds::neon(message *inMsg, table *outMsg)
 		lockOutP.unlock();
 		end = std::chrono::system_clock::now();
 		unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000;
-		vk::send("messages.edit", {{"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph}});
+		vk::send("messages.edit", { {"message_id", msg_id}, {"message", to_string(t) + " сек."}, {"peer_id", (*outMsg)["peer_id"]}, {"attachment", ph} });
 	}
-    (*outMsg)["message"]="";
+	(*outMsg)["message"] = "";
 }
 
 #define TPAUSE 0.1 //pause in sec
@@ -1420,4 +1420,44 @@ void cmds::corpLeave(cmdArg)
 void cmds::corpDrop(cmdArg)
 {
 	module::corp::dropUser(inMsg);
+}
+
+#define nDownSampling 2
+#define nBts 7
+void cmds::cartoon(cmdArg)
+{
+	args res = other::msgPhotos(inMsg);
+	for (unsigned i = 0; i < res.size(); i += 2)
+	{
+		string url = res[i];
+		string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
+		net::download(url, name);
+
+		Mat img = imread(name);
+		Mat imgColored = img.clone();
+		for (int i = 0; i < nDownSampling; i++)
+			cv::pyrDown(imgColored, imgColored);
+		for (int i = 0; i < nBts; i++)
+		{
+			Mat buff;
+			cv::bilateralFilter(imgColored, buff, 9, 9, 7);
+			imgColored = buff.clone();
+		}
+		for (int i = 0; i < nDownSampling; i++)
+			cv::pyrUp(imgColored, imgColored);
+		Mat imgGray;
+		cv::cvtColor(img, imgGray, COLOR_RGB2GRAY);
+		Mat imgBlur;
+		cv::medianBlur(imgGray, imgBlur, 7);
+		Mat imgEdge;
+		cv::adaptiveThreshold(imgBlur, imgEdge, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 9, 2);
+		cv::cvtColor(imgEdge, imgEdge, COLOR_GRAY2RGB);
+		//cv::imwrite("coloreg.jpg", imgColored);
+		//cv::imwrite("edge.jpg", imgEdge);
+		cv::bitwise_and(imgColored, imgEdge, img);
+		/*
+		name = "out-" + name;
+		cv::imwrite(name, img);
+		(*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";*/
+	}
 }
