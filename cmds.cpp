@@ -1454,6 +1454,7 @@ void cmds::cartoon(cmdArg)
 		cv::cvtColor(imgEdge, imgEdge, COLOR_GRAY2RGB);
 		cv::imwrite("colored-"+name, imgColored);
 		cv::imwrite("edge-"+name, imgEdge);
+		cv::resize(imgEdge, imgEdge, cv::Size(imgColored.size().width, imgColored.size().height));
 		cv::bitwise_and(imgColored, imgEdge, img);
 		cv::imwrite("cartoon-"+name, img);
 		(*outMsg)["attachment"] += vk::upload("cartoon-"+name, (*outMsg)["peer_id"], "photo") + ",";
