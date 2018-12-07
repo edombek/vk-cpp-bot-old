@@ -59,6 +59,12 @@ nlohmann::json vk::send(string method, table params, bool sendtoken)
 	unsigned int sleept = 0;
 	while (!request["error"].is_null() && (request["error"]["error_code"] == 14 || request["error"]["error_code"] == 10))
 	{
+		if (method == "docs.save")
+		{
+			cout << other::getRealTime() + ": VK ERROR: docs not uploaded" << endl;
+			request = {};
+			break;
+		}
 		sleept += 60000;
 		cout << other::getRealTime() + ": VK ERROR: capcha! wait " << sleept << "ms" << endl;
 		other::sleep(sleept);
@@ -88,7 +94,11 @@ string vk::upload(string path, string peer_id, string type)
 			bool f = im->sx > 2000 || im->sy > 2000;
 			gdImageDestroy(im);
 			if (f)
+			{
 				out = vk::upload(path, peer_id, "doc") + ",";
+				if (out == ",")
+					out = "";
+			}
 		}
 	}
 	json res;
