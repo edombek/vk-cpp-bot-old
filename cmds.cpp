@@ -1446,7 +1446,7 @@ void cmds::cartoon(cmdArg)
 		for (int i = 0; i < nDownSampling; i++)
 			cv::pyrUp(imgColored, imgColored);
 		Mat imgGray;
-		cv::cvtColor(img, imgGray, COLOR_RGB2GRAY);
+		cv::cvtColor(imgColored, imgGray, COLOR_RGB2GRAY);
 		Mat imgBlur;
 		cv::medianBlur(imgGray, imgBlur, 7);
 		Mat imgEdge;
