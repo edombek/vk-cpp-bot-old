@@ -1452,12 +1452,12 @@ void cmds::cartoon(cmdArg)
 		Mat imgEdge;
 		cv::adaptiveThreshold(imgBlur, imgEdge, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 9, 2);
 		cv::cvtColor(imgEdge, imgEdge, COLOR_GRAY2RGB);
-		//cv::imwrite("coloreg.jpg", imgColored);
-		//cv::imwrite("edge.jpg", imgEdge);
+		cv::imwrite("colored-"+name, imgColored);
+		cv::imwrite("edge-"+name, imgEdge);
 		cv::bitwise_and(imgColored, imgEdge, img);
-		/*
-		name = "out-" + name;
-		cv::imwrite(name, img);
-		(*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";*/
+		cv::imwrite("cartoon-"+name, img);
+		(*outMsg)["attachment"] += vk::upload("cartoon-"+name, (*outMsg)["peer_id"], "photo") + ",";
+		(*outMsg)["attachment"] += vk::upload("colored-"+name, (*outMsg)["peer_id"], "photo") + ",";
+		(*outMsg)["attachment"] += vk::upload("edge-"+name, (*outMsg)["peer_id"], "photo") + ",";
 	}
 }
