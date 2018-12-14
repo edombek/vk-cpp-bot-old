@@ -1331,7 +1331,7 @@ void cmds::face(cmdArg)
 
 		cv::CascadeClassifier cascade;
 		cascade.load("./haarcascade_frontalface_default.xml");
-		Mat img = imread(name, CV_LOAD_IMAGE_COLOR);
+		Mat img = imread(name);
 		Mat gray;
 		cv::cvtColor(img, gray, COLOR_BGR2GRAY);
 		cv::equalizeHist(gray, gray);
@@ -1424,6 +1424,12 @@ void cmds::corpDrop(cmdArg)
 
 #define nDownSampling 2
 #define nBts 7
+#ifndef CV_ADAPTIVE_THRESH_MEAN_C
+#define CV_ADAPTIVE_THRESH_MEAN_C 0
+#endif
+#ifndef CV_THRESH_BINARY
+#define CV_THRESH_BINARY 0
+#endif
 void cmds::cartoon(cmdArg)
 {
 	args res = other::msgPhotos(inMsg);

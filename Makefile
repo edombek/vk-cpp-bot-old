@@ -1,6 +1,6 @@
 CC=gcc  -Ofast -ftree-vectorize # -fsanitize=addres
-CFLAGS=-std=c++11 -c -I json/include -I json/include/nlohmann/
-LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lm
+CFLAGS=-std=c++11 -c -I json/include -I /usr/include/opencv4
+LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm
 INCLUDES=
 SOURCES=	\
 	fs.cpp \
@@ -25,7 +25,7 @@ else
 	ifdef TERMUX
 		LDFLAGS+= -lboost_python36
 	else
-		LDFLAGS+= -lboost_python-py35
+		LDFLAGS+= -lboost_python3
 	endif
 	SOURCES+= 	py.cpp
 endif
