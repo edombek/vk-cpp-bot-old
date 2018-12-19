@@ -19,7 +19,7 @@ export TERMUX=1
 ```
 For install on Arch:
 ```
-pacman -S git gcc g++ make curl opencv boost gd python-pip python
+pacman -S git gcc make curl opencv boost gd python-pip python
 pip3 install psutil untangle py-cpuinfo
 ```
 For install on Gentoo:
