@@ -142,6 +142,13 @@ void vk::friends()
 {
 	while (true)
 	{
+		for (int i = 0; i < 10; i++)
+		{
+			vk::send("account.setOnline");
+			other::sleep(60000);
+		}
+		if(!friendsadd)
+            continue;
 		json list = vk::send("friends.getRequests", {
 			{"need_viewed", "1"}
 		})["response"]["items"];
@@ -150,11 +157,6 @@ void vk::friends()
 			vk::send("friends.add", {
 				{"user_id", to_string((int)list[i])}
 			});
-		}
-		for (int i = 0; i < 10; i++)
-		{
-			vk::send("account.setOnline");
-			other::sleep(60000);
 		}
 	}
 }
