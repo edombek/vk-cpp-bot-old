@@ -1172,7 +1172,7 @@ hsv_t rgb2hsv(rgb_t in)
 		out.s = (delta / max);                  // s
 	}
 	else {
-		// if max is 0, then r = g = b = 0              
+		// if max is 0, then r = g = b = 0
 		// s = 0, h is undefined
 		out.s = 0.0;
 		out.h = NAN;                            // its now undefined
@@ -1467,4 +1467,27 @@ void cmds::cartoon(cmdArg)
 		(*outMsg)["attachment"] += vk::upload("colored-"+name, (*outMsg)["peer_id"], "photo") + ",";
 		(*outMsg)["attachment"] += vk::upload("edge-"+name, (*outMsg)["peer_id"], "photo") + ",";
 	}
+}
+
+#include <chrono>
+void cmds::test(cmdArg)
+{
+	std::chrono::time_point<std::chrono::system_clock> begin, end;
+	begin = std::chrono::system_clock::now();
+	net::send("http://api.vk.com", "");
+	end = std::chrono::system_clock::now();
+	unsigned int t = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+	(*outMsg)["message"] += "Обработка VK API за: " + to_string(t) + "мс\n";
+	(*outMsg)["message"] += "id чата (пользователь/чат): " + to_string(inMsg->user_id) + "/" + to_string(inMsg->chat_id) + "\n";
+
+	//получаем использование памяти
+	string allMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal")) / 1024));
+	string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal")) - str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable"))) / 1024));
+	string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS")) / 1024));
+
+	(*outMsg)["message"] += "CPU:" + other::getParamOfPath("/proc/cpuinfo", "model name") + "\n";
+	(*outMsg)["message"] += "Потоков занято: " + other::getParamOfPath("/proc/self/status", "Threads") + "\n";
+	(*outMsg)["message"] += "Я сожрал оперативы: " + myMem + " Мб\n";
+	(*outMsg)["message"] += "Сообщений: " + to_string(msg::CountComplete()) + "/" + to_string(msg::Count()) + "\n";
+	(*outMsg)["message"] += "Запущен: " + other::getTime() + "\n";
 }

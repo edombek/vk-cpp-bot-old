@@ -1,19 +1,17 @@
 #include "common.h"
 #include <mutex>
 #include <iostream>
-#include "thr/include/ThreadPool.h"
 
 bool forwardmessages;
 json botname;
 
-//ThreadPool pool(MAXTHREADS);
 mutex msgLock;
 unsigned long long int msgCount = 0;
 unsigned long long int msgCountComplete = 0;
 
 void msg::init()
 {
-	//pool.init();
+	
 }
 
 void msg::in(json js) {
@@ -24,8 +22,8 @@ void msg::in(json js) {
 	if (!msg::toMe(&inMsg))return;
 	if (!inMsg.words.size())
 		inMsg.words.push_back("help");
-	//pool.submit(msg::treatment, inMsg);
-	thread(msg::treatment, inMsg).detach();
+	thread t = thread(msg::treatment, inMsg);
+	t.detach();
 	//msg::treatment(inMsg);
 }
 
