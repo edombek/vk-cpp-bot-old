@@ -79,7 +79,8 @@ void cmd::init()
 	catch (py::error_already_set const &)
 	{
 		cout << pyF::error() << endl;
-}
+	}
+	std::cout << "capacity: " << sizeof(cmd_d) << std::endl;
 #endif
 }
 

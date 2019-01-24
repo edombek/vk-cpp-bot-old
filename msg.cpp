@@ -6,14 +6,14 @@
 bool forwardmessages;
 json botname;
 
-ThreadPool pool(MAXTHREADS);
+//ThreadPool pool(MAXTHREADS);
 mutex msgLock;
 unsigned long long int msgCount = 0;
 unsigned long long int msgCountComplete = 0;
 
 void msg::init()
 {
-	pool.init();
+	//pool.init();
 }
 
 void msg::in(json js) {
@@ -24,7 +24,8 @@ void msg::in(json js) {
 	if (!msg::toMe(&inMsg))return;
 	if (!inMsg.words.size())
 		inMsg.words.push_back("help");
-	pool.submit(msg::treatment, inMsg);
+	//pool.submit(msg::treatment, inMsg);
+	thread(msg::treatment, inMsg).detach();
 	//msg::treatment(inMsg);
 }
 
