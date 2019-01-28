@@ -50,6 +50,7 @@ namespace cmds
 	addCmd(corpMAdd)
 	addCmd(cartoon)
 	addCmd(test)
+	addCmd(swap)
 }
 
 #endif

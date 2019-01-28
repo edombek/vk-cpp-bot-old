@@ -1,7 +1,7 @@
-CC=gcc  -Ofast -ftree-vectorize # -fsanitize=addres
-CFLAGS=-std=c++11 -c -I json/include -I /usr/include/opencv4
-LDFLAGS=-lstdc++ -L. -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm
-INCLUDES=
+CC=g++ -Ofast -ftree-vectorize# -g -fsanitize=address -fsanitize-recover=address -U_FORTIFY_SOURCE -fno-omit-frame-pointer -fno-common -static-libasan
+CFLAGS= -std=c++11 -c
+LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm -ldlib -lblas -llapack -lpng16
+INCLUDES= -Ijson/include -I/usr/include/opencv4
 SOURCES=	\
 	fs.cpp \
 	net.cpp \
@@ -13,6 +13,7 @@ SOURCES=	\
 	modules.cpp \
 	cmd.cpp \
 	cmds.cpp \
+	FaceSwapper.cpp \
 	main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=vkbot
@@ -20,7 +21,7 @@ EXECUTABLE=vkbot
 ifdef NO_PYTHON
 	CFLAGS+= -DNO_PYTHON
 else
-	CFLAGS+= $(shell pkg-config --cflags python3)
+	INCLUDES+= $(shell pkg-config --cflags python3)
 	LDFLAGS+= $(shell pkg-config --libs python3)
 	ifdef TERMUX
 		LDFLAGS+= -lboost_python36
@@ -35,7 +36,6 @@ ifdef TERMUX
 endif
 
 CFLAGS+= -Wno-psabi
-LDFLAGS+= -Wl,-rpath,.
 
 all: $(SOURCES) $(EXECUTABLE)
 

@@ -22,8 +22,7 @@ void msg::in(json js) {
 	if (!msg::toMe(&inMsg))return;
 	if (!inMsg.words.size())
 		inMsg.words.push_back("help");
-	thread t = thread(msg::treatment, inMsg);
-	t.detach();
+	thread(msg::treatment, inMsg).detach();
 	//msg::treatment(inMsg);
 }
 

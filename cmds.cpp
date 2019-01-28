@@ -625,7 +625,7 @@ void cmds::ip(cmdArg)
 }
 
 #define sizeGame 5
-#define ss "⭕"
+#define nullsim "⭕"
 const string nums[] = { "0⃣","1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣" };
 const string levels[2][3] = {
 	{"⚪",{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967224},{(char)4294967280, (char)4294967199, (char)4294967188, (char)4294967222}},
@@ -771,7 +771,7 @@ void cmds::game(cmdArg)
 		if (t->step)
 			gameUplevel(t, str::fromString(inMsg->words[1]), str::fromString(inMsg->words[2]));
 		t->step++;
-		(*outMsg)["message"] += ss;
+		(*outMsg)["message"] += nullsim;
 		for (int i = 0; i < sizeGame; i++)
 			(*outMsg)["message"] += nums[i];
 		(*outMsg)["message"] += "\n";
@@ -1490,4 +1490,36 @@ void cmds::test(cmdArg)
 	(*outMsg)["message"] += "Я сожрал оперативы: " + myMem + " Мб\n";
 	(*outMsg)["message"] += "Сообщений: " + to_string(msg::CountComplete()) + "/" + to_string(msg::Count()) + "\n";
 	(*outMsg)["message"] += "Запущен: " + other::getTime() + "\n";
+}
+
+#include "FaceSwapper.h"
+cv::Rect dlibRectangleToCV(dlib::rectangle r) 
+{
+	return cv::Rect(cv::Point2i(r.left(), r.top()), cv::Point2i(r.right() + 1, r.bottom() + 1));
+}
+
+void cmds::swap(cmdArg)
+{
+	args res = other::msgPhotos(inMsg);
+	FaceSwapper face_swapper("shape_predictor_68_face_landmarks.dat");
+	dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
+	for (unsigned i = 0; i < res.size(); i += 2)
+	{
+		string url = res[i];
+		string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
+		net::download(url, name);
+		
+		cv::Mat img = cv::imread(name);
+		dlib::cv_image<dlib::bgr_pixel> cimg(img);
+		vector<dlib::rectangle> faces = detector(cimg);
+		for (int i = 0; i < int(faces.size()) - 1; i++)
+		{
+			cv::Rect rect1 = dlibRectangleToCV(faces[i]);
+			cv::Rect rect2 = dlibRectangleToCV(faces[i + 1]);
+			face_swapper.swapFaces(img, rect1, rect2);
+		}
+		
+		cv::imwrite("swaped-"+name, img);
+		(*outMsg)["attachment"] += vk::upload("swaped-"+name, (*outMsg)["peer_id"], "photo") + ",";
+	}
 }
