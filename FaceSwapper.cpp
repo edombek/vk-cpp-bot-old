@@ -1,296 +1,275 @@
-#include "FaceSwapper.h"
+#include <dlib/image_io.h>
+#include <dlib/image_processing.h>
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/opencv/cv_image_abstract.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo.hpp>
 
-#include <iostream>
+#ifdef DEBUG
+#include <dlib/gui_widgets.h>
+#include <dlib/image_processing/render_face_detections.h>
+#endif
 
-FaceSwapper::FaceSwapper(const std::string landmarks_path)
+using namespace std;
+
+#ifdef DEBUG
+#define DLOG(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+#else
+#define DLOG(fmt, ...)
+#endif
+
+struct correspondens {
+    std::vector<int> index;
+};
+
+void faceLandmarkDetection(dlib::array2d<unsigned char>& img, dlib::shape_predictor sp, std::vector<cv::Point2f>& landmark)
 {
-    try {
-        dlib::deserialize(landmarks_path) >> pose_model;
-    } catch (std::exception& e) {
-        std::cerr << "Error loading landmarks from " << landmarks_path << std::endl
-                  << "You can download the file from http://sourceforge.net/projects/dclib/files/dlib/v18.10/shape_predictor_68_face_landmarks.dat.bz2" << std::endl;
-        exit(-1);
+    dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
+    std::vector<dlib::rectangle> dets = detector(img);
+    DLOG("Number of faces detected: %lu \n", dets.size());
+    dlib::full_object_detection shape = sp(img, dets[0]);
+    for (int i = 0; i < shape.num_parts(); ++i) {
+        float x = shape.part(i).x();
+        float y = shape.part(i).y();
+        landmark.push_back(cv::Point2f(x, y));
     }
 }
 
-FaceSwapper::~FaceSwapper()
+void delaunayTriangulation(const std::vector<cv::Point2f>& hull, std::vector<correspondens>& delaunayTri, cv::Rect rect)
 {
-}
-
-void FaceSwapper::swapFaces(cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob)
-{
-    small_frame = getMinFrame(frame, rect_ann, rect_bob);
-
-    frame_size = cv::Size(small_frame.cols, small_frame.rows);
-
-    getFacePoints(small_frame);
-
-    getTransformationMatrices();
-
-    mask_ann.create(frame_size, CV_8UC1);
-    mask_bob.create(frame_size, CV_8UC1);
-    getMasks();
-
-    getWarppedMasks();
-
-    refined_masks = getRefinedMasks();
-
-    extractFaces();
-
-    warpped_faces = getWarppedFaces();
-
-    colorCorrectFaces();
-
-    auto refined_mask_ann = refined_masks(big_rect_ann);
-    auto refined_mask_bob = refined_masks(big_rect_bob);
-    featherMask(refined_mask_ann);
-    featherMask(refined_mask_bob);
-
-    pasteFacesOnFrame();
-}
-
-cv::Mat FaceSwapper::getMinFrame(const cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob)
-{
-    cv::Rect bounding_rect = rect_ann | rect_bob;
-
-    bounding_rect -= cv::Point(50, 50);
-    bounding_rect += cv::Size(100, 100);
-
-    bounding_rect &= cv::Rect(0, 0, frame.cols, frame.rows);
-
-    this->rect_ann = rect_ann - bounding_rect.tl();
-    this->rect_bob = rect_bob - bounding_rect.tl();
-
-    big_rect_ann = ((this->rect_ann - cv::Point(rect_ann.width / 4, rect_ann.height / 4)) + cv::Size(rect_ann.width / 2, rect_ann.height / 2)) & cv::Rect(0, 0, bounding_rect.width, bounding_rect.height);
-    big_rect_bob = ((this->rect_bob - cv::Point(rect_bob.width / 4, rect_bob.height / 4)) + cv::Size(rect_bob.width / 2, rect_bob.height / 2)) & cv::Rect(0, 0, bounding_rect.width, bounding_rect.height);
-
-    return frame(bounding_rect);
-}
-
-void FaceSwapper::getFacePoints(const cv::Mat& frame)
-{
-    using namespace dlib;
-
-    dlib_rects[0] = rectangle(rect_ann.x, rect_ann.y, rect_ann.x + rect_ann.width, rect_ann.y + rect_ann.height);
-    dlib_rects[1] = rectangle(rect_bob.x, rect_bob.y, rect_bob.x + rect_bob.width, rect_bob.y + rect_bob.height);
-
-    dlib_frame = frame;
-
-    shapes[0] = pose_model(dlib_frame, dlib_rects[0]);
-    shapes[1] = pose_model(dlib_frame, dlib_rects[1]);
-
-    auto getPoint = [&](int shape_index, int part_index) -> const cv::Point2i {
-        const auto& p = shapes[shape_index].part(part_index);
-        return cv::Point2i(p.x(), p.y());
-    };
-
-    points_ann[0] = getPoint(0, 0);
-    points_ann[1] = getPoint(0, 3);
-    points_ann[2] = getPoint(0, 5);
-    points_ann[3] = getPoint(0, 8);
-    points_ann[4] = getPoint(0, 11);
-    points_ann[5] = getPoint(0, 13);
-    points_ann[6] = getPoint(0, 16);
-
-    cv::Point2i nose_length = getPoint(0, 27) - getPoint(0, 30);
-    points_ann[7] = getPoint(0, 26) + nose_length;
-    points_ann[8] = getPoint(0, 17) + nose_length;
-
-    points_bob[0] = getPoint(1, 0);
-    points_bob[1] = getPoint(1, 3);
-    points_bob[2] = getPoint(1, 5);
-    points_bob[3] = getPoint(1, 8);
-    points_bob[4] = getPoint(1, 11);
-    points_bob[5] = getPoint(1, 13);
-    points_bob[6] = getPoint(1, 16);
-
-    nose_length = getPoint(1, 27) - getPoint(1, 30);
-    points_bob[7] = getPoint(1, 26) + nose_length;
-    points_bob[8] = getPoint(1, 17) + nose_length;
-
-    affine_transform_keypoints_ann[0] = points_ann[3];
-    affine_transform_keypoints_ann[1] = getPoint(0, 36);
-    affine_transform_keypoints_ann[2] = getPoint(0, 45);
-
-    affine_transform_keypoints_bob[0] = points_bob[3];
-    affine_transform_keypoints_bob[1] = getPoint(1, 36);
-    affine_transform_keypoints_bob[2] = getPoint(1, 45);
-
-    feather_amount.width = feather_amount.height = (int)cv::norm(points_ann[0] - points_ann[6]) / 8;
-}
-
-void FaceSwapper::getTransformationMatrices()
-{
-    trans_ann_to_bob = cv::getAffineTransform(affine_transform_keypoints_ann, affine_transform_keypoints_bob);
-    cv::invertAffineTransform(trans_ann_to_bob, trans_bob_to_ann);
-}
-
-void FaceSwapper::getMasks()
-{
-    mask_ann.setTo(cv::Scalar::all(0));
-    mask_bob.setTo(cv::Scalar::all(0));
-
-    cv::fillConvexPoly(mask_ann, points_ann, 9, cv::Scalar(255));
-    cv::fillConvexPoly(mask_bob, points_bob, 9, cv::Scalar(255));
-}
-
-void FaceSwapper::getWarppedMasks()
-{
-    cv::warpAffine(mask_ann, warpped_mask_ann, trans_ann_to_bob, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0));
-    cv::warpAffine(mask_bob, warpped_mask_bob, trans_bob_to_ann, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0));
-}
-
-cv::Mat FaceSwapper::getRefinedMasks()
-{
-    cv::bitwise_and(mask_ann, warpped_mask_bob, refined_ann_and_bob_warpped);
-    cv::bitwise_and(mask_bob, warpped_mask_ann, refined_bob_and_ann_warpped);
-
-    cv::Mat refined_masks(frame_size, CV_8UC1, cv::Scalar(0));
-    refined_ann_and_bob_warpped.copyTo(refined_masks, refined_ann_and_bob_warpped);
-    refined_bob_and_ann_warpped.copyTo(refined_masks, refined_bob_and_ann_warpped);
-
-    return refined_masks;
-}
-
-void FaceSwapper::extractFaces()
-{
-    small_frame.copyTo(face_ann, mask_ann);
-    small_frame.copyTo(face_bob, mask_bob);
-}
-
-cv::Mat FaceSwapper::getWarppedFaces()
-{
-    cv::Mat warpped_faces(frame_size, CV_8UC3, cv::Scalar::all(0));
-
-    cv::warpAffine(face_ann, warpped_face_ann, trans_ann_to_bob, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
-    cv::warpAffine(face_bob, warpped_face_bob, trans_bob_to_ann, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
-
-    warpped_face_ann.copyTo(warpped_faces, warpped_mask_ann);
-    warpped_face_bob.copyTo(warpped_faces, warpped_mask_bob);
-
-    return warpped_faces;
-}
-
-void FaceSwapper::colorCorrectFaces()
-{
-    specifiyHistogram(small_frame(big_rect_ann), warpped_faces(big_rect_ann), warpped_mask_bob(big_rect_ann));
-    specifiyHistogram(small_frame(big_rect_bob), warpped_faces(big_rect_bob), warpped_mask_ann(big_rect_bob));
-}
-
-void FaceSwapper::featherMask(cv::Mat& refined_masks)
-{
-    cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT, cv::Scalar(0));
-
-    cv::blur(refined_masks, refined_masks, feather_amount, cv::Point(-1, -1), cv::BORDER_CONSTANT);
-}
-
-inline void FaceSwapper::pasteFacesOnFrame()
-{
-    for (size_t i = 0; i < small_frame.rows; i++) {
-        auto frame_pixel = small_frame.row(i).data;
-        auto faces_pixel = warpped_faces.row(i).data;
-        auto masks_pixel = refined_masks.row(i).data;
-
-        for (size_t j = 0; j < small_frame.cols; j++) {
-            if (*masks_pixel != 0) {
-                *frame_pixel = ((255 - *masks_pixel) * (*frame_pixel) + (*masks_pixel) * (*faces_pixel)) >> 8; // divide by 256
-                *(frame_pixel + 1) = ((255 - *(masks_pixel + 1)) * (*(frame_pixel + 1)) + (*(masks_pixel + 1)) * (*(faces_pixel + 1))) >> 8;
-                *(frame_pixel + 2) = ((255 - *(masks_pixel + 2)) * (*(frame_pixel + 2)) + (*(masks_pixel + 2)) * (*(faces_pixel + 2))) >> 8;
-            }
-
-            frame_pixel += 3;
-            faces_pixel += 3;
-            masks_pixel++;
+    cv::Subdiv2D subdiv(rect);
+    for (int it = 0; it < hull.size(); it++) {
+        subdiv.insert(hull[it]);
+    }
+    DLOG("done subdiv add : %lu \n", hull.size());
+    std::vector<cv::Vec6f> triangleList;
+    subdiv.getTriangleList(triangleList);
+    DLOG("traingleList number is %lu \n", triangleList.size());
+    for (size_t i = 0; i < triangleList.size(); ++i) {
+        std::vector<cv::Point2f> pt;
+        correspondens ind;
+        cv::Vec6f t = triangleList[i];
+        pt.push_back(cv::Point2f(t[0], t[1]));
+        pt.push_back(cv::Point2f(t[2], t[3]));
+        pt.push_back(cv::Point2f(t[4], t[5]));
+        if (rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2])) {
+            int count = 0;
+            for (int j = 0; j < 3; ++j)
+                for (size_t k = 0; k < hull.size(); k++)
+                    if (abs(pt[j].x - hull[k].x) < 1.0 && abs(pt[j].y - hull[k].y) < 1.0) {
+                        ind.index.push_back(k);
+                        count++;
+                    }
+            if (count == 3)
+                delaunayTri.push_back(ind);
         }
     }
 }
 
-void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_image, cv::Mat mask)
+void applyAffineTransform(cv::Mat& warpImage, cv::Mat& src, std::vector<cv::Point2f>& srcTri, std::vector<cv::Point2f>& dstTri)
 {
+    cv::Mat warpMat = getAffineTransform(srcTri, dstTri);
+    warpAffine(src, warpImage, warpMat, warpImage.size(), cv::INTER_LINEAR, cv::BORDER_REFLECT_101);
+}
 
-    std::memset(source_hist_int, 0, sizeof(int) * 3 * 256);
-    std::memset(target_hist_int, 0, sizeof(int) * 3 * 256);
+void warpTriangle(cv::Mat& img1, cv::Mat& img2, std::vector<cv::Point2f>& t1, std::vector<cv::Point2f>& t2)
+{
+    cv::Rect r1 = boundingRect(t1);
+    cv::Rect r2 = boundingRect(t2);
+    std::vector<cv::Point2f> t1Rect, t2Rect;
+    std::vector<cv::Point> t2RectInt;
+    for (int i = 0; i < 3; i++) {
+        t1Rect.push_back(cv::Point2f(t1[i].x - r1.x, t1[i].y - r1.y));
+        t2Rect.push_back(cv::Point2f(t2[i].x - r2.x, t2[i].y - r2.y));
+        t2RectInt.push_back(cv::Point(t2[i].x - r2.x, t2[i].y - r2.y));
+    }
+    cv::Mat mask = cv::Mat::zeros(r2.height, r2.width, CV_32FC3);
+    fillConvexPoly(mask, t2RectInt, cv::Scalar(1.0, 1.0, 1.0), 16, 0);
+    cv::Mat img1Rect;
+    img1(r1).copyTo(img1Rect);
+    cv::Mat img2Rect = cv::Mat::zeros(r2.height, r2.width, img1Rect.type());
+    applyAffineTransform(img2Rect, img1Rect, t1Rect, t2Rect);
+    multiply(img2Rect, mask, img2Rect);
+    multiply(img2(r2), cv::Scalar(1.0, 1.0, 1.0) - mask, img2(r2));
+    img2(r2) = img2(r2) + img2Rect;
+}
 
-    for (size_t i = 0; i < mask.rows; i++) {
-        auto current_mask_pixel = mask.row(i).data;
-        auto current_source_pixel = source_image.row(i).data;
-        auto current_target_pixel = target_image.row(i).data;
+void time_teack(int* start, const char* event)
+{
+    printf("time - %s : %.0f ms\n", event, (clock() - *start) * 1000.0 / CLOCKS_PER_SEC);
+    *start = clock();
+}
 
-        for (size_t j = 0; j < mask.cols; j++) {
-            if (*current_mask_pixel != 0) {
-                source_hist_int[0][*current_source_pixel]++;
-                source_hist_int[1][*(current_source_pixel + 1)]++;
-                source_hist_int[2][*(current_source_pixel + 2)]++;
+void draw_face(const char* name, cv::Mat image, std::vector<cv::Point2f> points)
+{
+    cv::Mat imageClone = image.clone();
+    for (int i = 0; i < points.size(); i++) {
+        cv::circle(imageClone, cv::Point(points[i].x, points[i].y), 1, cv::Scalar(0, 0, 0));
+    }
+    cv::imshow(name, imageClone);
+}
 
-                target_hist_int[0][*current_target_pixel]++;
-                target_hist_int[1][*(current_target_pixel + 1)]++;
-                target_hist_int[2][*(current_target_pixel + 2)]++;
-            }
+void save_face(string out, cv::Mat image, std::vector<cv::Point2f> points)
+{
+    cv::Mat imageClone = image.clone();
+    for (int i = 0; i < points.size(); i++) {
+        cv::circle(imageClone, cv::Point(points[i].x, points[i].y), 1, cv::Scalar(0, 0, 0));
+    }
+    cv::imwrite(out, imageClone);
+}
 
-            // Advance to next pixel
-            current_source_pixel += 3;
-            current_target_pixel += 3;
-            current_mask_pixel++;
+void swap(string face, string body, string out)
+{
+    int start = clock();
+    bool v = true;
+
+    //----------------- step 1. load the input two images.
+    //----------------------------------
+    dlib::array2d<unsigned char> imgDlib1, imgDlib2;
+    dlib::load_image(imgDlib1, face);
+    dlib::load_image(imgDlib2, body);
+    if (v)
+        time_teack(&start, "load_image");
+
+    cv::Mat imgCV1 = cv::imread(face);
+    cv::Mat imgCV2 = cv::imread(body);
+    if (!imgCV1.data || !imgCV2.data) {
+        printf("No image data \n");
+        return;
+    }
+
+    //---------------------- step 2. detect face landmarks
+    //-----------------------------------
+    dlib::shape_predictor sp;
+    dlib::deserialize("shape_predictor_68_face_landmarks.dat") >> sp;
+    if (v)
+        time_teack(&start, "deserialize");
+
+    std::vector<cv::Point2f> points1, points2;
+
+    faceLandmarkDetection(imgDlib1, sp, points1);
+    if (v)
+        time_teack(&start, "faceLandmarkDetection1");
+#ifdef DEBUG
+    draw_face("Face 1", imgCV1, points1);
+    if (v)
+        time_teack(&start, "circle1");
+#endif
+    save_face("face-" + face, imgCV1, points1);
+
+    faceLandmarkDetection(imgDlib2, sp, points2);
+    if (v)
+        time_teack(&start, "faceLandmarkDetection2");
+#ifdef DEBUG
+    draw_face("Face 2", imgCV2, points2);
+    if (v)
+        time_teack(&start, "circle1");
+#endif
+    save_face("face-" + body, imgCV2, points2);
+
+    //---------------------step 3. find convex hull
+    //-------------------------------------------
+    cv::Mat imgCV1Warped = imgCV2.clone();
+    imgCV1.convertTo(imgCV1, CV_32F);
+    imgCV1Warped.convertTo(imgCV1Warped, CV_32F);
+    if (v)
+        time_teack(&start, "convertWarped");
+
+    std::vector<cv::Point2f> hull1;
+    std::vector<cv::Point2f> hull2;
+    std::vector<int> hullIndex;
+
+    cv::convexHull(points2, hullIndex, false, false);
+    if (v)
+        time_teack(&start, "convexHull");
+
+    for (int i = 0; i < hullIndex.size(); i++) {
+        hull1.push_back(points1[hullIndex[i]]);
+        hull2.push_back(points2[hullIndex[i]]);
+    }
+
+    //-----------------------step 4. delaunay triangulation
+    //-------------------------------------
+    std::vector<correspondens> delaunayTri;
+    cv::Rect rect(0, 0, imgCV1Warped.cols, imgCV1Warped.rows);
+    delaunayTriangulation(hull2, delaunayTri, rect);
+    if (v)
+        time_teack(&start, "delaunayTriangulation");
+
+    for (size_t i = 0; i < delaunayTri.size(); ++i) {
+        std::vector<cv::Point2f> t1, t2;
+        correspondens corpd = delaunayTri[i];
+        for (size_t j = 0; j < 3; ++j) {
+            t1.push_back(hull1[corpd.index[j]]);
+            t2.push_back(hull2[corpd.index[j]]);
         }
+
+        warpTriangle(imgCV1, imgCV1Warped, t1, t2);
+    }
+    if (v)
+        time_teack(&start, "warpTriangle");
+
+    //------------------------step 5. clone seamlessly
+    //-----------------------------------------------
+    // calculate mask
+    std::vector<cv::Point> hull8U;
+
+    for (int i = 0; i < hull2.size(); ++i) {
+        cv::Point pt(hull2[i].x, hull2[i].y);
+        hull8U.push_back(pt);
     }
 
-    // Calc CDF
-    for (size_t i = 1; i < 256; i++) {
-        source_hist_int[0][i] += source_hist_int[0][i - 1];
-        source_hist_int[1][i] += source_hist_int[1][i - 1];
-        source_hist_int[2][i] += source_hist_int[2][i - 1];
+    cv::Mat mask = cv::Mat::zeros(imgCV2.rows, imgCV2.cols, imgCV2.depth());
+    fillConvexPoly(mask, &hull8U[0], hull8U.size(), cv::Scalar(255, 255, 255));
+    if (v)
+        time_teack(&start, "fillConvexPoly");
 
-        target_hist_int[0][i] += target_hist_int[0][i - 1];
-        target_hist_int[1][i] += target_hist_int[1][i - 1];
-        target_hist_int[2][i] += target_hist_int[2][i - 1];
-    }
+    cv::Rect r = boundingRect(hull2);
+    cv::Point center = (r.tl() + r.br()) / 2;
 
-    // Normalize CDF
-    for (size_t i = 0; i < 256; i++) {
-        source_histogram[0][i] = (source_hist_int[0][255] ? (float)source_hist_int[0][i] / source_hist_int[0][255] : 0);
-        source_histogram[1][i] = (source_hist_int[1][255] ? (float)source_hist_int[1][i] / source_hist_int[1][255] : 0);
-        source_histogram[2][i] = (source_hist_int[2][255] ? (float)source_hist_int[2][i] / source_hist_int[2][255] : 0);
+    cv::Mat output;
+    imgCV1Warped.convertTo(imgCV1Warped, CV_8UC3);
+#ifdef DEBUG
+    cv::imshow("imgCV1Warped", imgCV1Warped);
+    if (v)
+        time_teack(&start, "imgCV1Warped");
+#endif
+    cv::seamlessClone(imgCV1Warped, imgCV2, mask, center, output, cv::NORMAL_CLONE);
+    if (v)
+        time_teack(&start, "seamlessClone");
 
-        target_histogram[0][i] = (target_hist_int[0][255] ? (float)target_hist_int[0][i] / target_hist_int[0][255] : 0);
-        target_histogram[1][i] = (target_hist_int[1][255] ? (float)target_hist_int[1][i] / target_hist_int[1][255] : 0);
-        target_histogram[2][i] = (target_hist_int[2][255] ? (float)target_hist_int[2][i] / target_hist_int[2][255] : 0);
-    }
+    //------------------------step 6. beauty
+    //-----------------------------------------------
+    cv::Mat dst;
 
-    // Create lookup table
+    int value1 = 3, value2 = 1;
 
-    auto binary_search = [&](const float needle, const float haystack[]) -> uint8_t {
-        uint8_t l = 0, r = 255, m;
-        while (l < r) {
-            m = (l + r) / 2;
-            if (needle > haystack[m])
-                l = m + 1;
-            else
-                r = m - 1;
-        }
-        // TODO check closest value
-        return m;
-    };
+    int dx = value1 * 5;
+    double fc = value1 * 12.5;
+    int p = 50;
+    cv::Mat temp1, temp2, temp3, temp4;
 
-    for (size_t i = 0; i < 256; i++) {
-        LUT[0][i] = binary_search(target_histogram[0][i], source_histogram[0]);
-        LUT[1][i] = binary_search(target_histogram[1][i], source_histogram[1]);
-        LUT[2][i] = binary_search(target_histogram[2][i], source_histogram[2]);
-    }
+    bilateralFilter(output, temp1, dx, fc, fc);
 
-    // repaint pixels
-    for (size_t i = 0; i < mask.rows; i++) {
-        auto current_mask_pixel = mask.row(i).data;
-        auto current_target_pixel = target_image.row(i).data;
-        for (size_t j = 0; j < mask.cols; j++) {
-            if (*current_mask_pixel != 0) {
-                *current_target_pixel = LUT[0][*current_target_pixel];
-                *(current_target_pixel + 1) = LUT[1][*(current_target_pixel + 1)];
-                *(current_target_pixel + 2) = LUT[2][*(current_target_pixel + 2)];
-            }
+    temp2 = (temp1 - output + 128);
 
-            // Advance to next pixel
-            current_target_pixel += 3;
-            current_mask_pixel++;
-        }
-    }
+    GaussianBlur(temp2, temp3, cv::Size(2 * value2 - 1, 2 * value2 - 1), 0, 0);
+
+    temp4 = output + 2 * temp3 - 255;
+
+    dst = (output * (100 - p) + temp4 * p) / 100;
+    if (v)
+        time_teack(&start, "beauty");
+
+    cv::imwrite(out, dst);
+    if (v)
+        time_teack(&start, "imwrite");
+
+#ifdef DEBUG
+    cv::imshow("Beauty", dst);
+    cv::imshow("Face Swapped", output);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+#endif
 }

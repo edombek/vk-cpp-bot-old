@@ -59,7 +59,6 @@ void cmd::init()
     cmd::add("face", &cmds::face, true, "ищет лица на фото", 1, 1);
     cmd::add("crt", &cmds::cartoon, true, "фото в мультипликационный вид", 1, 1);
     cmd::add("ii", &cmds::test, true, "core info", 0, 1);
-    cmd::add("свап", &cmds::swap, true, "свапнуть лица на фото", 2, 1);
 
     cmd::add("корп", &cmds::corp, true, "инфо о корпорации", 0, 1);
 

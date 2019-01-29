@@ -1208,43 +1208,28 @@ void cmds::hsv(cmdArg)
     }
 }
 
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/objdetect/objdetect.hpp>
-using namespace cv;
-#ifdef _WIN32
-#pragma comment(lib, "opencv_core2413.lib")
-#pragma comment(lib, "opencv_objdetect2413.lib")
-#pragma comment(lib, "opencv_highgui2413.lib")
-#pragma comment(lib, "opencv_imgproc2413.lib")
-#endif
+void swap(string face, string body, string out);
 void cmds::face(cmdArg)
 {
     args res = other::msgPhotos(inMsg);
-    for (unsigned i = 0; i < res.size(); i += 2) {
-        string url = res[i];
-        string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
-        net::download(url, name);
-
-        gdImagePtr in = gdImageCreateFromFile(name.c_str());
-
-        cv::CascadeClassifier cascade;
-        cascade.load("./haarcascade_frontalface_default.xml");
-        Mat img = imread(name);
-        Mat gray;
-        cv::cvtColor(img, gray, COLOR_BGR2GRAY);
-        cv::equalizeHist(gray, gray);
-        vector<Rect> faces;
-        cascade.detectMultiScale(gray, faces, 1.1, 5, 0 | CASCADE_SCALE_IMAGE, Size(16, 16));
-        for (size_t i = 0; i < faces.size(); i++) {
-            gdImageRectangle(in, faces[i].x, faces[i].y, faces[i].x + faces[i].width, faces[i].y + faces[i].height, gdImageColorClosest(in, 255, 0, 0));
-        }
-
-        name = "out-" + name;
-        gdImageFile(in, name.c_str());
-        gdImageDestroy(in);
-        (*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";
+    if (res.size() != 4) {
+        (*outMsg)["message"] += "надо приложить только 2 фото";
+        return;
     }
+    string body = to_string(inMsg->msg_id) + "-" + to_string(1) + "." + res[1];
+    string face = to_string(inMsg->msg_id) + "-" + to_string(2) + "." + res[3];
+    string name = to_string(inMsg->msg_id) + ".png";
+    net::download(res[0], body);
+    net::download(res[2], face);
+    try {
+        swap(face, body, name);
+    } catch (exception& e) {
+        (*outMsg)["message"] += "чот непрокатило(" + string(e.what()) + ")";
+        //return;
+    }
+    (*outMsg)["attachment"] += vk::upload(name, (*outMsg)["peer_id"], "photo") + ",";
+    (*outMsg)["attachment"] += vk::upload("face-" + face, (*outMsg)["peer_id"], "photo") + ",";
+    (*outMsg)["attachment"] += vk::upload("face-" + body, (*outMsg)["peer_id"], "photo") + ",";
 }
 
 void cmds::corp(cmdArg)
@@ -1317,6 +1302,9 @@ void cmds::corpDrop(cmdArg)
     module::corp::dropUser(inMsg);
 }
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 #define nDownSampling 2
 #define nBts 7
 #ifndef CV_ADAPTIVE_THRESH_MEAN_C
@@ -1332,25 +1320,24 @@ void cmds::cartoon(cmdArg)
         string url = res[i];
         string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
         net::download(url, name);
-
-        Mat img = imread(name);
-        Mat imgColored = img.clone();
+        cv::Mat img = cv::imread(name);
+        cv::Mat imgColored = img.clone();
         for (int i = 0; i < nDownSampling; i++)
             cv::pyrDown(imgColored, imgColored);
         for (int i = 0; i < nBts; i++) {
-            Mat buff;
+            cv::Mat buff;
             cv::bilateralFilter(imgColored, buff, 9, 9, 7);
             imgColored = buff.clone();
         }
         for (int i = 0; i < nDownSampling; i++)
             cv::pyrUp(imgColored, imgColored);
-        Mat imgGray;
-        cv::cvtColor(imgColored, imgGray, COLOR_RGB2GRAY);
-        Mat imgBlur;
+        cv::Mat imgGray;
+        cv::cvtColor(imgColored, imgGray, cv::COLOR_RGB2GRAY);
+        cv::Mat imgBlur;
         cv::medianBlur(imgGray, imgBlur, 7);
-        Mat imgEdge;
+        cv::Mat imgEdge;
         cv::adaptiveThreshold(imgBlur, imgEdge, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 9, 2);
-        cv::cvtColor(imgEdge, imgEdge, COLOR_GRAY2RGB);
+        cv::cvtColor(imgEdge, imgEdge, cv::COLOR_GRAY2RGB);
         cv::imwrite("colored-" + name, imgColored);
         cv::imwrite("edge-" + name, imgEdge);
         cv::resize(imgEdge, imgEdge, cv::Size(imgColored.size().width, imgColored.size().height));
@@ -1383,34 +1370,4 @@ void cmds::test(cmdArg)
     (*outMsg)["message"] += "Я сожрал оперативы: " + myMem + " Мб\n";
     (*outMsg)["message"] += "Сообщений: " + to_string(msg::CountComplete()) + "/" + to_string(msg::Count()) + "\n";
     (*outMsg)["message"] += "Запущен: " + other::getTime() + "\n";
-}
-
-#include "FaceSwapper.h"
-cv::Rect dlibRectangleToCV(dlib::rectangle r)
-{
-    return cv::Rect(cv::Point2i(r.left(), r.top()), cv::Point2i(r.right() + 1, r.bottom() + 1));
-}
-
-void cmds::swap(cmdArg)
-{
-    args res = other::msgPhotos(inMsg);
-    FaceSwapper face_swapper("shape_predictor_68_face_landmarks.dat");
-    dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
-    for (unsigned i = 0; i < res.size(); i += 2) {
-        string url = res[i];
-        string name = to_string(inMsg->msg_id) + "-" + to_string(i) + "." + res[i + 1];
-        net::download(url, name);
-
-        cv::Mat img = cv::imread(name);
-        dlib::cv_image<dlib::bgr_pixel> cimg(img);
-        vector<dlib::rectangle> faces = detector(cimg);
-        for (int i = 0; i < int(faces.size()) - 1; i++) {
-            cv::Rect rect1 = dlibRectangleToCV(faces[i]);
-            cv::Rect rect2 = dlibRectangleToCV(faces[i + 1]);
-            face_swapper.swapFaces(img, rect1, rect2);
-        }
-
-        cv::imwrite("swaped-" + name, img);
-        (*outMsg)["attachment"] += vk::upload("swaped-" + name, (*outMsg)["peer_id"], "photo") + ",";
-    }
 }

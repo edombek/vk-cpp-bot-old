@@ -47,6 +47,7 @@
 			<Add library="gd" />
 			<Add library="python3.5m" />
 		</Linker>
+		<Unit filename="FaceSwapper.cpp" />
 		<Unit filename="Makefile" />
 		<Unit filename="README.md" />
 		<Unit filename="cmd.cpp" />

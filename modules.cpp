@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <ctime>
 #include <iostream>
 #include <mutex>
 
