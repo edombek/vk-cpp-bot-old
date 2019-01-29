@@ -4,24 +4,20 @@
 
 FaceSwapper::FaceSwapper(const std::string landmarks_path)
 {
-    try
-    {
+    try {
         dlib::deserialize(landmarks_path) >> pose_model;
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         std::cerr << "Error loading landmarks from " << landmarks_path << std::endl
-            << "You can download the file from http://sourceforge.net/projects/dclib/files/dlib/v18.10/shape_predictor_68_face_landmarks.dat.bz2" << std::endl;
+                  << "You can download the file from http://sourceforge.net/projects/dclib/files/dlib/v18.10/shape_predictor_68_face_landmarks.dat.bz2" << std::endl;
         exit(-1);
     }
 }
-
 
 FaceSwapper::~FaceSwapper()
 {
 }
 
-void FaceSwapper::swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob)
+void FaceSwapper::swapFaces(cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob)
 {
     small_frame = getMinFrame(frame, rect_ann, rect_bob);
 
@@ -53,7 +49,7 @@ void FaceSwapper::swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_b
     pasteFacesOnFrame();
 }
 
-cv::Mat FaceSwapper::getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob)
+cv::Mat FaceSwapper::getMinFrame(const cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob)
 {
     cv::Rect bounding_rect = rect_ann | rect_bob;
 
@@ -71,7 +67,7 @@ cv::Mat FaceSwapper::getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::R
     return frame(bounding_rect);
 }
 
-void FaceSwapper::getFacePoints(const cv::Mat &frame)
+void FaceSwapper::getFacePoints(const cv::Mat& frame)
 {
     using namespace dlib;
 
@@ -83,9 +79,8 @@ void FaceSwapper::getFacePoints(const cv::Mat &frame)
     shapes[0] = pose_model(dlib_frame, dlib_rects[0]);
     shapes[1] = pose_model(dlib_frame, dlib_rects[1]);
 
-    auto getPoint = [&](int shape_index, int part_index) -> const cv::Point2i
-    {
-        const auto &p = shapes[shape_index].part(part_index);
+    auto getPoint = [&](int shape_index, int part_index) -> const cv::Point2i {
+        const auto& p = shapes[shape_index].part(part_index);
         return cv::Point2i(p.x(), p.y());
     };
 
@@ -100,7 +95,6 @@ void FaceSwapper::getFacePoints(const cv::Mat &frame)
     cv::Point2i nose_length = getPoint(0, 27) - getPoint(0, 30);
     points_ann[7] = getPoint(0, 26) + nose_length;
     points_ann[8] = getPoint(0, 17) + nose_length;
-
 
     points_bob[0] = getPoint(1, 0);
     points_bob[1] = getPoint(1, 3);
@@ -183,7 +177,7 @@ void FaceSwapper::colorCorrectFaces()
     specifiyHistogram(small_frame(big_rect_bob), warpped_faces(big_rect_bob), warpped_mask_ann(big_rect_bob));
 }
 
-void FaceSwapper::featherMask(cv::Mat &refined_masks)
+void FaceSwapper::featherMask(cv::Mat& refined_masks)
 {
     cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT, cv::Scalar(0));
 
@@ -192,16 +186,13 @@ void FaceSwapper::featherMask(cv::Mat &refined_masks)
 
 inline void FaceSwapper::pasteFacesOnFrame()
 {
-    for (size_t i = 0; i < small_frame.rows; i++)
-    {
+    for (size_t i = 0; i < small_frame.rows; i++) {
         auto frame_pixel = small_frame.row(i).data;
         auto faces_pixel = warpped_faces.row(i).data;
         auto masks_pixel = refined_masks.row(i).data;
 
-        for (size_t j = 0; j < small_frame.cols; j++)
-        {
-            if (*masks_pixel != 0)
-            {
+        for (size_t j = 0; j < small_frame.cols; j++) {
+            if (*masks_pixel != 0) {
                 *frame_pixel = ((255 - *masks_pixel) * (*frame_pixel) + (*masks_pixel) * (*faces_pixel)) >> 8; // divide by 256
                 *(frame_pixel + 1) = ((255 - *(masks_pixel + 1)) * (*(frame_pixel + 1)) + (*(masks_pixel + 1)) * (*(faces_pixel + 1))) >> 8;
                 *(frame_pixel + 2) = ((255 - *(masks_pixel + 2)) * (*(frame_pixel + 2)) + (*(masks_pixel + 2)) * (*(faces_pixel + 2))) >> 8;
@@ -220,14 +211,12 @@ void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_i
     std::memset(source_hist_int, 0, sizeof(int) * 3 * 256);
     std::memset(target_hist_int, 0, sizeof(int) * 3 * 256);
 
-    for (size_t i = 0; i < mask.rows; i++)
-    {
+    for (size_t i = 0; i < mask.rows; i++) {
         auto current_mask_pixel = mask.row(i).data;
         auto current_source_pixel = source_image.row(i).data;
         auto current_target_pixel = target_image.row(i).data;
 
-        for (size_t j = 0; j < mask.cols; j++)
-        {
+        for (size_t j = 0; j < mask.cols; j++) {
             if (*current_mask_pixel != 0) {
                 source_hist_int[0][*current_source_pixel]++;
                 source_hist_int[1][*(current_source_pixel + 1)]++;
@@ -239,15 +228,14 @@ void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_i
             }
 
             // Advance to next pixel
-            current_source_pixel += 3; 
-            current_target_pixel += 3; 
-            current_mask_pixel++; 
+            current_source_pixel += 3;
+            current_target_pixel += 3;
+            current_mask_pixel++;
         }
     }
 
     // Calc CDF
-    for (size_t i = 1; i < 256; i++)
-    {
+    for (size_t i = 1; i < 256; i++) {
         source_hist_int[0][i] += source_hist_int[0][i - 1];
         source_hist_int[1][i] += source_hist_int[1][i - 1];
         source_hist_int[2][i] += source_hist_int[2][i - 1];
@@ -258,8 +246,7 @@ void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_i
     }
 
     // Normalize CDF
-    for (size_t i = 0; i < 256; i++)
-    {
+    for (size_t i = 0; i < 256; i++) {
         source_histogram[0][i] = (source_hist_int[0][255] ? (float)source_hist_int[0][i] / source_hist_int[0][255] : 0);
         source_histogram[1][i] = (source_hist_int[1][255] ? (float)source_hist_int[1][i] / source_hist_int[1][255] : 0);
         source_histogram[2][i] = (source_hist_int[2][255] ? (float)source_hist_int[2][i] / source_hist_int[2][255] : 0);
@@ -271,11 +258,9 @@ void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_i
 
     // Create lookup table
 
-    auto binary_search = [&](const float needle, const float haystack[]) -> uint8_t
-    {
+    auto binary_search = [&](const float needle, const float haystack[]) -> uint8_t {
         uint8_t l = 0, r = 255, m;
-        while (l < r)
-        {
+        while (l < r) {
             m = (l + r) / 2;
             if (needle > haystack[m])
                 l = m + 1;
@@ -286,22 +271,18 @@ void FaceSwapper::specifiyHistogram(const cv::Mat source_image, cv::Mat target_i
         return m;
     };
 
-    for (size_t i = 0; i < 256; i++)
-    {
+    for (size_t i = 0; i < 256; i++) {
         LUT[0][i] = binary_search(target_histogram[0][i], source_histogram[0]);
         LUT[1][i] = binary_search(target_histogram[1][i], source_histogram[1]);
         LUT[2][i] = binary_search(target_histogram[2][i], source_histogram[2]);
     }
 
     // repaint pixels
-    for (size_t i = 0; i < mask.rows; i++)
-    {
+    for (size_t i = 0; i < mask.rows; i++) {
         auto current_mask_pixel = mask.row(i).data;
         auto current_target_pixel = target_image.row(i).data;
-        for (size_t j = 0; j < mask.cols; j++)
-        {
-            if (*current_mask_pixel != 0)
-            {
+        for (size_t j = 0; j < mask.cols; j++) {
+            if (*current_mask_pixel != 0) {
                 *current_target_pixel = LUT[0][*current_target_pixel];
                 *(current_target_pixel + 1) = LUT[1][*(current_target_pixel + 1)];
                 *(current_target_pixel + 2) = LUT[2][*(current_target_pixel + 2)];

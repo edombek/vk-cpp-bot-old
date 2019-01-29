@@ -1,6 +1,6 @@
 #ifndef NO_PYTHON
-#include <boost/python.hpp>
 #include <Python.h>
+#include <boost/python.hpp>
 #endif
 #include "common.h"
 #include <iostream>
@@ -13,16 +13,16 @@ bool friendsadd;
 int main()
 {
 #ifndef NO_PYTHON
-	PyMainThread m;
+    PyMainThread m;
 #endif
-	vk::init();
-	other::startTime();
-	module::start();
-	cmd::init();
-	thread friends(vk::friends);
-	msg::init();
-	lp::loop();
-	if (friendsadd)
-		friends.join();
-	return 0;
+    vk::init();
+    other::startTime();
+    module::start();
+    cmd::init();
+    thread friends(vk::friends);
+    msg::init();
+    lp::loop();
+    if (friendsadd)
+        friends.join();
+    return 0;
 }

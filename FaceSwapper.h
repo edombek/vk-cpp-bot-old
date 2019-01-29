@@ -1,31 +1,30 @@
 #pragma once
 
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/video.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
 
-#include <dlib/opencv.h>
-#include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing.h>
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/opencv.h>
 
-class FaceSwapper
-{
+class FaceSwapper {
 public:
     // Initialize face swapped with landmarks
     FaceSwapper(const std::string landmarks_path);
     ~FaceSwapper();
 
     //Swaps faces in rects on frame
-    void swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob);
+    void swapFaces(cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob);
 
 private:
     // Returns minimal Mat containing both faces
-    cv::Mat getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob);
+    cv::Mat getMinFrame(const cv::Mat& frame, cv::Rect& rect_ann, cv::Rect& rect_bob);
 
     // Finds facial landmarks on faces and extracts the useful points
-    void getFacePoints(const cv::Mat &frame);
+    void getFacePoints(const cv::Mat& frame);
 
     // Calculates transformation matrices based on points extracted by getFacePoints
     void getTransformationMatrices();
@@ -49,7 +48,7 @@ private:
     void colorCorrectFaces();
 
     // Blurs edges of mask
-    void featherMask(cv::Mat &refined_masks);
+    void featherMask(cv::Mat& refined_masks);
 
     // Pastes faces on original frame
     void pasteFacesOnFrame();
@@ -68,7 +67,7 @@ private:
 
     cv::Mat refined_ann_and_bob_warpped, refined_bob_and_ann_warpped;
     cv::Mat warpped_face_ann, warpped_face_bob;
-    
+
     cv::Point2i points_ann[9], points_bob[9];
     cv::Mat trans_ann_to_bob, trans_bob_to_ann;
     cv::Mat mask_ann, mask_bob;
@@ -89,4 +88,3 @@ private:
     float source_histogram[3][256];
     float target_histogram[3][256];
 };
-
