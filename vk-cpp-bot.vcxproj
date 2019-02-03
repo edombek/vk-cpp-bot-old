@@ -103,35 +103,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cmd.cpp" />
-    <ClCompile Include="cmds.cpp" />
-    <ClCompile Include="fs.cpp" />
-    <ClCompile Include="lp.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="modules.cpp" />
-    <ClCompile Include="msg.cpp" />
-    <ClCompile Include="net.cpp" />
-    <ClCompile Include="other.cpp" />
-    <ClCompile Include="py.cpp">
+    <ClCompile Include="src/cmd.cpp" />
+    <ClCompile Include="src/cmds.cpp" />
+    <ClCompile Include="src/fs.cpp" />
+    <ClCompile Include="src/lp.cpp" />
+    <ClCompile Include="src/main.cpp" />
+    <ClCompile Include="src/modules.cpp" />
+    <ClCompile Include="src/msg.cpp" />
+    <ClCompile Include="src/net.cpp" />
+    <ClCompile Include="src/other.cpp" />
+    <ClCompile Include="src/py.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="str.cpp" />
-    <ClCompile Include="vk.cpp" />
+    <ClCompile Include="src/str.cpp" />
+    <ClCompile Include="src/vk.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cmd.h" />
-    <ClInclude Include="cmds.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="fs.h" />
-    <ClInclude Include="lp.h" />
-    <ClInclude Include="modules.h" />
-    <ClInclude Include="msg.h" />
-    <ClInclude Include="net.h" />
-    <ClInclude Include="other.h" />
-    <ClInclude Include="py.h" />
-    <ClInclude Include="str.h" />
-    <ClInclude Include="vk.h" />
+    <ClInclude Include="src/cmd.h" />
+    <ClInclude Include="src/cmds.h" />
+    <ClInclude Include="src/common.h" />
+    <ClInclude Include="src/fs.h" />
+    <ClInclude Include="src/lp.h" />
+    <ClInclude Include="src/modules.h" />
+    <ClInclude Include="src/msg.h" />
+    <ClInclude Include="src/net.h" />
+    <ClInclude Include="src/other.h" />
+    <ClInclude Include="src/py.h" />
+    <ClInclude Include="src/str.h" />
+    <ClInclude Include="src/vk.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

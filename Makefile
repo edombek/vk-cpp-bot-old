@@ -1,20 +1,20 @@
 CC=g++ -Ofast -ftree-vectorize# -g -DDEBUG-fsanitize=address -fsanitize-recover=address -U_FORTIFY_SOURCE -fno-omit-frame-pointer -fno-common -static-libasan
 CFLAGS= -std=c++11 -c
 LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_photo -lgif -ljpeg -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm -ldlib -lcblas -llapack -lpng16
-INCLUDES= -I/usr/include/opencv4
+INCLUDES= -I/usr/include/opencv4 -Isrc
 SOURCES=	\
-	fs.cpp \
-	net.cpp \
-	vk.cpp \
-	lp.cpp \
-	str.cpp \
-	other.cpp \
-	msg.cpp \
-	modules.cpp \
-	cmd.cpp \
-	cmds.cpp \
-	FaceSwapper.cpp \
-	main.cpp
+	src/fs.cpp \
+	src/net.cpp \
+	src/vk.cpp \
+	src/lp.cpp \
+	src/str.cpp \
+	src/other.cpp \
+	src/msg.cpp \
+	src/modules.cpp \
+	src/cmd.cpp \
+	src/cmds.cpp \
+	src/FaceSwapper.cpp \
+	src/main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=vkbot
 
@@ -28,7 +28,7 @@ else
 	else
 		LDFLAGS+= -lboost_python3
 	endif
-	SOURCES+= 	py.cpp
+	SOURCES+= 	src/py.cpp
 endif
 
 ifdef TERMUX
