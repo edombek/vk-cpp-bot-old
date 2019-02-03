@@ -1,6 +1,6 @@
 CC=g++ -Ofast -ftree-vectorize# -g -DDEBUG-fsanitize=address -fsanitize-recover=address -U_FORTIFY_SOURCE -fno-omit-frame-pointer -fno-common -static-libasan
 CFLAGS= -std=c++11 -c
-LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_photo -lgif -ljpeg -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lm -ldlib -lcblas -llapack -lpng16
+LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_photo -lgif -ljpeg -lopencv_imgproc -lopencv_imgcodecs -lm -ldlib -lcblas -llapack -lpng16
 INCLUDES= -I/usr/include/opencv4 -Isrc
 SOURCES=	\
 	src/fs.cpp \
