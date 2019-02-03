@@ -2,7 +2,7 @@
 #include <dlib/image_processing.h>
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/opencv/cv_image_abstract.h>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo.hpp>
 
@@ -107,7 +107,7 @@ void draw_face(const char* name, cv::Mat image, std::vector<cv::Point2f> points)
     for (int i = 0; i < points.size(); i++) {
         cv::circle(imageClone, cv::Point(points[i].x, points[i].y), 1, cv::Scalar(0, 0, 0));
     }
-    cv::imshow(name, imageClone);
+    //cv::imshow(name, imageClone);
 }
 
 void save_face(string out, cv::Mat image, std::vector<cv::Point2f> points)
