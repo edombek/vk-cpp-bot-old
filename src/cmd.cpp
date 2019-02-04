@@ -51,7 +51,9 @@ void cmd::init()
     cmd::add("ip", &cmds::ip, true, "вычисляет по ойпе", 0, 1);
     cmd::add("гейм", &cmds::game, true, "нукер", 0, 1);
     cmd::add("neon", &cmds::neon, true, "арт с неоновой обработкой", 5, 1);
+#ifdef ENVIRONMENT32
     cmd::add("vox", &cmds::vox, true, "vox из HL", 1, 1);
+#endif
     cmd::add("rgb", &cmds::rgb, true, "смещает изображение поканально", 1, 1);
     cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
     cmd::add("ascii", &cmds::ascii, true, "asciiart из фото", 1, 1);
@@ -74,7 +76,7 @@ void cmd::init()
         py::object main_module = py::import("__main__");
         py::object main_namespace = main_module.attr("__dict__");
         main_module.attr("init") = cmd::pyAdd;
-        py::exec(py::str(fs::readData("py/init.py")), main_namespace);
+        py::exec_file(py::str("py/init.py"), main_namespace);
     } catch (py::error_already_set const&) {
         cout << pyF::error() << endl;
     }
@@ -169,7 +171,7 @@ void cmd::start(message* inMsg, table* outMsg, string command, cmd::cmd_table* c
             main_module.attr("net_info") = net::getInfo();
             main_module.attr("msg_imgs") = pyF::toPythonList(other::msgPhotos(inMsg));
             try {
-                py::exec(py::str(fs::readData("py/" + cmdptr->at(command).ex.pyPath)), main_namespace);
+                py::exec_file(py::str("py/" + cmdptr->at(command).ex.pyPath), main_namespace);
                 *outMsg = pyF::toTable(py::extract<py::dict>(main_module.attr("outMsg")));
             } catch (py::error_already_set&) {
                 (*outMsg)["message"] += pyF::error();

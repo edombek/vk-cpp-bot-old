@@ -35,7 +35,7 @@ ifdef TERMUX
 	LDFLAGS+= -latomic
 endif
 
-CFLAGS+= -Wno-psabi -Wno-write-strings
+CFLAGS+= -Wno-psabi -Wno-write-strings -Wno-unused-result
 
 all: $(SOURCES) $(EXECUTABLE)
 
