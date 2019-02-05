@@ -1,6 +1,6 @@
 CC=g++ -Ofast -ftree-vectorize# -g -DDEBUG-fsanitize=address -fsanitize-recover=address -U_FORTIFY_SOURCE -fno-omit-frame-pointer -fno-common -static-libasan
 CFLAGS= -std=c++11 -c
-LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_photo -lgif -ljpeg -lopencv_imgproc -lopencv_imgcodecs -lm -ldlib -lblas -llapack -lpng16
+LDFLAGS= -lcurl -lgd -pthread -lopencv_core -lopencv_objdetect -lopencv_photo -lgif -ljpeg -lopencv_imgproc -lopencv_imgcodecs
 INCLUDES= -I/usr/include/opencv4 -Isrc
 SOURCES=	\
 	src/fs.cpp \
@@ -13,7 +13,6 @@ SOURCES=	\
 	src/modules.cpp \
 	src/cmd.cpp \
 	src/cmds.cpp \
-	src/FaceSwapper.cpp \
 	src/main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=vkbot
@@ -29,6 +28,13 @@ else
 		LDFLAGS+= -lboost_python3
 	endif
 	SOURCES+= 	src/py.cpp
+endif
+
+ifdef NO_DLIB
+	CFLAGS+= -DNO_DLIB
+else
+	LDFLAGS+= -lm -ldlib -lblas -llapack -lpng16
+	SOURCES+=	src/FaceSwapper.cpp
 endif
 
 ifdef TERMUX

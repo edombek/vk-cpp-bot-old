@@ -1208,6 +1208,7 @@ void cmds::hsv(cmdArg)
     }
 }
 
+#ifndef NO_DLIB
 void swap(string face, string body, string out);
 void cmds::face(cmdArg)
 {
@@ -1231,6 +1232,7 @@ void cmds::face(cmdArg)
     (*outMsg)["attachment"] += vk::upload("face-" + face, (*outMsg)["peer_id"], "photo") + ",";
     (*outMsg)["attachment"] += vk::upload("face-" + body, (*outMsg)["peer_id"], "photo") + ",";
 }
+#endif
 
 void cmds::corp(cmdArg)
 {
@@ -1365,9 +1367,16 @@ void cmds::test(cmdArg)
     string usedMem = to_string((int)((float)(str::fromString(other::getParamOfPath("/proc/meminfo", "MemTotal")) - str::fromString(other::getParamOfPath("/proc/meminfo", "MemAvailable"))) / 1024));
     string myMem = to_string((int)((float)str::fromString(other::getParamOfPath("/proc/self/status", "VmRSS")) / 1024));
 
+    auto net_info = str::words(net::getInfo(), ' ');
+
     (*outMsg)["message"] += "CPU:" + other::getParamOfPath("/proc/cpuinfo", "model name") + "\n";
     (*outMsg)["message"] += "Потоков занято: " + other::getParamOfPath("/proc/self/status", "Threads") + "\n";
     (*outMsg)["message"] += "Я сожрал оперативы: " + myMem + " Мб\n";
     (*outMsg)["message"] += "Сообщений: " + to_string(msg::CountComplete()) + "/" + to_string(msg::Count()) + "\n";
     (*outMsg)["message"] += "Запущен: " + other::getTime() + "\n";
+    (*outMsg)["message"] += "\nТрафик: \n";
+    (*outMsg)["message"] += "Запросы: ↑" + net_info[1] + "B ↓" + net_info[0] + "B\n";
+    (*outMsg)["message"] += "Выгрузка: ↑" + net_info[3] + "B ↓" + net_info[2] + "B\n";
+    (*outMsg)["message"] += "Закачка: ↑" + net_info[5] + "B ↓" + net_info[4] + "B\n";
+    //outMsg["message"] += "Всего: ↑" + net_info[7] + "B ↓" + net_info[6] + "B\n";
 }

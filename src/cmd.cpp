@@ -37,7 +37,6 @@ void cmd::init()
     cmd::add("u", &cmds::upload, true, "выгрузить в контач", 0, 3);
     cmd::add("видосы", &cmds::video, false, "видосы", 0, 1);
     cmd::add("f", &cmds::f, false, "видосы с правками)", 0, 2);
-    cmd::add("-f", &cmds::f, false, "видосы с правками)", 0, 2);
     cmd::add("доки", &cmds::doc, true, "доки", 0, 2);
     cmd::add("set", &cmds::set, true, "acess set", 0, 5);
     cmd::add("цитата", &cmds::citata, true, "создать цитату", 5, 1);
@@ -58,10 +57,11 @@ void cmd::init()
     cmd::add("art", &cmds::art, true, "арт из фото", 1, 1);
     cmd::add("ascii", &cmds::ascii, true, "asciiart из фото", 1, 1);
     cmd::add("hsv", &cmds::hsv, true, "hsv гифка из фото", 1, 1);
+#ifndef NO_DLIB
     cmd::add("face", &cmds::face, true, "ищет лица на фото", 1, 1);
+#endif
     cmd::add("crt", &cmds::cartoon, true, "фото в мультипликационный вид", 1, 1);
     cmd::add("ii", &cmds::test, true, "core info", 0, 1);
-
     cmd::add("корп", &cmds::corp, true, "инфо о корпорации", 0, 1);
 
     cmds::init();
