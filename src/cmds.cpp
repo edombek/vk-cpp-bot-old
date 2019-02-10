@@ -849,23 +849,23 @@ void cmds::neon(cmdArg)
 mutex voxLock;
 
 struct wav_header_t {
-    char chunkID[4]; //"RIFF" = 0x46464952
-    unsigned long chunkSize; //28 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes] + sum(sizeof(chunk.id) + sizeof(chunk.size) + chunk.size)
-    char format[4]; //"WAVE" = 0x45564157
-    char subchunk1ID[4]; //"fmt " = 0x20746D66
-    unsigned long subchunk1Size; //16 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes]
-    unsigned short audioFormat;
-    unsigned short numChannels;
-    unsigned long sampleRate;
-    unsigned long byteRate;
-    unsigned short blockAlign;
-    unsigned short bitsPerSample;
+    uint8_t chunkID[4]; //"RIFF" = 0x46464952
+    uint32_t chunkSize; //28 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes] + sum(sizeof(chunk.id) + sizeof(chunk.size) + chunk.size)
+    uint8_t format[4]; //"WAVE" = 0x45564157
+    uint8_t subchunk1ID[4]; //"fmt " = 0x20746D66
+    uint32_t subchunk1Size; //16 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes]
+    uint16_t audioFormat;
+    int16_t numChannels;
+    uint32_t sampleRate;
+    uint32_t byteRate;
+    int16_t blockAlign;
+    int16_t bitsPerSample;
     //[WORD wExtraFormatBytes;]
     //[Extra format bytes]
 };
 struct chunk_t {
-    char ID[4]; //"data" = 0x61746164
-    unsigned long size; //Chunk data bytes
+    uint8_t ID[4]; //"data" = 0x61746164
+    uint32_t size; //Chunk data bytes
 };
 void cmds::vox(cmdArg)
 {
@@ -889,11 +889,11 @@ void cmds::vox(cmdArg)
         if (wavFile == NULL)
             continue;
         fread(&wavHeader, sizeof(wav_header_t), 1, wavFile);
-        char* offset = new char[wavHeader.subchunk1Size - 16];
+        uint8_t* offset = new uint8_t[wavHeader.subchunk1Size - 16];
         fread(offset, wavHeader.subchunk1Size - 16, 1, wavFile);
         delete[] offset;
         fread(&wavChunk, sizeof(chunk_t), 1, wavFile);
-        char* dataIn = new char[wavChunk.size];
+        uint8_t* dataIn = new uint8_t[wavChunk.size];
         fread(dataIn, wavChunk.size, 1, wavFile);
         fclose(wavFile);
         size += wavChunk.size;
