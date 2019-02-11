@@ -21,6 +21,7 @@ typedef struct {
     string msg;
     int chat_id;
     args words;
+    string attach;
 } message;
 
 #include "cmd.h"

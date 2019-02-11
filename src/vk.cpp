@@ -128,6 +128,24 @@ string vk::upload(string path, string peer_id, string type)
     return out + type + to_string((int)res["response"][0]["owner_id"]) + "_" + to_string((int)res["response"][0]["id"]);
 }
 
+string vk::getAttach(int msgid)
+{
+    string out;
+    json res = vk::send("messages.getById", { { "message_ids", to_string(msgid) }, { "extended", "1" } });
+    if (res["response"]["items"][0].is_null())
+        return out;
+    for (auto doc : res["response"]["items"][0]["attachments"]) {
+        string type = doc["type"];
+        string t = to_string((int)doc[type]["owner_id"]) + "_" + to_string((int)doc[type]["id"]);
+        if (!doc[type]["access_key"].is_null())
+            t += "_" + (string)doc[type]["access_key"];
+        if (type == "graffity" || type == "audio_message")
+            type = "doc";
+        out += type + t + ",";
+    }
+    return out;
+}
+
 void vk::friends()
 {
     while (true) {

@@ -22,7 +22,7 @@ void lp::loop()
                 { "key", key },
                 { "ts", ts },
                 { "wait", "90" }, //25
-                { "mode", "2" },
+                { "mode", "10" },
                 { "version", "3" },
                 { "act", "a_check" }
             };
@@ -83,6 +83,9 @@ void lp::updates(json updates)
         switch ((int)update[0]) {
         case 4: // message
             msg::in(update);
+            break;
+        case 2:
+            msg::change(update);
             break;
         }
     }

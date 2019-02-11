@@ -6,6 +6,7 @@ void new_msg(json js);
 namespace msg {
 void init();
 void in(json js);
+void change(json js);
 void treatment(message inMsg);
 void decode(json js, message* inMsg);
 void func(message* inMsg, table* outMsg);

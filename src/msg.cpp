@@ -6,6 +6,7 @@ bool forwardmessages;
 json botname;
 
 mutex msgLock;
+map<int, message> msgs;
 unsigned long long int msgCount = 0;
 unsigned long long int msgCountComplete = 0;
 
@@ -26,6 +27,21 @@ void msg::in(json js)
         inMsg.words.push_back("help");
     thread(msg::treatment, inMsg).detach();
     //msg::treatment(inMsg);
+}
+
+void msg::change(json js)
+{
+    message inMsg;
+    msg::decode(js, &inMsg);
+    msgLock.lock();
+    if (inMsg.flags & 131072 && inMsg.chat_id && msgs.find(inMsg.msg_id) != msgs.cend() && !(msgs[inMsg.msg_id].flags & 0x02)) {
+        table outMsg;
+        outMsg["message"] = str::replase(str::replase(str::replase(str::replase(msgs[inMsg.msg_id].msg, ". ", "@#$%&"), "&#", "-"), ".", "-"), "@#$%&", ". ");
+        outMsg["peer_id"] = to_string(msgs[inMsg.msg_id].chat_id + 2000000000);
+        outMsg["attachment"] = msgs[inMsg.msg_id].attach;
+        msg::send(outMsg);
+    }
+    msgLock.unlock();
 }
 
 void msg::treatment(message inMsg)
@@ -70,6 +86,10 @@ void msg::decode(json js, message* inMsg)
         return;
     inMsg->msg = str::replase(inMsg->msg, "<br>", " \n");
     inMsg->words = str::words(inMsg->msg, ' ');
+    inMsg->attach = vk::getAttach(inMsg->msg_id);
+    msgLock.lock();
+    msgs[inMsg->msg_id] = *inMsg;
+    msgLock.unlock();
 }
 
 void msg::func(message* inMsg, table* outMsg)
