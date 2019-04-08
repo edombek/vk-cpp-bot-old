@@ -1,12 +1,12 @@
 [submodule "vox"]
 	path = vox
-	url = http://github.com/EVGESHAd/GoldSrcVox
+	url = http://github.com/edombek/GoldSrcVox
 [submodule "thr"]
 	path = thr
 	url = https://github.com/mtrebi/thread-pool
 [submodule "win32deps"]
 	path = win32deps
-	url = http://github.com/evgeshad/vk-cpp-bot-old-win32deps
+	url = http://github.com/edombek/vk-cpp-bot-old-win32deps
 [submodule "py"]
 	path = py
-	url = https://github.com/EVGESHAd/vk-cpp-bot-old-py
+	url = https://github.com/edombek/vk-cpp-bot-old-py
